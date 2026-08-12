@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OTP Verification | Octo Buddy</title>
+    <style>
+
+   *{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial, Helvetica, sans-serif;
+}
+
+body{
+
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    background:linear-gradient(
+        180deg,
+        #000000 0%,
+        #0C6478 80%
+    );
+
+    padding:20px;
+
+}
+
+.container{
+
+    width:100%;
+    max-width:420px;
+
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    text-align:center;
+
+}
+
+.logo{
+
+    width:340px;
+    max-width:70%;
+    margin-bottom:60px;
+
+}
+
+h2{
+
+    color:#fff;
+    font-size:1.1rem;
+    font-weight:400;
+    margin-bottom:20px;
+
+}
+
+form{
+
+    width:100%;
+
+}
+
+.otp-box{
+
+    width:100%;
+    height:55px;
+
+    border:none;
+    outline:none;
+
+    border-radius:10px;
+
+    background:#D9D9D9;
+
+    text-align:center;
+
+    font-size:22px;
+    letter-spacing:10px;
+
+    margin-bottom:25px;
+
+}
+
+.verify-btn{
+
+    width:100%;
+    height:55px;
+
+    border:none;
+    border-radius:10px;
+
+    background:linear-gradient(
+        90deg,
+        #82EE99 0%,
+        #1EA17A 100%
+    );
+
+    color:white;
+
+    font-size:17px;
+    font-weight:600;
+
+    cursor:pointer;
+
+    transition:.25s;
+
+}
+
+.verify-btn:hover{
+
+    transform:translateY(-2px);
+
+    box-shadow:0 8px 18px rgba(0,0,0,.25);
+
+}
+
+.verify-btn:active{
+
+    transform:scale(.98);
+
+}
+
+.bottom{
+
+    margin-top:30px;
+
+    color:white;
+
+    font-size:14px;
+
+}
+
+.bottom a{
+
+    color:#82EE99;
+    text-decoration:none;
+    font-weight:600;
+
+}
+
+.bottom a:hover{
+
+    text-decoration:underline;
+
+}
+
+
+/* Mobile */
+
+@media(max-width:480px){
+
+    .logo{
+
+        width:180px;
+        margin-bottom:45px;
+
+    }
+
+    h2{
+
+        font-size:1rem;
+
+    }
+
+    .otp-box{
+
+        height:50px;
+        font-size:20px;
+        letter-spacing:8px;
+
+    }
+
+    .verify-btn{
+
+        height:50px;
+
+    }
+
+}
+</style> 
+
+</head>
+<body>
+
+<div class="container">
+
+    <img src="LOGIN.png" class="logo" alt="Octo Buddy Logo">
+
+    <!--
+        Flask Developers:
+        action="/verify-otp"
+        method="POST"
+
+        Backend receives:
+
+        otp = request.form.get("otp")
+    -->
+
+    <form action="/verify-otp" method="POST">
+
+        <h2>Enter 5 digit code sent to your email</h2>
+
+        <input
+                type="text"
+                name="otp"
+                maxlength="5"
+                pattern="[0-9]{5}"
+                class="otp-box"
+                placeholder="_____"
+                required
+        >
+
+        <button class="verify-btn">
+            Verify Code
+        </button>
+
+    </form>
+
+    <div class="bottom">
+
+        Didn't receive code?<br>
+
+        <a href="/resend-otp">
+            Press Here
+        </a>
+
+    </div>
+
+</div>
+
+</body>
+</html>

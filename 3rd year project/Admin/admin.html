@@ -1,0 +1,2052 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Octo Buddy | Admin</title>
+
+    <link rel="stylesheet" href="admin.css">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+
+    <!-- =========================
+         SIDEBAR
+    ========================= -->
+
+    <aside class="sidebar">
+
+        <div class="sidebar-logo">
+            <img src="../LOGIN.png" alt="Octo Buddy Logo">
+        </div>
+
+        <div class="admin-profile">
+
+            <div class="admin-avatar">
+                A
+            </div>
+
+            <div>
+                <strong>Campus Manager</strong>
+                <span>Administrator</span>
+            </div>
+
+        </div>
+
+
+        <nav class="sidebar-nav">
+
+            <button class="nav-item active" data-section="dashboard">
+                <span>▦</span>
+                Dashboard
+            </button>
+
+            <button class="nav-item" data-section="applications">
+                <span>📋</span>
+                Applications
+                <span class="notification">6</span>
+            </button>
+
+            <button class="nav-item" data-section="students">
+                <span>👨‍🎓</span>
+                Students
+            </button>
+
+            <button class="nav-item" data-section="buddies">
+                <span>🐙</span>
+                Octo Buddies
+            </button>
+
+            <button class="nav-item" data-section="qualifications">
+                <span>🎓</span>
+                Qualifications
+            </button>
+
+            <button class="nav-item" data-section="modules">
+                <span>📚</span>
+                Modules
+            </button>
+
+            <button class="nav-item" data-section="schedule">
+                <span>📅</span>
+                Schedule
+            </button>
+
+            <button class="nav-item" data-section="reports">
+                <span>📊</span>
+                Reports
+            </button>
+
+            <button class="nav-item" data-section="leaderboard">
+                <span>🏆</span>
+                Leaderboard
+            </button>
+
+            <button class="nav-item" data-section="settings">
+                <span>⚙</span>
+                Settings
+            </button>
+
+        </nav>
+
+
+        <button class="logout-btn" id="logoutBtn">
+            <span>↪</span>
+            Logout
+        </button>
+
+    </aside>
+
+
+    <!-- =========================
+         MAIN CONTENT
+    ========================= -->
+
+    <main class="main-content">
+
+
+        <!-- TOP BAR -->
+
+        <header class="topbar">
+
+            <div>
+
+                <button class="mobile-menu" id="mobileMenu">
+                    ☰
+                </button>
+
+                <p class="page-label">Campus Manager</p>
+
+                <h1 id="pageTitle">
+                    Dashboard
+                </h1>
+
+            </div>
+
+
+            <div class="topbar-right">
+
+                <button class="notification-btn">
+                    🔔
+                    <span>3</span>
+                </button>
+
+                <div class="top-profile">
+
+                    <div class="top-avatar">
+                        A
+                    </div>
+
+                    <div>
+                        <strong>Campus Manager</strong>
+                        <small>Administrator</small>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <!-- =====================================================
+             DASHBOARD
+        ====================================================== -->
+
+        <section class="content-section active-section" id="dashboard">
+
+            <div class="welcome-card">
+
+                <div>
+
+                    <p>Welcome back 👋</p>
+
+                    <h2>
+                        Campus Manager Dashboard
+                    </h2>
+
+                    <span>
+                        Here's what's happening with Octo Buddy today.
+                    </span>
+
+                </div>
+
+                <div class="welcome-icon">
+                    🐙
+                </div>
+
+            </div>
+
+
+            <!-- STATISTICS -->
+
+            <div class="stats-grid">
+
+                <div class="stat-card">
+
+                    <div class="stat-icon orange">
+                        📋
+                    </div>
+
+                    <div>
+                        <span>Pending Applications</span>
+                        <strong id="pendingCount">6</strong>
+                    </div>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <div class="stat-icon blue">
+                        👨‍🎓
+                    </div>
+
+                    <div>
+                        <span>Students</span>
+                        <strong>340</strong>
+                    </div>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <div class="stat-icon green">
+                        🐙
+                    </div>
+
+                    <div>
+                        <span>Octo Buddies</span>
+                        <strong>18</strong>
+                    </div>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <div class="stat-icon purple">
+                        📅
+                    </div>
+
+                    <div>
+                        <span>Today's Sessions</span>
+                        <strong>14</strong>
+                    </div>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <div class="stat-icon teal">
+                        ✓
+                    </div>
+
+                    <div>
+                        <span>Completed Sessions</span>
+                        <strong>350</strong>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- DASHBOARD GRID -->
+
+            <div class="dashboard-grid">
+
+
+                <!-- RECENT APPLICATIONS -->
+
+                <div class="panel">
+
+                    <div class="panel-header">
+
+                        <div>
+
+                            <h3>
+                                Recent Applications
+                            </h3>
+
+                            <p>
+                                Octo Buddy applications waiting for review.
+                            </p>
+
+                        </div>
+
+                        <button class="view-btn" data-section-link="applications">
+                            View All
+                        </button>
+
+                    </div>
+
+
+                    <div class="application-preview">
+
+                        <div class="application-row">
+
+                            <div class="person-avatar">
+                                K
+                            </div>
+
+                            <div class="person-info">
+
+                                <strong>
+                                    Kyle Pillay
+                                </strong>
+
+                                <span>
+                                    Diploma in Information Technology
+                                </span>
+
+                            </div>
+
+                            <span class="status pending">
+                                Pending
+                            </span>
+
+                        </div>
+
+
+                        <div class="application-row">
+
+                            <div class="person-avatar">
+                                D
+                            </div>
+
+                            <div class="person-info">
+
+                                <strong>
+                                    Daniel Naidoo
+                                </strong>
+
+                                <span>
+                                    Diploma in Information Technology
+                                </span>
+
+                            </div>
+
+                            <span class="status pending">
+                                Pending
+                            </span>
+
+                        </div>
+
+
+                        <div class="application-row">
+
+                            <div class="person-avatar">
+                                S
+                            </div>
+
+                            <div class="person-info">
+
+                                <strong>
+                                    Sarah Moodley
+                                </strong>
+
+                                <span>
+                                    Bachelor of Business Administration
+                                </span>
+
+                            </div>
+
+                            <span class="status pending">
+                                Pending
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- TODAY'S SESSIONS -->
+
+                <div class="panel">
+
+                    <div class="panel-header">
+
+                        <div>
+
+                            <h3>
+                                Today's Sessions
+                            </h3>
+
+                            <p>
+                                Upcoming tutoring sessions.
+                            </p>
+
+                        </div>
+
+                        <button class="view-btn" data-section-link="schedule">
+                            Calendar
+                        </button>
+
+                    </div>
+
+
+                    <div class="session-preview">
+
+                        <div class="session-row">
+
+                            <div class="session-time">
+                                09:00
+                            </div>
+
+                            <div class="session-details">
+
+                                <strong>
+                                    Programming
+                                </strong>
+
+                                <span>
+                                    Kyle → Daniel
+                                </span>
+
+                            </div>
+
+                            <span class="session-status upcoming">
+                                Upcoming
+                            </span>
+
+                        </div>
+
+
+                        <div class="session-row">
+
+                            <div class="session-time">
+                                10:00
+                            </div>
+
+                            <div class="session-details">
+
+                                <strong>
+                                    Networking
+                                </strong>
+
+                                <span>
+                                    Sarah → Jason
+                                </span>
+
+                            </div>
+
+                            <span class="session-status ongoing">
+                                Ongoing
+                            </span>
+
+                        </div>
+
+
+                        <div class="session-row">
+
+                            <div class="session-time">
+                                11:00
+                            </div>
+
+                            <div class="session-details">
+
+                                <strong>
+                                    Database Systems
+                                </strong>
+
+                                <span>
+                                    Mark → Daniel
+                                </span>
+
+                            </div>
+
+                            <span class="session-status upcoming">
+                                Upcoming
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- QUICK ACTIONS -->
+
+            <div class="panel quick-panel">
+
+                <div class="panel-header">
+
+                    <div>
+
+                        <h3>
+                            Quick Actions
+                        </h3>
+
+                        <p>
+                            Manage your Octo Buddy system.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="quick-actions">
+
+                    <button data-section-link="applications">
+                        <span>📋</span>
+                        Review Applications
+                    </button>
+
+                    <button data-section-link="schedule">
+                        <span>📅</span>
+                        Schedule Session
+                    </button>
+
+                    <button data-section-link="students">
+                        <span>👨‍🎓</span>
+                        Manage Students
+                    </button>
+
+                    <button data-section-link="reports">
+                        <span>📊</span>
+                        View Reports
+                    </button>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             APPLICATIONS
+        ====================================================== -->
+
+        <section class="content-section" id="applications">
+
+            <div class="section-heading">
+
+                <div>
+
+                    <h2>
+                        Octo Buddy Applications
+                    </h2>
+
+                    <p>
+                        Review students who have applied to become Octo Buddies.
+                    </p>
+
+                </div>
+
+                <div class="filter-buttons">
+
+                    <button class="filter-btn active">
+                        All
+                    </button>
+
+                    <button class="filter-btn">
+                        Pending
+                    </button>
+
+                    <button class="filter-btn">
+                        Approved
+                    </button>
+
+                    <button class="filter-btn">
+                        Rejected
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <div class="table-panel">
+
+                <div class="table-wrapper">
+
+                    <table>
+
+                        <thead>
+
+                            <tr>
+
+                                <th>Student</th>
+                                <th>Qualification</th>
+                                <th>Year</th>
+                                <th>Modules</th>
+                                <th>Availability</th>
+                                <th>Status</th>
+                                <th>Action</th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody id="applicationsTable">
+
+                            <tr>
+
+                                <td>
+                                    <div class="table-person">
+                                        <div class="small-avatar">K</div>
+                                        <strong>Kyle Pillay</strong>
+                                    </div>
+                                </td>
+
+                                <td>Diploma in IT</td>
+
+                                <td>3rd Year</td>
+
+                                <td>
+                                    <span class="module-tag">
+                                        Programming
+                                    </span>
+
+                                    <span class="module-tag">
+                                        Networking
+                                    </span>
+                                </td>
+
+                                <td>
+                                    Mon · Wed · Fri
+                                </td>
+
+                                <td>
+                                    <span class="status pending">
+                                        Pending
+                                    </span>
+                                </td>
+
+                                <td>
+
+                                    <div class="action-buttons">
+
+                                        <button class="approve-btn">
+                                            Approve
+                                        </button>
+
+                                        <button class="reject-btn">
+                                            Reject
+                                        </button>
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+
+
+                            <tr>
+
+                                <td>
+                                    <div class="table-person">
+                                        <div class="small-avatar">D</div>
+                                        <strong>Daniel Naidoo</strong>
+                                    </div>
+                                </td>
+
+                                <td>Diploma in IT</td>
+
+                                <td>3rd Year</td>
+
+                                <td>
+                                    <span class="module-tag">
+                                        Programming
+                                    </span>
+                                </td>
+
+                                <td>
+                                    Tue · Thu
+                                </td>
+
+                                <td>
+                                    <span class="status pending">
+                                        Pending
+                                    </span>
+                                </td>
+
+                                <td>
+
+                                    <div class="action-buttons">
+
+                                        <button class="approve-btn">
+                                            Approve
+                                        </button>
+
+                                        <button class="reject-btn">
+                                            Reject
+                                        </button>
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+
+
+                            <tr>
+
+                                <td>
+                                    <div class="table-person">
+                                        <div class="small-avatar">S</div>
+                                        <strong>Sarah Moodley</strong>
+                                    </div>
+                                </td>
+
+                                <td>BBA</td>
+
+                                <td>2nd Year</td>
+
+                                <td>
+                                    <span class="module-tag">
+                                        Marketing
+                                    </span>
+                                </td>
+
+                                <td>
+                                    Mon · Fri
+                                </td>
+
+                                <td>
+                                    <span class="status pending">
+                                        Pending
+                                    </span>
+                                </td>
+
+                                <td>
+
+                                    <div class="action-buttons">
+
+                                        <button class="approve-btn">
+                                            Approve
+                                        </button>
+
+                                        <button class="reject-btn">
+                                            Reject
+                                        </button>
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             STUDENTS
+        ====================================================== -->
+
+        <section class="content-section" id="students">
+
+            <div class="section-heading">
+
+                <div>
+
+                    <h2>
+                        Students
+                    </h2>
+
+                    <p>
+                        View and manage registered students.
+                    </p>
+
+                </div>
+
+                <div class="search-box">
+                    🔍
+                    <input
+                        type="text"
+                        id="studentSearch"
+                        placeholder="Search students...">
+                </div>
+
+            </div>
+
+
+            <div class="table-panel">
+
+                <div class="table-wrapper">
+
+                    <table>
+
+                        <thead>
+
+                            <tr>
+                                <th>Student</th>
+                                <th>Student Number</th>
+                                <th>Qualification</th>
+                                <th>Year</th>
+                                <th>Sessions</th>
+                                <th>Status</th>
+                            </tr>
+
+                        </thead>
+
+                        <tbody id="studentsTable">
+
+                            <tr>
+                                <td>
+                                    <div class="table-person">
+                                        <div class="small-avatar">K</div>
+                                        <strong>Kyle Pillay</strong>
+                                    </div>
+                                </td>
+                                <td>12345678</td>
+                                <td>Diploma in IT</td>
+                                <td>3rd Year</td>
+                                <td>4</td>
+                                <td>
+                                    <span class="status active">
+                                        Active
+                                    </span>
+                                </td>
+                            </tr>
+
+
+                            <tr>
+                                <td>
+                                    <div class="table-person">
+                                        <div class="small-avatar">S</div>
+                                        <strong>Sarah Moodley</strong>
+                                    </div>
+                                </td>
+                                <td>12345679</td>
+                                <td>BBA</td>
+                                <td>2nd Year</td>
+                                <td>3</td>
+                                <td>
+                                    <span class="status active">
+                                        Active
+                                    </span>
+                                </td>
+                            </tr>
+
+
+                            <tr>
+                                <td>
+                                    <div class="table-person">
+                                        <div class="small-avatar">M</div>
+                                        <strong>Mark Daniels</strong>
+                                    </div>
+                                </td>
+                                <td>12345680</td>
+                                <td>Diploma in IT</td>
+                                <td>3rd Year</td>
+                                <td>2</td>
+                                <td>
+                                    <span class="status active">
+                                        Active
+                                    </span>
+                                </td>
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             OCTO BUDDIES
+        ====================================================== -->
+
+        <section class="content-section" id="buddies">
+
+            <div class="section-heading">
+
+                <div>
+
+                    <h2>
+                        Octo Buddies
+                    </h2>
+
+                    <p>
+                        Monitor approved Octo Buddy performance.
+                    </p>
+
+                </div>
+
+                <button class="primary-btn">
+                    + Add Octo Buddy
+                </button>
+
+            </div>
+
+
+            <div class="buddy-grid">
+
+                <div class="buddy-card">
+
+                    <div class="buddy-card-top">
+
+                        <div class="large-avatar">
+                            D
+                        </div>
+
+                        <span class="status active">
+                            Active
+                        </span>
+
+                    </div>
+
+                    <h3>Daniel Naidoo</h3>
+
+                    <p>
+                        Diploma in Information Technology · Year 3
+                    </p>
+
+                    <div class="buddy-stats">
+
+                        <div>
+                            <strong>18</strong>
+                            <span>Classes</span>
+                        </div>
+
+                        <div>
+                            <strong>450</strong>
+                            <span>Points</span>
+                        </div>
+
+                        <div>
+                            <strong>96%</strong>
+                            <span>Attendance</span>
+                        </div>
+
+                    </div>
+
+                    <button class="outline-btn">
+                        View Profile
+                    </button>
+
+                </div>
+
+
+                <div class="buddy-card">
+
+                    <div class="buddy-card-top">
+
+                        <div class="large-avatar">
+                            K
+                        </div>
+
+                        <span class="status active">
+                            Active
+                        </span>
+
+                    </div>
+
+                    <h3>Kyle Pillay</h3>
+
+                    <p>
+                        Diploma in Information Technology · Year 3
+                    </p>
+
+                    <div class="buddy-stats">
+
+                        <div>
+                            <strong>17</strong>
+                            <span>Classes</span>
+                        </div>
+
+                        <div>
+                            <strong>425</strong>
+                            <span>Points</span>
+                        </div>
+
+                        <div>
+                            <strong>94%</strong>
+                            <span>Attendance</span>
+                        </div>
+
+                    </div>
+
+                    <button class="outline-btn">
+                        View Profile
+                    </button>
+
+                </div>
+
+
+                <div class="buddy-card">
+
+                    <div class="buddy-card-top">
+
+                        <div class="large-avatar">
+                            S
+                        </div>
+
+                        <span class="status active">
+                            Active
+                        </span>
+
+                    </div>
+
+                    <h3>Sarah Moodley</h3>
+
+                    <p>
+                        Bachelor of Business Administration · Year 2
+                    </p>
+
+                    <div class="buddy-stats">
+
+                        <div>
+                            <strong>16</strong>
+                            <span>Classes</span>
+                        </div>
+
+                        <div>
+                            <strong>400</strong>
+                            <span>Points</span>
+                        </div>
+
+                        <div>
+                            <strong>91%</strong>
+                            <span>Attendance</span>
+                        </div>
+
+                    </div>
+
+                    <button class="outline-btn">
+                        View Profile
+                    </button>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             QUALIFICATIONS
+        ====================================================== -->
+
+        <section class="content-section" id="qualifications">
+
+            <div class="section-heading">
+
+                <div>
+
+                    <h2>
+                        Qualifications
+                    </h2>
+
+                    <p>
+                        Manage qualifications available on the platform.
+                    </p>
+
+                </div>
+
+                <button class="primary-btn" id="addQualification">
+                    + Add Qualification
+                </button>
+
+            </div>
+
+
+            <div class="management-grid">
+
+                <div class="management-card">
+
+                    <div class="management-icon">
+                        🎓
+                    </div>
+
+                    <h3>
+                        Diploma in Information Technology
+                    </h3>
+
+                    <p>
+                        4 academic years
+                    </p>
+
+                    <div class="management-footer">
+                        <span>12 Modules</span>
+                        <button>Edit</button>
+                    </div>
+
+                </div>
+
+
+                <div class="management-card">
+
+                    <div class="management-icon">
+                        📈
+                    </div>
+
+                    <h3>
+                        Bachelor of Business Administration
+                    </h3>
+
+                    <p>
+                        3 academic years
+                    </p>
+
+                    <div class="management-footer">
+                        <span>15 Modules</span>
+                        <button>Edit</button>
+                    </div>
+
+                </div>
+
+
+                <div class="management-card">
+
+                    <div class="management-icon">
+                        👥
+                    </div>
+
+                    <h3>
+                        Human Resource Management
+                    </h3>
+
+                    <p>
+                        3 academic years
+                    </p>
+
+                    <div class="management-footer">
+                        <span>11 Modules</span>
+                        <button>Edit</button>
+                    </div>
+
+                </div>
+
+
+                <div class="management-card">
+
+                    <div class="management-icon">
+                        💰
+                    </div>
+
+                    <h3>
+                        Accounting
+                    </h3>
+
+                    <p>
+                        3 academic years
+                    </p>
+
+                    <div class="management-footer">
+                        <span>14 Modules</span>
+                        <button>Edit</button>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             MODULES
+        ====================================================== -->
+
+        <section class="content-section" id="modules">
+
+            <div class="section-heading">
+
+                <div>
+
+                    <h2>
+                        Modules
+                    </h2>
+
+                    <p>
+                        Manage modules for each qualification.
+                    </p>
+
+                </div>
+
+                <button class="primary-btn" id="addModule">
+                    + Add Module
+                </button>
+
+            </div>
+
+
+            <div class="module-manager">
+
+                <div class="module-sidebar">
+
+                    <h3>Qualifications</h3>
+
+                    <button class="qualification-select active">
+                        Diploma in IT
+                    </button>
+
+                    <button class="qualification-select">
+                        BBA
+                    </button>
+
+                    <button class="qualification-select">
+                        Human Resources
+                    </button>
+
+                    <button class="qualification-select">
+                        Accounting
+                    </button>
+
+                </div>
+
+
+                <div class="module-list">
+
+                    <div class="module-list-header">
+
+                        <div>
+                            <h3>
+                                Diploma in Information Technology
+                            </h3>
+
+                            <span>
+                                Available Modules
+                            </span>
+                        </div>
+
+                    </div>
+
+
+                    <div class="module-item">
+
+                        <div>
+                            <strong>Programming</strong>
+                            <span>IT · Year 3</span>
+                        </div>
+
+                        <button>Edit</button>
+
+                    </div>
+
+
+                    <div class="module-item">
+
+                        <div>
+                            <strong>Database Systems</strong>
+                            <span>IT · Year 3</span>
+                        </div>
+
+                        <button>Edit</button>
+
+                    </div>
+
+
+                    <div class="module-item">
+
+                        <div>
+                            <strong>Networking</strong>
+                            <span>IT · Year 3</span>
+                        </div>
+
+                        <button>Edit</button>
+
+                    </div>
+
+
+                    <div class="module-item">
+
+                        <div>
+                            <strong>Web Development</strong>
+                            <span>IT · Year 3</span>
+                        </div>
+
+                        <button>Edit</button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             SCHEDULE
+        ====================================================== -->
+
+        <section class="content-section" id="schedule">
+
+            <div class="section-heading">
+
+                <div>
+
+                    <h2>
+                        Session Schedule
+                    </h2>
+
+                    <p>
+                        Schedule tutoring sessions and manage availability.
+                    </p>
+
+                </div>
+
+                <button class="primary-btn" id="newSessionBtn">
+                    + Schedule Session
+                </button>
+
+            </div>
+
+
+            <div class="calendar-panel">
+
+                <div class="calendar-header">
+
+                    <button id="previousWeek">
+                        ←
+                    </button>
+
+                    <h3 id="calendarTitle">
+                        August 2026
+                    </h3>
+
+                    <button id="nextWeek">
+                        →
+                    </button>
+
+                </div>
+
+
+                <div class="calendar">
+
+                    <div class="calendar-day">
+
+                        <div class="day-header">
+                            Monday
+                            <span>10</span>
+                        </div>
+
+                        <button class="time-slot available">
+                            <span>09:00</span>
+                            Available
+                        </button>
+
+                        <button class="time-slot booked">
+                            <span>10:00</span>
+                            Kyle · Programming
+                        </button>
+
+                        <button class="time-slot available">
+                            <span>11:00</span>
+                            Available
+                        </button>
+
+                        <button class="time-slot available">
+                            <span>12:00</span>
+                            Available
+                        </button>
+
+                    </div>
+
+
+                    <div class="calendar-day">
+
+                        <div class="day-header">
+                            Tuesday
+                            <span>11</span>
+                        </div>
+
+                        <button class="time-slot available">
+                            <span>09:00</span>
+                            Available
+                        </button>
+
+                        <button class="time-slot booked">
+                            <span>10:00</span>
+                            Sarah · Marketing
+                        </button>
+
+                        <button class="time-slot available">
+                            <span>11:00</span>
+                            Available
+                        </button>
+
+                        <button class="time-slot available">
+                            <span>12:00</span>
+                            Available
+                        </button>
+
+                    </div>
+
+
+                    <div class="calendar-day">
+
+                        <div class="day-header">
+                            Wednesday
+                            <span>12</span>
+                        </div>
+
+                        <button class="time-slot available">
+                            <span>09:00</span>
+                            Available
+                        </button>
+
+                        <button class="time-slot available">
+                            <span>10:00</span>
+                            Available
+                        </button>
+
+                        <button class="time-slot booked">
+                            <span>11:00</span>
+                            Mark · Databases
+                        </button>
+
+                        <button class="time-slot available">
+                            <span>12:00</span>
+                            Available
+                        </button>
+
+                    </div>
+
+
+                    <div class="calendar-day">
+
+                        <div class="day-header">
+                            Thursday
+                            <span>13</span>
+                        </div>
+
+                        <button class="time-slot available">
+                            <span>09:00</span>
+                            Available
+                        </button>
+
+                        <button class="time-slot available">
+                            <span>10:00</span>
+                            Available
+                        </button>
+
+                        <button class="time-slot available">
+                            <span>11:00</span>
+                            Available
+                        </button>
+
+                        <button class="time-slot available">
+                            <span>12:00</span>
+                            Available
+                        </button>
+
+                    </div>
+
+
+                    <div class="calendar-day">
+
+                        <div class="day-header">
+                            Friday
+                            <span>14</span>
+                        </div>
+
+                        <button class="time-slot booked">
+                            <span>09:00</span>
+                            Kyle · Networking
+                        </button>
+
+                        <button class="time-slot available">
+                            <span>10:00</span>
+                            Available
+                        </button>
+
+                        <button class="time-slot available">
+                            <span>11:00</span>
+                            Available
+                        </button>
+
+                        <button class="time-slot available">
+                            <span>12:00</span>
+                            Available
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             REPORTS
+        ====================================================== -->
+
+        <section class="content-section" id="reports">
+
+            <div class="section-heading">
+
+                <div>
+
+                    <h2>
+                        Reports
+                    </h2>
+
+                    <p>
+                        Monitor activity and performance across Octo Buddy.
+                    </p>
+
+                </div>
+
+                <button class="primary-btn" id="exportReport">
+                    Export Report
+                </button>
+
+            </div>
+
+
+            <div class="report-grid">
+
+                <div class="report-card">
+
+                    <span>
+                        Students Helped
+                    </span>
+
+                    <strong>
+                        287
+                    </strong>
+
+                    <small>
+                        ↑ 12% this month
+                    </small>
+
+                </div>
+
+
+                <div class="report-card">
+
+                    <span>
+                        Sessions Completed
+                    </span>
+
+                    <strong>
+                        350
+                    </strong>
+
+                    <small>
+                        ↑ 8% this month
+                    </small>
+
+                </div>
+
+
+                <div class="report-card">
+
+                    <span>
+                        Attendance Rate
+                    </span>
+
+                    <strong>
+                        94%
+                    </strong>
+
+                    <small>
+                        ↑ 3% this month
+                    </small>
+
+                </div>
+
+
+                <div class="report-card">
+
+                    <span>
+                        Total Points Earned
+                    </span>
+
+                    <strong>
+                        8,750
+                    </strong>
+
+                    <small>
+                        Across all Octo Buddies
+                    </small>
+
+                </div>
+
+            </div>
+
+
+            <div class="panel report-table-panel">
+
+                <div class="panel-header">
+
+                    <div>
+                        <h3>
+                            Octo Buddy Performance
+                        </h3>
+
+                        <p>
+                            Overview of tutor activity.
+                        </p>
+                    </div>
+
+                </div>
+
+
+                <div class="table-wrapper">
+
+                    <table>
+
+                        <thead>
+
+                            <tr>
+                                <th>Octo Buddy</th>
+                                <th>Completed Classes</th>
+                                <th>Attendance</th>
+                                <th>Points</th>
+                                <th>Performance</th>
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            <tr>
+
+                                <td>Daniel Naidoo</td>
+                                <td>18</td>
+                                <td>96%</td>
+                                <td>450</td>
+
+                                <td>
+                                    <span class="performance excellent">
+                                        Excellent
+                                    </span>
+                                </td>
+
+                            </tr>
+
+
+                            <tr>
+
+                                <td>Kyle Pillay</td>
+                                <td>17</td>
+                                <td>94%</td>
+                                <td>425</td>
+
+                                <td>
+                                    <span class="performance excellent">
+                                        Excellent
+                                    </span>
+                                </td>
+
+                            </tr>
+
+
+                            <tr>
+
+                                <td>Sarah Moodley</td>
+                                <td>16</td>
+                                <td>91%</td>
+                                <td>400</td>
+
+                                <td>
+                                    <span class="performance good">
+                                        Good
+                                    </span>
+                                </td>
+
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             LEADERBOARD
+        ====================================================== -->
+
+        <section class="content-section" id="leaderboard">
+
+            <div class="section-heading">
+
+                <div>
+
+                    <h2>
+                        Octo Buddy Leaderboard
+                    </h2>
+
+                    <p>
+                        Top-performing Octo Buddies based on completed sessions.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="leaderboard-card">
+
+                <div class="leaderboard-header">
+
+                    <div>
+                        🏆
+                    </div>
+
+                    <h3>
+                        Top Octo Buddies
+                    </h3>
+
+                </div>
+
+
+                <div class="leaderboard-row first">
+
+                    <div class="rank">
+                        🥇
+                    </div>
+
+                    <div class="leader-avatar">
+                        D
+                    </div>
+
+                    <div class="leader-info">
+                        <strong>Daniel Naidoo</strong>
+                        <span>18 completed sessions</span>
+                    </div>
+
+                    <strong class="leader-points">
+                        450 Points
+                    </strong>
+
+                </div>
+
+
+                <div class="leaderboard-row">
+
+                    <div class="rank">
+                        🥈
+                    </div>
+
+                    <div class="leader-avatar">
+                        K
+                    </div>
+
+                    <div class="leader-info">
+                        <strong>Kyle Pillay</strong>
+                        <span>17 completed sessions</span>
+                    </div>
+
+                    <strong class="leader-points">
+                        425 Points
+                    </strong>
+
+                </div>
+
+
+                <div class="leaderboard-row">
+
+                    <div class="rank">
+                        🥉
+                    </div>
+
+                    <div class="leader-avatar">
+                        S
+                    </div>
+
+                    <div class="leader-info">
+                        <strong>Sarah Moodley</strong>
+                        <span>16 completed sessions</span>
+                    </div>
+
+                    <strong class="leader-points">
+                        400 Points
+                    </strong>
+
+                </div>
+
+
+                <div class="leaderboard-row">
+
+                    <div class="rank">
+                        4
+                    </div>
+
+                    <div class="leader-avatar">
+                        J
+                    </div>
+
+                    <div class="leader-info">
+                        <strong>Jason Govender</strong>
+                        <span>14 completed sessions</span>
+                    </div>
+
+                    <strong class="leader-points">
+                        350 Points
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             SETTINGS
+        ====================================================== -->
+
+        <section class="content-section" id="settings">
+
+            <div class="section-heading">
+
+                <div>
+
+                    <h2>
+                        Settings
+                    </h2>
+
+                    <p>
+                        Configure the Octo Buddy platform.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="settings-panel">
+
+                <div class="settings-group">
+
+                    <h3>
+                        System Settings
+                    </h3>
+
+                    <label>
+                        Daily Octo Buddy session limit
+
+                        <input
+                            type="number"
+                            value="5"
+                            min="1"
+                            max="10">
+                    </label>
+
+
+                    <label>
+                        Points awarded per completed session
+
+                        <input
+                            type="number"
+                            value="25"
+                            min="1">
+                    </label>
+
+
+                    <label>
+                        Session fee
+
+                        <input
+                            type="number"
+                            value="50"
+                            min="0">
+                    </label>
+
+                </div>
+
+
+                <div class="settings-group">
+
+                    <h3>
+                        Notifications
+                    </h3>
+
+                    <label class="toggle-row">
+
+                        <span>
+                            New Buddy Applications
+                        </span>
+
+                        <input type="checkbox" checked>
+
+                    </label>
+
+
+                    <label class="toggle-row">
+
+                        <span>
+                            New Booking Requests
+                        </span>
+
+                        <input type="checkbox" checked>
+
+                    </label>
+
+
+                    <label class="toggle-row">
+
+                        <span>
+                            Session Completion Alerts
+                        </span>
+
+                        <input type="checkbox" checked>
+
+                    </label>
+
+                </div>
+
+
+                <button class="primary-btn" id="saveSettings">
+                    Save Settings
+                </button>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- =====================================================
+         SESSION MODAL
+    ====================================================== -->
+
+    <div class="modal" id="sessionModal">
+
+        <div class="modal-content">
+
+            <button class="close-modal" id="closeModal">
+                ×
+            </button>
+
+            <h2>
+                Schedule Tutoring Session
+            </h2>
+
+            <p>
+                The system will only show qualified and available Octo Buddies.
+            </p>
+
+
+            <label>
+                Student
+
+                <select>
+
+                    <option>
+                        Kyle Pillay
+                    </option>
+
+                    <option>
+                        Sarah Moodley
+                    </option>
+
+                    <option>
+                        Mark Daniels
+                    </option>
+
+                </select>
+
+            </label>
+
+
+            <label>
+                Module
+
+                <select>
+
+                    <option>
+                        Programming
+                    </option>
+
+                    <option>
+                        Database Systems
+                    </option>
+
+                    <option>
+                        Networking
+                    </option>
+
+                    <option>
+                        Web Development
+                    </option>
+
+                </select>
+
+            </label>
+
+
+            <label>
+                Octo Buddy
+
+                <select>
+
+                    <option>
+                        Daniel Naidoo
+                    </option>
+
+                    <option>
+                        Kyle Pillay
+                    </option>
+
+                </select>
+
+            </label>
+
+
+            <label>
+                Date
+
+                <input type="date">
+
+            </label>
+
+
+            <label>
+                Time
+
+                <input type="time">
+
+            </label>
+
+
+            <button class="primary-btn full-btn" id="saveSession">
+                Save Session
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <script src="admin.js"></script>
+
+</body>
+
+</html>

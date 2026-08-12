@@ -231,6 +231,89 @@ button{
 .invalid{
     color:#ff4d4d;
 }
+
+/* ==========================================================
+   MOBILE RESPONSIVE
+========================================================== */
+
+@media screen and (max-width:768px){
+
+body{
+    overflow-x:hidden;
+}
+
+.container{
+    flex-direction:column-reverse;
+    overflow:visible;
+}
+
+.left,
+.right{
+    width:100%;
+}
+
+.right{
+    height:100vh;
+    position:relative;
+    display:flex;
+}
+
+.left{
+    min-height:100vh;
+    padding:40px 25px;
+}
+
+.curve-box{
+    position:relative;
+    width:100%;
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    flex-direction:column;
+        
+.curve-box h1{
+    font-size:38px;
+}
+
+.graphic{
+    width:220px;
+    max-width:70%;
+    height:auto;
+    margin-top:20px;
+}
+
+.form-wrapper{
+    margin-top:0;
+}
+
+.name-group{
+    flex-direction:column;
+    gap:0;
+}
+
+input{
+    height:58px;
+    font-size:18px;
+}
+
+.register-btn{
+    width:100%;
+}
+
+.bottom-text{
+    margin-top:40px;
+    padding-bottom:40px;
+}
+.container.login-active .left{
+    transform:none;
+}
+
+.container.login-active .right{
+    transform:none;  
+}
+}
+}
 </style>
 </head>
 
@@ -332,10 +415,20 @@ function hideLoading(){
 
 /* SWITCH  */
 function showLogin() {
-    container.classList.add("login-active");
 
-    registerForm.style.display = "none";
-    loginForm.style.display = "block";
+    if(window.innerWidth <= 768){
+
+        registerForm.style.display = "none";
+        loginForm.style.display = "block";
+
+    }else{
+
+        container.classList.add("login-active");
+
+        registerForm.style.display = "none";
+        loginForm.style.display = "block";
+
+    }
 
     document.querySelector(".account-text").textContent = "DON'T HAVE AN ACCOUNT?";
 
@@ -344,10 +437,20 @@ function showLogin() {
 }
 
 function showRegister() {
-    container.classList.remove("login-active");
 
-    registerForm.style.display = "block";
-    loginForm.style.display = "none";
+    if(window.innerWidth <= 768){
+
+        registerForm.style.display = "block";
+        loginForm.style.display = "none";
+
+    }else{
+
+        container.classList.remove("login-active");
+
+        registerForm.style.display = "block";
+        loginForm.style.display = "none";
+
+    }
 
     document.querySelector(".account-text").textContent = "ALREADY HAVE AN ACCOUNT?";
 
