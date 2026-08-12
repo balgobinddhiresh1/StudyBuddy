@@ -2,221 +2,720 @@
 <html lang="en">
 
 <head>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Study Buddy | OctoBuddy</title>
-
-    <!-- CSS -->
-    <link rel="stylesheet" href="Dashboard.css">
+    <title>Student Dashboard | Octo Buddy</title>
 
     <!-- Google Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
-
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
 
+    <!-- Dashboard CSS -->
+    <link rel="stylesheet" href="dashboard.css">
 </head>
 
 <body>
 
-<!-- ===========================
-        NAVBAR
-=========================== -->
+    <!-- =========================
+         NAVBAR
+    ========================== -->
 
-<header>
+    <header class="dashboard-header">
 
-<nav class="navbar">
+        <nav class="navbar">
 
-<div class="logo">
+            <div class="logo">
+                <a href="../homepage/homepage.html">
+                    <img src="../LOGIN.png" alt="Octo Buddy Logo">
+                </a>
+            </div>
 
-<img src="Login-removebg-preview.png" alt="Study Buddy Logo">
+            <ul class="nav-links">
 
-</div>
+                <li>
+                    <a href="../homepage/homepage.html">Home</a>
+                </li>
 
-<ul class="nav-links">
+                <li>
+                    <a href="../homepage/homepage.html#about">About</a>
+                </li>
 
-<li><a href="#" class="active">Home</a></li>
+                <li>
+                    <a href="dashboard.html" class="active">Dashboard</a>
+                </li>
 
-<li><a href="#about">About</a></li>
+                <li>
+                    <a href="../octobuddy/octobuddy.html">Octo Buddy</a>
+                </li>
 
-<li><a href="#">Dashboard</a></li>
+            </ul>
 
-<li><a href="#">Octo Buddy</a></li>
+            <div class="profile-nav">
 
-</ul>
+                <div class="profile-avatar">
+                    <span>KP</span>
+                </div>
 
-<div class="profile">
+                <div class="profile-info">
+                    <span class="profile-name">Kyle</span>
+                    <span class="profile-role">Student</span>
+                </div>
 
-<img src="Welcome banner.jpeg">
+            </div>
 
-</div>
+        </nav>
 
-</nav>
+    </header>
 
-</header>
 
+    <!-- =========================
+         MAIN DASHBOARD
+    ========================== -->
 
-<!-- ===========================
-        HERO SECTION
-=========================== -->
+    <main class="dashboard">
 
-<section class="hero">
+        <!-- =========================
+             WELCOME SECTION
+        ========================== -->
 
-<div class="overlay">
+        <section class="welcome-section">
 
-<div class="hero-content">
+            <div class="welcome-text">
 
-<h1>Welcome to <span>OctoBuddy</span></h1>
+                <span class="welcome-label">
+                    STUDENT DASHBOARD
+                </span>
 
-<h3>Learn together. Grow together. Succeed together.</h3>
+                <h1>
+                    Welcome back,
+                    <span>Kyle!</span>
+                </h1>
 
-<p>
+                <p>
+                    Stay on top of your studies, book tutoring sessions,
+                    and get the academic support you need.
+                </p>
 
-Book tutoring sessions with experienced Octo Buddies and
-get the academic support you need to achieve your goals.
+            </div>
 
-</p>
+            <div class="welcome-date">
 
+                <span>Today</span>
 
-<a href="#about" class="btn">
-        
+                <strong id="currentDate">
+                    Loading...
+                </strong>
 
-ABOUT US →
+            </div>
 
-</a>
+        </section>
 
-</div>
 
-</div>
+        <!-- =========================
+             QUICK STATISTICS
+        ========================== -->
 
-</section>
+        <section class="stats-grid">
 
+            <div class="stat-card">
 
-<!-- ===========================
-    WHAT OCTOBUDDY OFFERS
-=========================== -->
+                <div class="stat-icon">
+                    📚
+                </div>
 
-<section id="about" class="offers">
+                <div class="stat-content">
 
-<h2>
+                    <span>Upcoming Sessions</span>
 
-What <span>OctoBuddy</span> Offers
+                    <strong>2</strong>
 
-</h2>
+                </div>
 
+            </div>
 
-<!-- FEATURE 1 -->
 
-<div class="feature">
+            <div class="stat-card">
 
-<div class="feature-image">
+                <div class="stat-icon">
+                    ✓
+                </div>
 
-<img src="Plugtopus1.png">
+                <div class="stat-content">
 
-</div>
+                    <span>Completed Sessions</span>
 
-<div class="feature-text">
+                    <strong>3</strong>
 
-<h3>Peer-to-Peer Learning</h3>
+                </div>
 
-<p>
+            </div>
 
-Connect with knowledgeable Octo Buddies who have
-successfully completed the same modules you're studying.
 
-Learn from fellow students in a supportive environment
-where asking questions and gaining confidence is encouraged.
+            <div class="stat-card">
 
-</p>
+                <div class="stat-icon">
+                    🎯
+                </div>
 
-</div>
+                <div class="stat-content">
 
-</div>
+                    <span>Programme Progress</span>
 
+                    <strong>3 / 5</strong>
 
-<!-- FEATURE 2 -->
+                </div>
 
-<div class="feature">
+            </div>
 
-<div class="feature-text">
 
-<h3>Easy Tutoring Booking</h3>
+            <div class="stat-card">
 
-<p>
+                <div class="stat-icon">
+                    ⭐
+                </div>
 
-Finding academic support is simple.
+                <div class="stat-content">
 
-Book tutoring sessions through an easy-to-use scheduling
-system, view your upcoming sessions, and receive guidance
-whenever you need it most.
+                    <span>Buddy Status</span>
 
-</p>
+                    <strong>Student</strong>
 
-</div>
+                </div>
 
-<div class="feature-image">
+            </div>
 
-<img src="Bulbtopus-removebg-preview.png">
+        </section>
 
-</div>
 
-</div>
+        <!-- =========================
+             MAIN CONTENT GRID
+        ========================== -->
 
+        <section class="dashboard-grid">
 
 
-<!-- FEATURE 3 -->
+            <!-- =========================
+                 UPCOMING SESSION
+            ========================== -->
 
-<div class="feature">
+            <div class="dashboard-card upcoming-card">
 
-<div class="feature-image">
+                <div class="card-header">
 
-<img src="orangopus-removebg-preview.png">
+                    <div>
 
-</div>
+                        <span class="card-label">
+                            NEXT SESSION
+                        </span>
 
-<div class="feature-text">
+                        <h2>
+                            Upcoming Tutoring
+                        </h2>
 
-<h3>Learn, Teach & Earn Points</h3>
+                    </div>
 
-<p>
+                    <span class="status-badge">
+                        Confirmed
+                    </span>
 
-Take your learning a step further by becoming an Octo Buddy.
+                </div>
 
-Share your knowledge with other students, earn 25 points
-for every completed tutoring session, and build valuable
-leadership and mentoring experience while making a positive impact.
 
-</p>
+                <div class="session-details">
 
-</div>
+                    <div class="session-date">
 
-</div>
+                        <span class="day">
+                            MON
+                        </span>
 
-</section>
+                        <strong>
+                            18
+                        </strong>
 
+                        <span class="month">
+                            AUG
+                        </span>
 
+                    </div>
 
-<!-- ===========================
-        FOOTER
-=========================== -->
 
-<footer>
+                    <div class="session-info">
 
-<h3>Octo Buddy © 2026</h3>
+                        <h3>
+                            Programming
+                        </h3>
 
-<p>
+                        <p>
+                            With Daniel
+                        </p>
 
-Designed by The AlphaTech Team
+                        <p>
+                            🕐 10:00 AM
+                        </p>
 
-</p>
+                        <p>
+                            💻 Online — Jitsi Meet
+                        </p>
 
-</footer>
+                    </div>
 
+                </div>
 
-<script src="Dashboard.js"></script>
+
+                <div class="session-actions">
+
+                    <button
+                        class="primary-button"
+                        onclick="joinSession()">
+
+                        Join Session →
+
+                    </button>
+
+                    <button
+                        class="secondary-button"
+                        onclick="viewSessions()">
+
+                        View All
+
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- =========================
+                 ACADEMIC TRACKER
+            ========================== -->
+
+            <div class="dashboard-card tracker-card">
+
+                <div class="card-header">
+
+                    <div>
+
+                        <span class="card-label">
+                            ACADEMIC TRACKER
+                        </span>
+
+                        <h2>
+                            Your Progress
+                        </h2>
+
+                    </div>
+
+                    <button
+                        class="small-button"
+                        onclick="openAcademicTracker()">
+
+                        View →
+
+                    </button>
+
+                </div>
+
+
+                <div class="progress-item">
+
+                    <div class="progress-info">
+
+                        <span>
+                            Programming
+                        </span>
+
+                        <strong>
+                            72%
+                        </strong>
+
+                    </div>
+
+                    <div class="progress-bar">
+
+                        <div
+                            class="progress-fill good"
+                            style="width:72%">
+                        </div>
+
+                    </div>
+
+                    <span class="progress-status good-text">
+                        Good progress
+                    </span>
+
+                </div>
+
+
+                <div class="progress-item">
+
+                    <div class="progress-info">
+
+                        <span>
+                            Database Systems
+                        </span>
+
+                        <strong>
+                            43%
+                        </strong>
+
+                    </div>
+
+                    <div class="progress-bar">
+
+                        <div
+                            class="progress-fill warning"
+                            style="width:43%">
+                        </div>
+
+                    </div>
+
+                    <span class="progress-status warning-text">
+                        We recommend tutoring
+                    </span>
+
+                </div>
+
+
+                <div class="progress-item">
+
+                    <div class="progress-info">
+
+                        <span>
+                            Networking
+                        </span>
+
+                        <strong>
+                            61%
+                        </strong>
+
+                    </div>
+
+                    <div class="progress-bar">
+
+                        <div
+                            class="progress-fill average"
+                            style="width:61%">
+                        </div>
+
+                    </div>
+
+                    <span class="progress-status average-text">
+                        Keep improving
+                    </span>
+
+                </div>
+
+            </div>
+
+
+        </section>
+
+
+        <!-- =========================
+             QUICK ACTIONS
+        ========================== -->
+
+        <section class="quick-section">
+
+            <div class="section-heading">
+
+                <div>
+
+                    <span class="card-label">
+                        QUICK ACTIONS
+                    </span>
+
+                    <h2>
+                        What would you like to do?
+                    </h2>
+
+                </div>
+
+            </div>
+
+
+            <div class="action-grid">
+
+
+                <!-- BOOK TUTORING -->
+
+                <button
+                    class="action-card"
+                    onclick="bookTutoring()">
+
+                    <div class="action-icon">
+                        📚
+                    </div>
+
+                    <div>
+
+                        <h3>
+                            Book Tutoring
+                        </h3>
+
+                        <p>
+                            Find an available Octo Buddy
+                            for your module.
+                        </p>
+
+                    </div>
+
+                    <span class="action-arrow">
+                        →
+                    </span>
+
+                </button>
+
+
+                <!-- ACADEMIC TRACKER -->
+
+                <button
+                    class="action-card"
+                    onclick="openAcademicTracker()">
+
+                    <div class="action-icon">
+                        📊
+                    </div>
+
+                    <div>
+
+                        <h3>
+                            Academic Tracker
+                        </h3>
+
+                        <p>
+                            Add your marks and monitor
+                            your academic progress.
+                        </p>
+
+                    </div>
+
+                    <span class="action-arrow">
+                        →
+                    </span>
+
+                </button>
+
+
+                <!-- BECOME OCTO BUDDY -->
+
+                <button
+                    class="action-card"
+                    onclick="becomeOctoBuddy()">
+
+                    <div class="action-icon">
+                        🐙
+                    </div>
+
+                    <div>
+
+                        <h3>
+                            Become an Octo Buddy
+                        </h3>
+
+                        <p>
+                            Share your knowledge and
+                            help other students.
+                        </p>
+
+                    </div>
+
+                    <span class="action-arrow">
+                        →
+                    </span>
+
+                </button>
+
+
+                <!-- PROFILE -->
+
+                <button
+                    class="action-card"
+                    onclick="openProfile()">
+
+                    <div class="action-icon">
+                        👤
+                    </div>
+
+                    <div>
+
+                        <h3>
+                            My Profile
+                        </h3>
+
+                        <p>
+                            View and manage your
+                            student information.
+                        </p>
+
+                    </div>
+
+                    <span class="action-arrow">
+                        →
+                    </span>
+
+                </button>
+
+            </div>
+
+        </section>
+
+
+        <!-- =========================
+             TUTORING PROGRAMME
+        ========================== -->
+
+        <section class="programme-card">
+
+            <div class="programme-text">
+
+                <span class="card-label">
+                    TUTORING PROGRAMME
+                </span>
+
+                <h2>
+                    Your 5-session journey
+                </h2>
+
+                <p>
+                    Complete your tutoring sessions and keep
+                    progressing towards your academic goals.
+                </p>
+
+            </div>
+
+
+            <div class="session-progress">
+
+                <div class="session-step completed">
+
+                    <div class="step-circle">
+                        ✓
+                    </div>
+
+                    <span>
+                        Session 1
+                    </span>
+
+                </div>
+
+
+                <div class="step-line completed-line"></div>
+
+
+                <div class="session-step completed">
+
+                    <div class="step-circle">
+                        ✓
+                    </div>
+
+                    <span>
+                        Session 2
+                    </span>
+
+                </div>
+
+
+                <div class="step-line completed-line"></div>
+
+
+                <div class="session-step completed">
+
+                    <div class="step-circle">
+                        ✓
+                    </div>
+
+                    <span>
+                        Session 3
+                    </span>
+
+                </div>
+
+
+                <div class="step-line"></div>
+
+
+                <div class="session-step">
+
+                    <div class="step-circle">
+                        4
+                    </div>
+
+                    <span>
+                        Session 4
+                    </span>
+
+                </div>
+
+
+                <div class="step-line"></div>
+
+
+                <div class="session-step">
+
+                    <div class="step-circle">
+                        5
+                    </div>
+
+                    <span>
+                        Session 5
+                    </span>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =========================
+             BECOME OCTO BUDDY BANNER
+        ========================== -->
+
+        <section class="buddy-banner">
+
+            <div class="buddy-banner-content">
+
+                <span>
+                    WANT TO HELP OTHER STUDENTS?
+                </span>
+
+                <h2>
+                    Become an Octo Buddy 🐙
+                </h2>
+
+                <p>
+                    Share your knowledge, support fellow students,
+                    build leadership experience and earn points
+                    for every completed tutoring session.
+                </p>
+
+                <button
+                    class="primary-button"
+                    onclick="becomeOctoBuddy()">
+
+                    Apply Now →
+
+                </button>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- =========================
+         JAVASCRIPT
+    ========================== -->
+
+    <script src="dashboard.js"></script>
 
 </body>
 

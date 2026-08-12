@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Sessions | OctoBuddy</title>
+
+    <link rel="stylesheet" href="sessions.css">
+
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+
+    <!-- =========================
+            NAVBAR
+    ========================= -->
+
+    <header>
+
+        <nav class="navbar">
+
+            <div class="logo">
+                <a href="../homepage/homepage.html">
+                    <img src="../LOGIN.png" alt="Octo Buddy Logo">
+                </a>
+            </div>
+
+            <ul class="nav-links">
+
+                <li>
+                    <a href="../homepage/homepage.html">Home</a>
+                </li>
+
+                <li>
+                    <a href="../dashboard/dashboard.html">Dashboard</a>
+                </li>
+
+                <li>
+                    <a href="sessions.html" class="active">Sessions</a>
+                </li>
+
+                <li>
+                    <a href="../octobuddy/octobuddy.html">Octo Buddy</a>
+                </li>
+
+            </ul>
+
+            <div class="profile">
+
+                <a href="../student/profile.html">
+                    <img src="../Welcome banner .jpeg" alt="Profile">
+                </a>
+
+            </div>
+
+        </nav>
+
+    </header>
+
+
+    <!-- =========================
+            PAGE HEADER
+    ========================= -->
+
+    <main>
+
+        <section class="page-header">
+
+            <div>
+
+                <p class="page-label">
+                    OCTO BUDDY
+                </p>
+
+                <h1>
+                    Tutoring <span>Sessions</span>
+                </h1>
+
+                <p>
+                    View your upcoming tutoring sessions, manage your
+                    schedule and join your online classes.
+                </p>
+
+            </div>
+
+        </section>
+
+
+        <!-- =========================
+                QUICK STATS
+        ========================= -->
+
+        <section class="stats-section">
+
+            <div class="stat-card">
+
+                <div class="stat-icon">
+                    📅
+                </div>
+
+                <div>
+                    <h3>3</h3>
+                    <p>Upcoming Sessions</p>
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-icon">
+                    ✓
+                </div>
+
+                <div>
+                    <h3>9</h3>
+                    <p>Completed Sessions</p>
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-icon">
+                    ⭐
+                </div>
+
+                <div>
+                    <h3>225</h3>
+                    <p>Points Earned</p>
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-icon">
+                    🎓
+                </div>
+
+                <div>
+                    <h3>4 / 5</h3>
+                    <p>Programme Progress</p>
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =========================
+                MAIN SESSION AREA
+        ========================= -->
+
+        <section class="session-layout">
+
+
+            <!-- =========================
+                    CALENDAR
+            ========================= -->
+
+            <div class="calendar-card">
+
+                <div class="card-header">
+
+                    <div>
+
+                        <p class="small-label">
+                            SCHEDULE
+                        </p>
+
+                        <h2>
+                            August 2026
+                        </h2>
+
+                    </div>
+
+                    <div class="calendar-buttons">
+
+                        <button onclick="previousMonth()">
+                            ‹
+                        </button>
+
+                        <button onclick="nextMonth()">
+                            ›
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <div class="calendar">
+
+                    <div class="calendar-weekdays">
+
+                        <span>MON</span>
+                        <span>TUE</span>
+                        <span>WED</span>
+                        <span>THU</span>
+                        <span>FRI</span>
+                        <span>SAT</span>
+                        <span>SUN</span>
+
+                    </div>
+
+
+                    <div class="calendar-days">
+
+                        <div class="empty"></div>
+                        <div class="empty"></div>
+                        <div class="empty"></div>
+                        <div class="empty"></div>
+                        <div class="empty"></div>
+                        <div>1</div>
+                        <div>2</div>
+
+                        <div>3</div>
+                        <div>4</div>
+                        <div>5</div>
+                        <div>6</div>
+                        <div>7</div>
+                        <div>8</div>
+                        <div>9</div>
+
+                        <div>10</div>
+                        <div>11</div>
+                        <div>12</div>
+                        <div>13</div>
+                        <div>14</div>
+                        <div>15</div>
+                        <div>16</div>
+
+                        <div>17</div>
+                        <div>18</div>
+
+                        <div class="session-day">
+                            19
+                            <span></span>
+                        </div>
+
+                        <div>20</div>
+
+                        <div class="session-day">
+                            21
+                            <span></span>
+                        </div>
+
+                        <div>22</div>
+                        <div>23</div>
+
+                        <div>24</div>
+
+                        <div class="today">
+                            25
+                        </div>
+
+                        <div>26</div>
+                        <div>27</div>
+                        <div>28</div>
+                        <div>29</div>
+                        <div>30</div>
+
+                        <div>31</div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- =========================
+                    UPCOMING SESSIONS
+            ========================= -->
+
+            <div class="upcoming-card">
+
+                <div class="card-header">
+
+                    <div>
+
+                        <p class="small-label">
+                            YOUR SCHEDULE
+                        </p>
+
+                        <h2>
+                            Upcoming Sessions
+                        </h2>
+
+                    </div>
+
+                </div>
+
+
+                <!-- SESSION 1 -->
+
+                <div class="session">
+
+                    <div class="session-date">
+
+                        <span>
+                            MON
+                        </span>
+
+                        <strong>
+                            19
+                        </strong>
+
+                    </div>
+
+
+                    <div class="session-info">
+
+                        <h3>
+                            Programming
+                        </h3>
+
+                        <p>
+                            🕐 10:00 AM – 11:00 AM
+                        </p>
+
+                        <p>
+                            👨‍🎓 Student: Kyle Pillay
+                        </p>
+
+                        <p>
+                            🐙 Octo Buddy: Daniel
+                        </p>
+
+                    </div>
+
+
+                    <div class="session-action">
+
+                        <span class="status confirmed">
+                            Confirmed
+                        </span>
+
+                        <button
+                            class="join-btn"
+                            onclick="joinSession('programming-101')">
+
+                            Join Session →
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <!-- SESSION 2 -->
+
+                <div class="session">
+
+                    <div class="session-date">
+
+                        <span>
+                            WED
+                        </span>
+
+                        <strong>
+                            21
+                        </strong>
+
+                    </div>
+
+
+                    <div class="session-info">
+
+                        <h3>
+                            Database Systems
+                        </h3>
+
+                        <p>
+                            🕐 2:00 PM – 3:00 PM
+                        </p>
+
+                        <p>
+                            👨‍🎓 Student: Kyle Pillay
+                        </p>
+
+                        <p>
+                            🐙 Octo Buddy: Sarah
+                        </p>
+
+                    </div>
+
+
+                    <div class="session-action">
+
+                        <span class="status pending">
+                            Pending
+                        </span>
+
+                        <button class="details-btn">
+                            View Details
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <!-- SESSION 3 -->
+
+                <div class="session">
+
+                    <div class="session-date">
+
+                        <span>
+                            FRI
+                        </span>
+
+                        <strong>
+                            23
+                        </strong>
+
+                    </div>
+
+
+                    <div class="session-info">
+
+                        <h3>
+                            Networking
+                        </h3>
+
+                        <p>
+                            🕐 11:00 AM – 12:00 PM
+                        </p>
+
+                        <p>
+                            👨‍🎓 Student: Kyle Pillay
+                        </p>
+
+                        <p>
+                            🐙 Octo Buddy: Daniel
+                        </p>
+
+                    </div>
+
+
+                    <div class="session-action">
+
+                        <span class="status confirmed">
+                            Confirmed
+                        </span>
+
+                        <button
+                            class="join-btn"
+                            onclick="joinSession('networking-103')">
+
+                            Join Session →
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =========================
+                SESSION INFORMATION
+        ========================= -->
+
+        <section class="info-section">
+
+            <div class="info-card">
+
+                <div class="info-icon">
+                    💻
+                </div>
+
+                <div>
+
+                    <h3>
+                        Online Tutoring
+                    </h3>
+
+                    <p>
+                        All Octo Buddy sessions are conducted online.
+                        When your session begins, click
+                        <strong>Join Session</strong> to enter the
+                        Jitsi video classroom.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="info-card">
+
+                <div class="info-icon">
+                    ⭐
+                </div>
+
+                <div>
+
+                    <h3>
+                        Earn Points
+                    </h3>
+
+                    <p>
+                        Approved Octo Buddies receive
+                        <strong>25 points</strong> after completing
+                        a tutoring session.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- =========================
+            FOOTER
+    ========================= -->
+
+    <div id="footer-container"></div>
+
+
+    <!-- =========================
+            JAVASCRIPT
+    ========================= -->
+
+    <script src="../footer.js"></script>
+
+   
+
+</body>
+
+</html>
