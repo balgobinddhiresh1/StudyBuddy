@@ -64,6 +64,15 @@ body {
     box-shadow: 5px 0 25px rgba(0, 0, 0, 0.08);
 }
 
+.material-symbols-outlined {
+  font-variation-settings:
+  'FILL' 0,
+  'wght' 400,
+  'GRAD' 0,
+  'opsz' 24
+}
+
+
 
 /* LOGO */
 
@@ -229,6 +238,12 @@ body {
     border-radius: 9px;
 
     font-family: inherit;
+
+    font-size: 14px;
+
+    
+    align-items: null;
+    gap: 10px;
 
     cursor: pointer;
 
