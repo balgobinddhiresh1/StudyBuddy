@@ -4,16 +4,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>Student Dashboard | Octo Buddy</title>
 
     <!-- Google Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-    <link
-        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
-        rel="stylesheet">
+    <!-- Jitsi External API Script -->
+    <script src="https://meet.jit.si/external_api.js"></script>
 
     <!-- Dashboard CSS -->
     <link rel="stylesheet" href="dashboard.css">
@@ -24,9 +23,7 @@
     <!-- =========================
          NAVBAR
     ========================== -->
-
     <header class="dashboard-header">
-
         <nav class="navbar">
 
             <div class="logo">
@@ -36,717 +33,550 @@
             </div>
 
             <ul class="nav-links">
-
-                <li>
-                    <a href="../homepage/homepage.html">Home</a>
-                </li>
-
-                <li>
-                    <a href="../homepage/homepage.html#about">About</a>
-                </li>
-
-                <li>
-                    <a href="dashboard.html" class="active">Dashboard</a>
-                </li>
-
-                <li>
-                    <a href="../octobuddy/octobuddy.html">Octo Buddy</a>
-                </li>
-
+                <li><a href="../homepage/homepage.html">Home</a></li>
+                <li><a href="../homepage/homepage.html#about">About</a></li>
+                <li><a href="dashboard.html" class="active">Dashboard</a></li>
+                <li><a href="../octobuddy/octobuddy.html">Octo Buddy</a></li>
             </ul>
 
-            <div class="profile-nav">
-
+            <!-- Clickable Profile Nav Section -->
+            <div class="profile-nav" style="cursor: pointer;" onclick="openEditModal()">
                 <div class="profile-avatar">
-                    <span>KP</span>
+                    <span id="navUserInitials">--</span>
                 </div>
-
                 <div class="profile-info">
-                    <span class="profile-name">Kyle</span>
-                    <span class="profile-role">Student</span>
+                    <span class="profile-name" id="navUserName">Loading...</span>
+                    <span class="profile-role" id="navroleDisplay">@student</span>
                 </div>
-
             </div>
 
         </nav>
-
     </header>
 
 
     <!-- =========================
          MAIN DASHBOARD
     ========================== -->
-
     <main class="dashboard">
 
-        <!-- =========================
-             WELCOME SECTION
-        ========================== -->
-
+        <!-- WELCOME SECTION -->
         <section class="welcome-section">
-
             <div class="welcome-text">
-
-                <span class="welcome-label">
-                    STUDENT DASHBOARD
-                </span>
-
+                <span class="welcome-label">STUDENT DASHBOARD</span>
                 <h1>
                     Welcome back,
-                    <span>Kyle!</span>
+                    <span id="welcomeFirstName">Student</span>!
                 </h1>
-
                 <p>
                     Stay on top of your studies, book tutoring sessions,
                     and get the academic support you need.
                 </p>
-
             </div>
 
             <div class="welcome-date">
-
                 <span>Today</span>
-
-                <strong id="currentDate">
-                    Loading...
-                </strong>
-
+                <strong id="currentDate">Loading...</strong>
             </div>
-
         </section>
 
 
-        <!-- =========================
-             QUICK STATISTICS
-        ========================== -->
-
+        <!-- QUICK STATISTICS -->
         <section class="stats-grid">
 
             <div class="stat-card">
-
                 <div class="stat-icon">
-                                     <button data-section-link="schedule">
-                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="-0.75 -0.75 24 24" id="Calendar-Add--Streamline-Sharp-Neon" height="24" width="24">
-  <desc>
-    Calendar Add Streamline Icon: https://streamlinehq.com
-  </desc>
-  <g id="calendar-add--add-calendar-date-day-month">
-    <path id="Rectangle 11" stroke="#17c786" d="M10.809000000000001 18.747H1.107V2.871h17.64v7.938" stroke-width="1.5"></path>
-    <path id="Vector 38" stroke="#000cfe" d="M18.747 6.399H1.107V2.871h17.64v3.528Z" stroke-width="1.5"></path>
-    <path id="Vector 39" stroke="#000cfe" d="M4.635 0.22499999999999998v2.646" stroke-width="1.5"></path>
-    <path id="Vector 40" stroke="#000cfe" d="M15.219 0.22499999999999998v2.646" stroke-width="1.5"></path>
-    <path id="Vector 1141" stroke="#000cfe" d="M21.392999999999997 16.983h-8.82m4.41 -4.41v8.82" stroke-width="1.5"></path>
-  </g>
-</svg>
+                    <button data-section-link="schedule" style="background: none; border: none; cursor: pointer;">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="-0.75 -0.75 24 24" height="24" width="24">
+                            <g id="calendar-add--add-calendar-date-day-month">
+                                <path stroke="#17c786" d="M10.809 18.747H1.107V2.871h17.64v7.938" stroke-width="1.5"></path>
+                                <path stroke="#000cfe" d="M18.747 6.399H1.107V2.871h17.64v3.528Z" stroke-width="1.5"></path>
+                                <path stroke="#000cfe" d="M4.635 0.225v2.646" stroke-width="1.5"></path>
+                                <path stroke="#000cfe" d="M15.219 0.225v2.646" stroke-width="1.5"></path>
+                                <path stroke="#000cfe" d="M21.393 16.983h-8.82m4.41-4.41v8.82" stroke-width="1.5"></path>
+                            </g>
+                        </svg>
+                    </button>
                 </div>
-
                 <div class="stat-content">
-
                     <span>Upcoming Sessions</span>
-
                     <strong>2</strong>
-
                 </div>
-
             </div>
 
-
             <div class="stat-card">
-
                 <div class="stat-icon">
-                    <span><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="-0.855 -0.855 24 24" id="Check-Square--Streamline-Core-Neon" height="24" width="24">
-  <desc>
-    Check Square Streamline Icon: https://streamlinehq.com
-  </desc>
-  <g id="check-square--check-form-validation-checkmark-success-add-addition-box-square-tick">
-    <path id="Vector" stroke="#000cfe" stroke-linecap="round" stroke-linejoin="round" d="m15.789264792857143 7.562678571428571 -6.368571428571428 7.960714285714285 -3.184285714285714 -2.3882142857142856" stroke-width="1.71"></path>
-    <path id="Vector_2" stroke="#2211f1" stroke-linecap="round" stroke-linejoin="round" d="m1.592142857142857 3.184285714285714 0 15.92142857142857c0 0.8793405 0.7128342 1.592142857142857 1.592142857142857 1.592142857142857l15.92142857142857 0c0.8793405 0 1.592142857142857 -0.7128023571428571 1.592142857142857 -1.592142857142857l0 -15.92142857142857c0 -0.8793245785714284 -0.7128023571428571 -1.592142857142857 -1.592142857142857 -1.592142857142857L3.184285714285714 1.592142857142857c-0.8793086571428571 0 -1.592142857142857 0.7128342 -1.592142857142857 1.592142857142857Z" stroke-width="1.71"></path>
-  </g>
-</svg>
-      <span>
+                    <span>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="-0.855 -0.855 24 24" height="24" width="24">
+                            <g id="check-square">
+                                <path stroke="#000cfe" stroke-linecap="round" stroke-linejoin="round" d="m15.789 7.563-6.369 7.96-3.184-2.388" stroke-width="1.71"></path>
+                                <path stroke="#2211f1" stroke-linecap="round" stroke-linejoin="round" d="M1.592 3.184v15.922c0 .879.713 1.592 1.592 1.592h15.922c.879 0 1.592-.713 1.592-1.592V3.184c0-.879-.713-1.592-1.592-1.592H3.184c-.879 0-1.592.713-1.592 1.592Z" stroke-width="1.71"></path>
+                            </g>
+                        </svg>
+                    </span>
                 </div>
-
                 <div class="stat-content">
-
                     <span>Completed Sessions</span>
-
                     <strong>3</strong>
-
                 </div>
-
             </div>
 
-
             <div class="stat-card">
-
                 <div class="stat-icon">
-                    <span><svg width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 14 14" fill="#3532ba"><g fill="none" stroke="#3532ba" stroke-linecap="round" stroke-linejoin="round"><path d="M12.99 7.005c0 3.837-2.16 5.995-5.996 5.995S1 10.842 1 7.005C1 3.17 3.158 1.011 6.995 1.011"/><path d="M6.035 3.988c-1.391.316-2.158 1.368-2.158 3.017C3.877 9 5 10.122 6.995 10.122c1.729 0 2.803-.843 3.058-2.368m-3.058-.749l2.077-2.078m-.001.003l-.124-.404a2 2 0 0 1 .497-2.004L10.965 1l.48 1.555l1.555.48l-1.522 1.522a2 2 0 0 1-2.003.497z"/></g></svg><span>
+                    <span>
+                        <svg width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 14 14" fill="#3532ba">
+                            <g fill="none" stroke="#3532ba" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12.99 7.005c0 3.837-2.16 5.995-5.996 5.995S1 10.842 1 7.005C1 3.17 3.158 1.011 6.995 1.011"/>
+                                <path d="M6.035 3.988c-1.391.316-2.158 1.368-2.158 3.017C3.877 9 5 10.122 6.995 10.122c1.729 0 2.803-.843 3.058-2.368m-3.058-.749l2.077-2.078m-.001.003l-.124-.404a2 2 0 0 1 .497-2.004L10.965 1l.48 1.555l1.555.48l-1.522 1.522a2 2 0 0 1-2.003.497z"/>
+                            </g>
+                        </svg>
+                    </span>
                 </div>
-
                 <div class="stat-content">
-
                     <span>Programme Progress</span>
-
                     <strong>3 / 5</strong>
-
                 </div>
-
             </div>
 
-
             <div class="stat-card">
-
                 <div class="stat-icon">
-                    <span><svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 20 20" fill="#1e41bb"><g fill="#1e41bb" fill-rule="evenodd" clip-rule="evenodd"><path d="M11.5 2.5a1 1 0 0 1 .87.507l2.314 4.078l4.527.976a1 1 0 0 1 .537 1.641l-3.106 3.502l.488 4.693a1 1 0 0 1-1.407 1.014L11.5 16.997l-4.223 1.914a1 1 0 0 1-1.407-1.014l.488-4.693l-3.106-3.502a1 1 0 0 1 .537-1.641l4.527-.976l2.314-4.078a1 1 0 0 1 .87-.507Zm0 3.026L9.834 8.462a1 1 0 0 1-.659.484l-3.291.71l2.262 2.55a1 1 0 0 1 .246.768L8.04 16.37l3.047-1.381a1 1 0 0 1 .826 0l3.047 1.38l-.353-3.396a1 1 0 0 1 .247-.766l2.262-2.551l-3.291-.71a1 1 0 0 1-.66-.484L11.5 5.526Z" opacity=".2"/><path d="M10 2a.5.5 0 0 1 .435.253l2.425 4.274l4.745 1.023a.5.5 0 0 1 .27.82l-3.253 3.667l.51 4.911a.5.5 0 0 1-.703.507L10 15.448l-4.429 2.007a.5.5 0 0 1-.704-.507l.51-4.91l-3.25-3.668a.5.5 0 0 1 .269-.82L7.14 6.527l2.425-4.274A.5.5 0 0 1 10 2Zm0 1.513L7.9 7.215a.5.5 0 0 1-.33.242l-4.128.89l2.83 3.191a.5.5 0 0 1 .123.384l-.443 4.263l3.842-1.74a.5.5 0 0 1 .412 0l3.842 1.74l-.443-4.263a.5.5 0 0 1 .123-.384l2.83-3.191l-4.128-.89a.5.5 0 0 1-.33-.242L10 3.513Z"/></g></svg><span>
+                    <span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 20 20" fill="#1e41bb">
+                            <g fill="#1e41bb" fill-rule="evenodd" clip-rule="evenodd">
+                                <path d="M11.5 2.5a1 1 0 0 1 .87.507l2.314 4.078l4.527.976a1 1 0 0 1 .537 1.641l-3.106 3.502l.488 4.693a1 1 0 0 1-1.407 1.014L11.5 16.997l-4.223 1.914a1 1 0 0 1-1.407-1.014l.488-4.693l-3.106-3.502a1 1 0 0 1 .537-1.641l4.527-.976l2.314-4.078a1 1 0 0 1 .87-.507Zm0 3.026L9.834 8.462a1 1 0 0 1-.659.484l-3.291.71l2.262 2.55a1 1 0 0 1 .246.768L8.04 16.37l3.047-1.381a1 1 0 0 1 .826 0l3.047 1.38l-.353-3.396a1 1 0 0 1 .247-.766l2.262-2.551l-3.291-.71a1 1 0 0 1-.66-.484L11.5 5.526Z" opacity=".2"/>
+                                <path d="M10 2a.5.5 0 0 1 .435.253l2.425 4.274l4.745 1.023a.5.5 0 0 1 .27.82l-3.253 3.667l.51 4.911a.5.5 0 0 1-.703.507L10 15.448l-4.429 2.007a.5.5 0 0 1-.704-.507l.51-4.91l-3.25-3.668a.5.5 0 0 1 .269-.82L7.14 6.527l2.425-4.274A.5.5 0 0 1 10 2Zm0 1.513L7.9 7.215a.5.5 0 0 1-.33.242l-4.128.89l2.83 3.191a.5.5 0 0 1 .123.384l-.443 4.263l3.842-1.74a.5.5 0 0 1 .412 0l3.842 1.74l-.443-4.263a.5.5 0 0 1 .123-.384l2.83-3.191l-4.128-.89a.5.5 0 0 1-.33-.242L10 3.513Z"/>
+                            </g>
+                        </svg>
+                    </span>
                 </div>
-
                 <div class="stat-content">
-
                     <span>Buddy Status</span>
-
-                    <strong>Student</strong>
-
+                    <strong id="buddyStatusStat">Student</strong>
                 </div>
-
             </div>
 
         </section>
 
 
-        <!-- =========================
-             MAIN CONTENT GRID
-        ========================== -->
-
+        <!-- MAIN CONTENT GRID -->
         <section class="dashboard-grid">
 
-
-            <!-- =========================
-                 UPCOMING SESSION
-            ========================== -->
-
+            <!-- UPCOMING SESSION -->
             <div class="dashboard-card upcoming-card">
-
                 <div class="card-header">
-
                     <div>
-
-                        <span class="card-label">
-                            NEXT SESSION
-                        </span>
-
-                        <h2>
-                            Upcoming Tutoring
-                        </h2>
-
+                        <span class="card-label">NEXT SESSION</span>
+                        <h2>Upcoming Tutoring</h2>
                     </div>
-
-                    <span class="status-badge">
-                        Confirmed
-                    </span>
-
+                    <span class="status-badge">Confirmed</span>
                 </div>
-
 
                 <div class="session-details">
-
                     <div class="session-date">
-
-                        <span class="day">
-                            MON
-                        </span>
-
-                        <strong>
-                            18
-                        </strong>
-
-                        <span class="month">
-                            AUG
-                        </span>
-
+                        <span class="day">MON</span>
+                        <strong>18</strong>
+                        <span class="month">AUG</span>
                     </div>
-
 
                     <div class="session-info">
-
-                        <h3>
-                            Programming
-                        </h3>
-
-                        <p>
-                            With Daniel
-                        </p>
-
-                        <p>
-                             10:00 AM
-                        </p>
-
-                        <p>
-                            Online — Jitsi Meet
-                        </p>
-
+                        <h3>Programming</h3>
+                        <p>With Daniel (Octo Buddy)</p>
+                        <p>10:00 AM</p>
+                        <p>Room: <strong id="assignedRoomCode">OctoBuddy_Daniel_Prog101</strong></p>
                     </div>
-
                 </div>
-
 
                 <div class="session-actions">
-
-                    <button
-                        class="primary-button"
-                        onclick="joinSession()">
-
-                        Join Session →
-
-                    </button>
-
-                    <button
-                        class="secondary-button"
-                        onclick="viewSessions()">
-
-                        View All
-
-                    </button>
-
+                    <button class="primary-button" onclick="joinBuddyRoom()">Join Buddy's Room →</button>
+                    <button class="secondary-button" onclick="joinCustomRoomPrompt()">Enter Room Code</button>
                 </div>
-
             </div>
 
-
-            <!-- =========================
-                 ACADEMIC TRACKER
-            ========================== -->
-
+            <!-- ACADEMIC TRACKER -->
             <div class="dashboard-card tracker-card">
-
                 <div class="card-header">
-
                     <div>
-
-                        <span class="card-label">
-                            ACADEMIC TRACKER
-                        </span>
-
-                        <h2>
-                            Your Progress
-                        </h2>
-
+                        <span class="card-label">ACADEMIC TRACKER</span>
+                        <h2>Your Progress</h2>
                     </div>
-
-                    <button
-                        class="small-button"
-                        onclick="openAcademicTracker()">
-
-                        View →
-
-                    </button>
-
+                    <button class="small-button" onclick="openAcademicTracker()">View →</button>
                 </div>
-
 
                 <div class="progress-item">
-
                     <div class="progress-info">
-
-                        <span>
-                            Programming
-                        </span>
-
-                        <strong>
-                            72%
-                        </strong>
-
+                        <span>Programming</span>
+                        <strong>72%</strong>
                     </div>
-
                     <div class="progress-bar">
-
-                        <div
-                            class="progress-fill good"
-                            style="width:72%">
-                        </div>
-
+                        <div class="progress-fill good" style="width:72%"></div>
                     </div>
-
-                    <span class="progress-status good-text">
-                        Good progress
-                    </span>
-
+                    <span class="progress-status good-text">Good progress</span>
                 </div>
-
 
                 <div class="progress-item">
-
                     <div class="progress-info">
-
-                        <span>
-                            Database Systems
-                        </span>
-
-                        <strong>
-                            43%
-                        </strong>
-
+                        <span>Database Systems</span>
+                        <strong>43%</strong>
                     </div>
-
                     <div class="progress-bar">
-
-                        <div
-                            class="progress-fill warning"
-                            style="width:43%">
-                        </div>
-
+                        <div class="progress-fill warning" style="width:43%"></div>
                     </div>
-
-                    <span class="progress-status warning-text">
-                        We recommend tutoring
-                    </span>
-
+                    <span class="progress-status warning-text">We recommend tutoring</span>
                 </div>
-
 
                 <div class="progress-item">
-
                     <div class="progress-info">
-
-                        <span>
-                            Networking
-                        </span>
-
-                        <strong>
-                            61%
-                        </strong>
-
+                        <span>Networking</span>
+                        <strong>61%</strong>
                     </div>
-
                     <div class="progress-bar">
-
-                        <div
-                            class="progress-fill average"
-                            style="width:61%">
-                        </div>
-
+                        <div class="progress-fill average" style="width:61%"></div>
                     </div>
-
-                    <span class="progress-status average-text">
-                        Keep improving
-                    </span>
-
+                    <span class="progress-status average-text">Keep improving</span>
                 </div>
-
             </div>
 
+            <!-- APPLY TO BE A BUDDY CARD -->
+            <div class="dashboard-card buddy-card">
+                <div class="card-header">
+                    <div>
+                        <span class="card-label">PEER TUTORING</span>
+                        <h2>Apply to Be a Buddy</h2>
+                    </div>
+                    <span class="status-badge pending" id="buddyApplicationBadge">Not Applied</span>
+                </div>
+
+                <div class="buddy-info" style="margin: 15px 0;">
+                    <p style="font-size: 0.9rem; color: #555; line-height: 1.5;">
+                        Help fellow students, sharpen your own skills, and earn recognition across campus by becoming a peer tutor.
+                    </p>
+                    <div style="margin-top: 15px; background: #f4f6ff; padding: 12px; border-radius: 8px; border-left: 4px solid #1e41bb;">
+                        <span style="font-size: 0.8rem; color: #666; display: block;">Requirements:</span>
+                        <strong style="font-size: 0.85rem; color: #1e41bb;">70%+ Average in target modules</strong>
+                    </div>
+                </div>
+
+                <div class="session-actions" style="margin-top: auto;">
+                    <button class="primary-button" id="applyBuddyBtn" onclick="becomeOctoBuddy()">Apply Now →</button>
+                </div>
+            </div>
 
         </section>
 
 
-        <!-- =========================
-             QUICK ACTIONS
-        ========================== -->
-
+        <!-- QUICK ACTIONS -->
         <section class="quick-section">
-
             <div class="section-heading">
-
                 <div>
-
-                    <span class="card-label">
-                        QUICK ACTIONS
-                    </span>
-
-                    <h2>
-                        What would you like to do?
-                    </h2>
-
+                    <span class="card-label">QUICK ACTIONS</span>
+                    <h2>What would you like to do?</h2>
                 </div>
-
             </div>
-
 
             <div class="action-grid">
 
-
                 <!-- BOOK TUTORING -->
-
-                <button
-                    class="action-card"
-                    onclick="bookTutoring()">
-
-                    <div class="action-icon">
-                        📚
-                    </div>
-
+                <button class="action-card" onclick="bookTutoring()">
+                    <div class="action-icon">📚</div>
                     <div>
-
-                        <h3>
-                            Book Tutoring
-                        </h3>
-
-                        <p>
-                            Find an available Octo Buddy
-                            for your module.
-                        </p>
-
+                        <h3>Book Tutoring</h3>
+                        <p>Find an available Octo Buddy for your module.</p>
                     </div>
-
-                    <span class="action-arrow">
-                        →
-                    </span>
-
+                    <span class="action-arrow">→</span>
                 </button>
-
 
                 <!-- ACADEMIC TRACKER -->
-
-                <button
-                    class="action-card"
-                    onclick="openAcademicTracker()">
-
-                    <div class="action-icon">
-                        📊
-                    </div>
-
+                <button class="action-card" onclick="openAcademicTracker()">
+                    <div class="action-icon">📊</div>
                     <div>
-
-                        <h3>
-                            Academic Tracker
-                        </h3>
-
-                        <p>
-                            Add your marks and monitor
-                            your academic progress.
-                        </p>
-
+                        <h3>Academic Tracker</h3>
+                        <p>Add your marks and monitor your academic progress.</p>
                     </div>
-
-                    <span class="action-arrow">
-                        →
-                    </span>
-
+                    <span class="action-arrow">→</span>
                 </button>
-
 
                 <!-- BECOME OCTO BUDDY -->
-
-                <button
-                    class="action-card"
-                    onclick="becomeOctoBuddy()">
-
-                    <div class="action-icon">
-                        🐙
-                    </div>
-
+                <button class="action-card" onclick="becomeOctoBuddy()">
+                    <div class="action-icon">🐙</div>
                     <div>
-
-                        <h3>
-                            Become an Octo Buddy
-                        </h3>
-
-                        <p>
-                            Share your knowledge and
-                            help other students.
-                        </p>
-
+                        <h3>Become an Octo Buddy</h3>
+                        <p>Share your knowledge and help other students.</p>
                     </div>
-
-                    <span class="action-arrow">
-                        →
-                    </span>
-
+                    <span class="action-arrow">→</span>
                 </button>
 
-
-                <!-- PROFILE -->
-
-                <button
-                    class="action-card"
-                    onclick="openProfile()">
-
-                    <div class="action-icon">
-                        👤
-                    </div>
-
+                <!-- UPDATE PROFILE -->
+                <button class="action-card" onclick="openEditModal()">
+                    <div class="action-icon">✏️</div>
                     <div>
-
-                        <h3>
-                            My Profile
-                        </h3>
-
-                        <p>
-                            View and manage your
-                            student information.
-                        </p>
-
+                        <h3>Update Profile</h3>
+                        <p>Change your display name or account role.</p>
                     </div>
-
-                    <span class="action-arrow">
-                        →
-                    </span>
-
+                    <span class="action-arrow">→</span>
                 </button>
 
             </div>
-
-        </section>
-
-
-        <!-- =========================
-             TUTORING PROGRAMME
-        ========================== -->
-
-        <section class="programme-card">
-
-            <div class="programme-text">
-
-                <span class="card-label">
-                    TUTORING PROGRAMME
-                </span>
-
-                <h2>
-                    Your 5-session journey
-                </h2>
-
-                <p>
-                    Complete your tutoring sessions and keep
-                    progressing towards your academic goals.
-                </p>
-
-            </div>
-
-
-            <div class="session-progress">
-
-                <div class="session-step completed">
-
-                    <div class="step-circle">
-                        ✓
-                    </div>
-
-                    <span>
-                        Session 1
-                    </span>
-
-                </div>
-
-
-                <div class="step-line completed-line"></div>
-
-
-                <div class="session-step completed">
-
-                    <div class="step-circle">
-                        ✓
-                    </div>
-
-                    <span>
-                        Session 2
-                    </span>
-
-                </div>
-
-
-                <div class="step-line completed-line"></div>
-
-
-                <div class="session-step completed">
-
-                    <div class="step-circle">
-                        ✓
-                    </div>
-
-                    <span>
-                        Session 3
-                    </span>
-
-                </div>
-
-
-                <div class="step-line"></div>
-
-
-                <div class="session-step">
-
-                    <div class="step-circle">
-                        4
-                    </div>
-
-                    <span>
-                        Session 4
-                    </span>
-
-                </div>
-
-
-                <div class="step-line"></div>
-
-
-                <div class="session-step">
-
-                    <div class="step-circle">
-                        5
-                    </div>
-
-                    <span>
-                        Session 5
-                    </span>
-
-                </div>
-
-            </div>
-
-        </section>
-
-
-        <!-- =========================
-             BECOME OCTO BUDDY BANNER
-        ========================== -->
-
-        <section class="buddy-banner">
-
-            <div class="buddy-banner-content">
-
-                <span>
-                    WANT TO HELP OTHER STUDENTS?
-                </span>
-
-                <h2>
-                <div class="octo-icon"> Become an Octo Buddy
-                    <svg role="img" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" id="Chainguard--Streamline-Simple-Icons" height="26" width="26">
-  <desc>
-    Chainguard Streamline Icon: https://streamlinehq.com
-  </desc>
-  <title>Chainguard</title>
-  <path d="M99.98416666666668 68.03750000000001c-0.45333333333333337 -4.679166666666667 -14.113750000000001 -6.2 -23.820833333333333 -10.420833333333334 2.1233333333333335 -4.236666666666666 5.344166666666667 -9.033333333333335 3.9533333333333336 -17.86041666666667C78.25708333333334 28.022083333333335 68.155 7.254166666666667 50 7.254166666666667c-18.154583333333335 0 -28.257083333333334 20.752916666666668 -30.116666666666667 32.50208333333334 -1.3908333333333334 8.826666666666666 1.8450000000000002 13.623750000000001 3.9533333333333336 17.860000000000003 -9.6925 4.221666666666668 -23.3525 5.756666666666667 -23.820833333333333 10.420833333333334 -0.425 4.325 7.876666666666668 5.904166666666668 17.232083333333335 5.343333333333334 -2.3570833333333336 2.8783333333333334 -4.201666666666667 5.608750000000001 -4.055416666666667 7.5720833333333335 0.2341666666666667 3.291666666666667 3.733333333333334 5.4316666666666675 9.252916666666668 5.4316666666666675 6.178750000000001 0 15.725000000000001 -3.9116666666666666 17.99416666666667 -14.479583333333334 0 0 -0.9375000000000001 4.235833333333334 -0.425 8.295 0.6150000000000001 4.841666666666667 4.245833333333334 12.54625 9.985416666666667 12.54625 5.739166666666667 0 9.370416666666667 -7.705 9.985 -12.54625 0.5125000000000001 -4.059166666666667 -0.4241666666666667 -8.295416666666666 -0.4241666666666667 -8.295416666666666 2.2691666666666666 10.568333333333333 11.800416666666667 14.48 17.993750000000002 14.48 5.519583333333333 0 9.01875 -2.140416666666667 9.252916666666668 -5.4316666666666675 0.1466666666666667 -1.9633333333333336 -1.7125000000000001 -4.708333333333333 -4.055416666666667 -7.5720833333333335 9.355416666666667 0.5608333333333334 17.657083333333336 -1.01875 17.2325 -5.343333333333334zM30.981250000000003 24.80416666666667c-1.0833333333333335 -0.9300000000000002 -0.7904166666666668 -2.9375 0.6445833333333334 -4.4875 1.4345833333333333 -1.5495833333333335 3.4841666666666673 -2.06625 4.567500000000001 -1.13625s0.7908333333333334 2.9375 -0.64375 4.4875c-1.435 1.5495833333333335 -3.4845833333333336 2.05125 -4.568333333333334 1.13625Zm9.882916666666668 26.745833333333334c-4.465416666666667 0 -8.082083333333333 -3.6458333333333335 -8.082083333333333 -8.147916666666667s3.6166666666666667 -8.147916666666667 8.082083333333333 -8.147916666666667c4.465416666666667 0 8.081666666666667 3.6458333333333335 8.081666666666667 8.147916666666667 0 4.4875 -3.6166666666666667 8.1475 -8.081666666666667 8.1475zm4.93375 -32.089166666666664c-3.1479166666666667 1.416666666666667 -6.500416666666667 0.9300000000000002 -7.495833333333334 -1.0775000000000001 -0.9958333333333333 -2.0220833333333337 0.7466666666666667 -4.797083333333334 3.894166666666667 -6.214166666666667 3.1479166666666667 -1.416666666666667 6.500833333333334 -0.9300000000000002 7.49625 1.0775000000000001 0.9958333333333333 2.0075000000000003 -0.7466666666666667 4.797083333333334 -3.8945833333333333 6.214166666666667Zm21.741666666666667 32.088750000000005c-4.465000000000001 0 -8.081666666666667 -3.6458333333333335 -8.081666666666667 -8.1475 0 -4.502083333333334 3.6166666666666667 -8.147916666666667 8.082083333333333 -8.147916666666667 4.465416666666667 0 8.082083333333333 3.6458333333333335 8.082083333333333 8.147916666666667 0 4.4875 -3.6166666666666667 8.1475 -8.082083333333333 8.1475zm0.6591666666666668 -8.206666666666667 2.972083333333334 -3.5275000000000003a5.021666666666667 5.021666666666667 0 0 0 -3.6308333333333334 -1.55c-2.8108333333333335 0 -5.080416666666667 2.287916666666667 -5.080416666666667 5.122083333333334 0 2.83375 2.2695833333333333 5.121666666666667 5.080416666666667 5.121666666666667 2.8112500000000002 0 5.080416666666667 -2.287916666666667 5.080416666666667 -5.121666666666667v-0.044583333333333336zm-22.26875 0v0.044583333333333336c0 2.834166666666667 -2.2695833333333333 5.121666666666667 -5.0808333333333335 5.121666666666667 -2.8108333333333335 0 -5.080000000000001 -2.2875000000000005 -5.080000000000001 -5.121666666666667 0 -2.83375 2.2691666666666666 -5.121666666666667 5.080000000000001 -5.121666666666667 1.4204166666666667 0 2.7083333333333335 0.5904166666666667 3.6312500000000005 1.55l-2.972083333333334 3.5275000000000003Z" fill="#0a1cab" stroke-width="4.1667"></path>
-</svg>
-                </div>
-
-            </div>
-                </h2>
-
-                <p>
-                    Share your knowledge, support fellow students,
-                    build leadership experience and earn points
-                    for every completed tutoring session.
-                </p>
-
-                <button
-                    class="primary-button"
-                    onclick="becomeOctoBuddy()">
-
-                    Apply Now →
-
-                </button>
-
-            </div>
-
         </section>
 
     </main>
 
 
     <!-- =========================
-         JAVASCRIPT
+         UPDATE PROFILE MODAL
     ========================== -->
+    <div id="editModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.6); z-index: 2000; justify-content: center; align-items: center;">
+        <div style="width: 90%; max-width: 450px; background: #fff; border-radius: 12px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+            <h3 style="margin-top: 0; color: #1e41bb;">Update Profile</h3>
+            
+            <label style="display: block; font-size: 0.85rem; color: #555; margin-top: 15px;">First Name</label>
+            <input type="text" id="editFirstName" style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box;">
 
+            <label style="display: block; font-size: 0.85rem; color: #555; margin-top: 15px;">Last Name</label>
+            <input type="text" id="editLastName" style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box;">
+
+            <label style="display: block; font-size: 0.85rem; color: #555; margin-top: 15px;">Role</label>
+            <select id="editRole" style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box;">
+                <option value="student">Student</option>
+                <option value="buddy">Octo Buddy</option>
+                <option value="admin">Admin</option>
+            </select>
+
+            <div style="margin-top: 25px; display: flex; justify-content: flex-end; gap: 10px;">
+                <button onclick="closeEditModal()" style="background: #ccc; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer;">Cancel</button>
+                <button onclick="saveProfileChanges()" style="background: #1e41bb; color: #fff; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-weight: bold;">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- =========================
+         JITSI MEET EMBEDDED MODAL
+    ========================== -->
+    <div id="jitsiModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.85); z-index: 2000; justify-content: center; align-items: center; flex-direction: column;">
+        <div style="width: 90%; max-width: 1100px; background: #111; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background: #1e41bb; color: #fff;">
+                <h3 style="margin: 0; font-size: 1.1rem; font-weight: 600;" id="jitsiModalTitle">Octo Buddy Room</h3>
+                <button onclick="closeJitsiSession()" style="background: #ff4d4d; border: none; color: #fff; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold;">Leave & Close</button>
+            </div>
+            <div id="jitsiContainer" style="width: 100%; height: 600px; max-height: 75vh; background: #000;"></div>
+        </div>
+    </div>
+
+
+    <!-- External Script Load -->
     <script src="dashboard.js"></script>
+
+    <!-- Dynamic User Session & Jitsi Integration Script -->
+    <script>
+        const API_BASE_URL = "http://127.0.0.1:5000/api";
+        let jitsiApi = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadLoggedInUser();
+            setCurrentDate();
+            checkBuddyStatus();
+            loadUpcomingSessionRoom();
+        });
+
+        // 1. Fetch current user from local/session storage or sync from backend API
+        async function loadLoggedInUser() {
+            const userId = localStorage.getItem('user_id') || sessionStorage.getItem('user_id');
+            
+            if (userId) {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/user/${userId}`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        localStorage.setItem('first_name', data.first_name);
+                        localStorage.setItem('last_name', data.last_name);
+                        localStorage.setItem('role', data.role);
+                        
+                        updateDOMProfile(data.first_name, data.last_name, data.role);
+                        return;
+                    }
+                } catch (err) {
+                    console.warn("Backend unavailable, loading cached profile from storage:", err);
+                }
+            }
+
+            // Fallback storage sync
+            let user = JSON.parse(sessionStorage.getItem('user')) || JSON.parse(localStorage.getItem('user')) || {};
+            const firstName = user.first_name || localStorage.getItem('first_name') || sessionStorage.getItem('first_name') || 'Student';
+            const lastName = user.last_name || localStorage.getItem('last_name') || sessionStorage.getItem('last_name') || '';
+            const role = user.role || localStorage.getItem('role') || sessionStorage.getItem('role') || 'student';
+
+            updateDOMProfile(firstName, lastName, role);
+        }
+
+        function updateDOMProfile(firstName, lastName, role) {
+            const navUserName = document.getElementById('navUserName');
+            const navUserInitials = document.getElementById('navUserInitials');
+            const welcomeFirstName = document.getElementById('welcomeFirstName');
+            const navroleDisplay = document.getElementById('navroleDisplay');
+
+            if (welcomeFirstName) welcomeFirstName.textContent = firstName;
+            if (navUserName) navUserName.textContent = `${firstName} ${lastName}`.trim();
+            if (navroleDisplay) navroleDisplay.textContent = `@${role.replace(/^@/, '')}`;
+
+            const firstInitial = firstName ? firstName.charAt(0).toUpperCase() : 'S';
+            const lastInitial = lastName ? lastName.charAt(0).toUpperCase() : '';
+            if (navUserInitials) navUserInitials.textContent = `${firstInitial}${lastInitial}`;
+        }
+
+        // Profile Update Modal Logic
+        function openEditModal() {
+            const modal = document.getElementById('editModal');
+            const firstName = localStorage.getItem('first_name') || 'Student';
+            const lastName = localStorage.getItem('last_name') || '';
+            const role = localStorage.getItem('role') || 'student';
+
+            document.getElementById('editFirstName').value = firstName;
+            document.getElementById('editLastName').value = lastName;
+            document.getElementById('editRole').value = role;
+
+            modal.style.display = 'flex';
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').style.display = 'none';
+        }
+
+        async function saveProfileChanges() {
+            const firstName = document.getElementById('editFirstName').value.trim();
+            const lastName = document.getElementById('editLastName').value.trim();
+            const role = document.getElementById('editRole').value;
+            const userId = localStorage.getItem('user_id') || sessionStorage.getItem('user_id');
+
+            if (!firstName) {
+                alert("First name is required");
+                return;
+            }
+
+            if (userId) {
+                try {
+                    const res = await fetch(`${API_BASE_URL}/user/${userId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            first_name: firstName,
+                            last_name: lastName,
+                            role: role
+                        })
+                    });
+
+                    if (!res.ok) {
+                        const err = await res.json();
+                        alert(`Update failed: ${err.message}`);
+                        return;
+                    }
+                } catch (err) {
+                    console.error("Failed to update profile on backend:", err);
+                }
+            }
+
+            localStorage.setItem('first_name', firstName);
+            localStorage.setItem('last_name', lastName);
+            localStorage.setItem('role', role);
+
+            updateDOMProfile(firstName, lastName, role);
+            checkBuddyStatus();
+            closeEditModal();
+        }
+
+        // 2. Load Buddy Room Code dynamically
+        function loadUpcomingSessionRoom() {
+            const activeRoom = localStorage.getItem('active_buddy_room') || 'OctoBuddy_Daniel_Prog101';
+            const roomDisplay = document.getElementById('assignedRoomCode');
+            if (roomDisplay) roomDisplay.textContent = activeRoom;
+        }
+
+        // 3. Connect to Octo Buddy's specific session room
+        function joinBuddyRoom() {
+            const roomName = localStorage.getItem('active_buddy_room') || 'OctoBuddy_Daniel_Prog101';
+            launchJitsiCall(roomName);
+        }
+
+        function joinCustomRoomPrompt() {
+            const userInput = prompt("Enter the Room Code provided by your Octo Buddy:", "OctoBuddy_Daniel_Prog101");
+            if (userInput && userInput.trim() !== "") {
+                const sanitizedRoom = userInput.trim().replace(/\s+/g, '_');
+                launchJitsiCall(sanitizedRoom);
+            }
+        }
+
+        // 4. Core Jitsi Launch Handler
+        function launchJitsiCall(roomName) {
+            const firstName = localStorage.getItem('first_name') || sessionStorage.getItem('first_name') || 'Student';
+            const lastName = localStorage.getItem('last_name') || sessionStorage.getItem('last_name') || '';
+            const displayName = `${firstName} ${lastName}`.trim();
+
+            const modal = document.getElementById('jitsiModal');
+            const container = document.getElementById('jitsiContainer');
+            const title = document.getElementById('jitsiModalTitle');
+
+            if (title) title.textContent = `Octo Buddy Room: ${roomName}`;
+            modal.style.display = 'flex';
+            container.innerHTML = '';
+
+            if (typeof JitsiMeetExternalAPI !== 'undefined') {
+                const domain = 'meet.jit.si';
+                const options = {
+                    roomName: roomName,
+                    width: '100%',
+                    height: '100%',
+                    parentNode: container,
+                    userInfo: {
+                        displayName: displayName
+                    },
+                    configOverwrite: {
+                        startWithAudioMuted: false,
+                        startWithVideoMuted: false,
+                        prejoinPageEnabled: false
+                    }
+                };
+                
+                jitsiApi = new JitsiMeetExternalAPI(domain, options);
+                
+                jitsiApi.addEventListeners({
+                    videoConferenceLeft: function() {
+                        closeJitsiSession();
+                    }
+                });
+            } else {
+                window.open(`https://meet.jit.si/${encodeURIComponent(roomName)}`, '_blank');
+                closeJitsiSession();
+            }
+        }
+
+        function closeJitsiSession() {
+            if (jitsiApi) {
+                jitsiApi.dispose();
+                jitsiApi = null;
+            }
+            document.getElementById('jitsiModal').style.display = 'none';
+        }
+
+        function checkBuddyStatus() {
+            const userRole = localStorage.getItem('role') || 'student';
+            const status = localStorage.getItem('buddy_status') || 'Not Applied';
+            const badge = document.getElementById('buddyApplicationBadge');
+            const statText = document.getElementById('buddyStatusStat');
+
+            if (badge) badge.textContent = userRole === 'buddy' ? 'Approved' : status;
+            if (statText) statText.textContent = userRole === 'buddy' || status === 'Approved' ? 'Octo Buddy' : 'Student';
+        }
+
+        function setCurrentDate() {
+            const currentDateElement = document.getElementById('currentDate');
+            if (currentDateElement) {
+                const options = { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' };
+                currentDateElement.textContent = new Date().toLocaleDateString('en-US', options);
+            }
+        }
+
+        function openAcademicTracker() { window.location.href = 'tracker.html'; }
+        function bookTutoring() { window.location.href = 'book-tutoring.html'; }
+        function becomeOctoBuddy() { window.location.href = 'become-buddy.html'; }
+    </script>
 
 </body>
 

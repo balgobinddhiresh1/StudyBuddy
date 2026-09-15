@@ -129,27 +129,19 @@ header {
         PROFILE
 =========================== */
 
-.profile {
-    display: flex;
-    align-items: center;
+/* Style the link directly inside .Login */
+.Login a {
+    color: #ffffff;             /* Set text color to white */
+    text-decoration: none;      /* Remove the default link underline */
+    font-weight: 500;
+    transition: opacity 0.2s ease;
 }
 
-.profile img {
-    width: 55px;
-    height: 55px;
-
-    border-radius: 50%;
-
-    object-fit: cover;
-
-    cursor: pointer;
-
-    transition: 0.3s ease;
+/* Optional: Add a subtle hover effect */
+.Login a:hover {
+    opacity: 0.8;
 }
 
-.profile img:hover {
-    transform: scale(1.08);
-}
 
 
 /* ===========================

@@ -1,44 +1,69 @@
-from flask import Flask, request, jsonify, redirect
-from flask_cors import CORS
-import pymysql
-import re
 import os
-import random
-import time
-from datetime import datetime, timedelta
+import re
+from flask import Flask, request, jsonify
+from flask_sqlalchemy import SQLAlchemy
+from flask_cors import CORS
+from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 CORS(app)
 
-# Secret key for generating secure tokens
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-fallback-secret-key')
 
-# --- OTP IN-MEMORY STORAGE ---
-# In a production app, you would use a Redis database or a DB table for this.
-# Stores structure: { "email@example.com": { "otp": "123456", "expires_at": timestamp, "last_sent": timestamp } }
-otp_store = {}
+# =========================================================
+# SUPABASE POOLED POSTGRESQL CONNECTION
+# Replace [YOUR-PASSWORD] with your actual Supabase database password
+# =========================================================
+SUPABASE_URI = "postgresql+psycopg2://postgres.gjnpwpcnzhoxdqyfxzez:AlphaTechocti@aws-1-eu-west-1.pooler.supabase.com:6543/postgres"
 
-# DATABASE CONNECTION
-def get_connection():
-    return pymysql.connect(
-        host="mysql-3d71e7bc-studybuddy-alphatech.l.aivencloud.com",
-        port=22178,
-        user="avnadmin",
-        password="YOUR_SECURE_PASSWORD", # Use environment variables here
-        database="defaultdb",
-        cursorclass=pymysql.cursors.DictCursor
-    )
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL", SUPABASE_URI)
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-# MOCK EMAIL FUNCTION FOR OTP
-def send_otp_email(target_email, otp):
-    print("\n----------------- SIMULATED OTP EMAIL -----------------")
-    print(f"To: {target_email}")
-    print(f"Subject: Your Study Buddy OTP Verification Code")
-    print(f"Your 6-digit verification code is: {otp}")
-    print("This code will expire in 5 minutes.")
-    print("-------------------------------------------------------\n")
+db = SQLAlchemy(app)
 
-# VALIDATION HELPER FUNCTIONS
+# =========================
+# DATABASE MODELS
+# =========================
+class User(db.Model):
+    __tablename__ = 'Users'
+
+    id = db.Column('User_id', db.Integer, primary_key=True)
+    first_name = db.Column('First_Name', db.String(50), nullable=False)
+    last_name = db.Column('Last_Name', db.String(50), nullable=False)
+    password_hash = db.Column('Password', db.String(255), nullable=False)
+    email = db.Column('Email', db.String(50), unique=True, nullable=False)
+    course = db.Column('course', db.String(20), default='General')
+    academic_year = db.Column('Acedemic_year', db.Integer, default=1)
+    is_verified = db.Column('Verified', db.SmallInteger, default=0)
+    verification_token = db.Column('VerificationToken', db.String(255), nullable=True)
+    role = db.Column('Role', db.String(50), default='Student')
+    points = db.Column('Points', db.Integer, default=0)
+
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "first_name": self.first_name,
+            "last_name": self.last_name,
+            "email": self.email,
+            "role": str(self.role),
+            "course": self.course,
+            "academic_year": self.academic_year,
+            "is_verified": bool(self.is_verified),
+            "points": self.points
+        }
+
+with app.app_context():
+    db.create_all()
+
+# =========================
+# VALIDATION HELPERS
+# =========================
 def valid_email(email):
     pattern = r'^[\w\.-]+@[\w\.-]+\.\w+$'
     return re.match(pattern, email)
@@ -50,200 +75,135 @@ def valid_password(password):
         return False
     return True
 
-# HELPER: Generate and handle OTP cooldown logic
-def generate_and_send_otp(email):
-    current_time = time.time()
-    
-    # Check 1-minute (60 seconds) cooldown rule
-    if email in otp_store:
-        time_passed = current_time - otp_store[email]['last_sent']
-        if time_passed < 60:
-            remaining = int(60 - time_passed)
-            return False, f"Please wait {remaining} seconds before requesting a new OTP code."
-
-    # Generate a secure 6-digit token code
-    otp = f"{random.randint(100000, 999999)}"
-    
-    # Store verification code with 5 minutes expiration, tracking last sent timestamp
-    otp_store[email] = {
-        "otp": otp,
-        "expires_at": current_time + 300, # 5 minutes expiry window
-        "last_sent": current_time
-    }
-    
-    send_otp_email(email, otp)
-    return True, "OTP successfully sent."
+# =========================
+# API ROUTES
+# =========================
 
 @app.route('/')
 def home():
-    return jsonify({"message": "Study Buddy API Running"})
+    return jsonify({"message": "Study Loop API Connected to Supabase Pooler"}), 200
 
-# --- REGISTER ENDPOINT ---
+
+# 1. User Registration
 @app.route('/api/register', methods=['POST'])
+@app.route('/api/auth/register', methods=['POST'])
 def register():
     try:
-        data = request.get_json()
+        data = request.get_json() or {}
+        
         first_name = data.get('first_name', '').strip()
         last_name = data.get('last_name', '').strip()
-        email = data.get('email', '').strip()
+        email = data.get('email', '').strip().lower()
         password = data.get('password', '')
 
-        # Validations
+        # Safe integer conversion to avoid ValueError on empty inputs
+        raw_year = str(data.get('academic_year', '')).strip()
+        academic_year = int(raw_year) if raw_year.isdigit() else 1
+
         if len(first_name) > 30 or len(last_name) > 30:
-            return jsonify({"message": "Names cannot exceed 30 characters"}), 400
-        if not first_name or not last_name or not email:
-            return jsonify({"message": "All fields are required"}), 400
+            return jsonify({"status": "error", "message": "Names cannot exceed 30 characters"}), 400
+        if not first_name or not email or not password:
+            return jsonify({"status": "error", "message": "First name, email, and password are required"}), 400
         if not valid_email(email):
-            return jsonify({"message": "Invalid email address"}), 400
+            return jsonify({"status": "error", "message": "Invalid email address format"}), 400
         if not valid_password(password):
-            return jsonify({"message": "Password must be 8-10 characters long and contain a number"}), 400
+            return jsonify({"status": "error", "message": "Password must be 8-10 characters long and contain a number"}), 400
 
-        connection = get_connection()
-        with connection.cursor() as cursor:
-            # Check if email exists
-            cursor.execute("SELECT * FROM Users WHERE Email = %s", (email,))
-            if cursor.fetchone():
-                connection.close()
-                return jsonify({"message": "Email already exists"}), 400
+        if User.query.filter_by(email=email).first():
+            return jsonify({"status": "error", "message": "Account with this email already exists"}), 409
 
-            # Insert unverified user (Is_Verified = 0)
-            cursor.execute(
-                """
-                INSERT INTO Users 
-                (First_Name, Last_Name, Password, Email, course, Acedemic_year, Is_Verified)
-                VALUES (%s, %s, %s, %s, %s, %s, 0)
-                """,
-                (first_name, last_name, password, email, "General", 1)
-            )
-            connection.commit()
-        connection.close()
+        new_user = User(
+            first_name=first_name,
+            last_name=last_name,
+            email=email,
+            role='student',
+            course=data.get('course', 'General'),
+            academic_year=academic_year,
+            is_verified=True
+        )
+        new_user.set_password(password)
 
-        # Generate and route OTP
-        success, msg = generate_and_send_otp(email)
-        if not success:
-            return jsonify({"message": msg}), 429
+        db.session.add(new_user)
+        db.session.commit()
 
         return jsonify({
             "status": "success",
-            "message": "Registration successful! Please submit the OTP code sent to your email."
+            "message": "User registered successfully",
+            "user": new_user.to_dict()
         }), 201
 
     except Exception as e:
-        print("REGISTER ERROR:", e)
-        return jsonify({"status": "error", "message": "Database error"}), 500
+        db.session.rollback()
+        print("REGISTER ERROR:", str(e))
+        return jsonify({"status": "error", "message": f"Database error: {str(e)}"}), 500
 
-# --- LOGIN ENDPOINT ---
+
+# 2. User Login
 @app.route('/api/login', methods=['POST'])
+@app.route('/api/auth/login', methods=['POST'])
 def login():
     try:
-        data = request.get_json()
-        email = data.get('email', '').strip()
+        data = request.get_json() or {}
+        email = data.get('email', '').strip().lower()
         password = data.get('password', '')
 
         if not email or not password:
-            return jsonify({"message": "Email and password required"}), 400
+            return jsonify({"status": "error", "message": "Email and password are required"}), 400
 
-        connection = get_connection()
-        with connection.cursor() as cursor:
-            cursor.execute(
-                "SELECT * FROM Users WHERE Email = %s AND Password = %s", 
-                (email, password)
-            )
-            user = cursor.fetchone()
-        connection.close()
+        user = User.query.filter_by(email=email).first()
 
-        if user:
-            # Trigger OTP verification for user confirmation upon log in attempt
-            success, msg = generate_and_send_otp(email)
-            if not success:
-                return jsonify({"message": msg}), 429
-
-            return jsonify({
-                "status": "success",
-                "message": "Credentials valid. Please submit the OTP code sent to your email."
-            }), 200
-
-        return jsonify({"status": "error", "message": "Invalid email or password"}), 401
-
-    except Exception as e:
-        print("LOGIN ERROR:", e)
-        return jsonify({"status": "error", "message": "Database error"}), 500
-
-# --- NEW: VERIFY OTP ENDPOINT ---
-# Your frontend can send verification payload here: {"email": "...", "otp": "..."}
-@app.route('/api/verify-otp', methods=['POST'])
-def verify_otp():
-    try:
-        data = request.get_json()
-        email = data.get('email', '').strip()
-        submitted_otp = data.get('otp', '').strip()
-
-        if not email or not submitted_otp:
-            return jsonify({"message": "Email and OTP code are required"}), 400
-
-        if email not in otp_store:
-            return jsonify({"message": "No active OTP request found for this email."}), 400
-
-        record = otp_store[email]
-        current_time = time.time()
-
-        # Check expiration
-        if current_time > record['expires_at']:
-            del otp_store[email]
-            return jsonify({"message": "OTP code has expired. Please request a new one."}), 400
-
-        # Check matching criteria
-        if record['otp'] != submitted_otp:
-            return jsonify({"message": "Invalid OTP code. Please try again."}), 400
-
-        # Success! Activate user status inside DB
-        connection = get_connection()
-        with connection.cursor() as cursor:
-            cursor.execute("UPDATE Users SET Is_Verified = 1 WHERE Email = %s", (email,))
-            connection.commit()
-            
-            # Fetch user info for complete session confirmation object
-            cursor.execute("SELECT * FROM Users WHERE Email = %s", (email,))
-            user = cursor.fetchone()
-        connection.close()
-
-        # Clear active token verification loop data from memory
-        del otp_store[email]
+        if not user or not user.check_password(password):
+            return jsonify({"status": "error", "message": "Invalid email or password"}), 401
 
         return jsonify({
             "status": "success",
-            "message": "Verification successful!",
-            "user_id": user["User_id"] if user else None,
-            "first_name": user["First_Name"] if user else ""
+            "message": "Login successful",
+            "user": user.to_dict()
         }), 200
 
     except Exception as e:
-        print("OTP VERIFY ERROR:", e)
-        return jsonify({"status": "error", "message": "Server error processing verification."}), 500
+        print("LOGIN ERROR:", str(e))
+        return jsonify({"status": "error", "message": f"Server error: {str(e)}"}), 500
 
-# --- NEW: RESEND OTP ENDPOINT ---
-# Enforces the 1-minute timer rule before sending a fresh numerical token
-@app.route('/api/resend-otp', methods=['POST'])
-def resend_otp():
+
+# 3. Get User Profile
+@app.route('/api/user/<int:user_id>', methods=['GET'])
+def get_user(user_id):
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"status": "error", "message": "User not found"}), 404
+
+    return jsonify(user.to_dict()), 200
+
+
+# 4. Update Profile
+@app.route('/api/user/<int:user_id>', methods=['PUT'])
+def update_user_profile(user_id):
     try:
-        data = request.get_json()
-        email = data.get('email', '').strip()
+        data = request.get_json() or {}
+        user = User.query.get(user_id)
 
-        if not email:
-            return jsonify({"message": "Email address is required."}), 400
+        if not user:
+            return jsonify({"status": "error", "message": "User not found"}), 404
 
-        success, msg = generate_and_send_otp(email)
-        if not success:
-            return jsonify({"message": msg}), 429 # 429 Too Many Requests
+        if 'first_name' in data and data['first_name'].strip():
+            user.first_name = data['first_name'].strip()
+        
+        if 'last_name' in data:
+            user.last_name = data['last_name'].strip()
+
+        db.session.commit()
 
         return jsonify({
             "status": "success",
-            "message": "A fresh OTP code has been dispatched to your email address."
+            "message": "Profile updated successfully",
+            "user": user.to_dict()
         }), 200
 
     except Exception as e:
-        print("RESEND OTP ERROR:", e)
-        return jsonify({"status": "error", "message": "Server processing error"}), 500
+        db.session.rollback()
+        return jsonify({"status": "error", "message": "Failed to update profile"}), 500
+
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='127.0.0.1', port=5000, debug=True)
