@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Dashboard | Octo Buddy</title>
+    <title>Octo Buddy Dashboard | Octo Buddy</title>
 
     <!-- Google Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -32,25 +32,38 @@
                 </a>
             </div>
 
-            <ul class="nav-links">
+            <ul class="nav-links" id="navLinks">
                 <li><a href="../homepage/homepage.html">Home</a></li>
                 <li><a href="../homepage/homepage.html#about">About</a></li>
                 <li><a href="dashboard.html" class="active">Dashboard</a></li>
-                <li><a href="../octobuddy/octobuddy.html">Octo Buddy</a></li>
+                <li><a href="../sessions/sessions.html">Sessions</a></li>
             </ul>
 
-            <!-- Clickable Profile Nav Section -->
-            <div class="profile-nav" style="cursor: pointer;" onclick="openEditModal()">
-                <div class="profile-avatar">
-                    <span id="navUserInitials">--</span>
+            <div class="navbar-right">
+
+                <!-- Clickable Profile Nav Section -->
+                <div class="profile-nav" style="cursor: pointer;" onclick="openEditModal()">
+                    <div class="profile-avatar">
+                        <span id="navUserInitials">--</span>
+                    </div>
+                    <div class="profile-info">
+                        <span class="profile-name" id="navUserName">Loading...</span>
+                        <span class="profile-role" id="navroleDisplay">@buddy</span>
+                    </div>
                 </div>
-                <div class="profile-info">
-                    <span class="profile-name" id="navUserName">Loading...</span>
-                    <span class="profile-role" id="navroleDisplay">@student</span>
-                </div>
+
+                <button class="hamburger-btn" id="hamburgerBtn" aria-label="Open menu" onclick="toggleMobileMenu()">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+
             </div>
 
         </nav>
+
+        <!-- MOBILE NAV OVERLAY -->
+        <div class="mobile-nav-overlay" id="mobileNavOverlay" onclick="toggleMobileMenu()"></div>
     </header>
 
 
@@ -62,14 +75,14 @@
         <!-- WELCOME SECTION -->
         <section class="welcome-section">
             <div class="welcome-text">
-                <span class="welcome-label">STUDENT DASHBOARD</span>
+                <span class="welcome-label">OCTO BUDDY DASHBOARD</span>
                 <h1>
-                    Welcome back,
-                    <span id="welcomeFirstName">Student</span>!
+                    Welcome back, Octo Buddy
+                    <span id="welcomeFirstName">Buddy</span>!
                 </h1>
                 <p>
-                    Stay on top of your studies, book tutoring sessions,
-                    and get the academic support you need.
+                    Here's your teaching schedule, the students you're
+                    helping, and your tutoring stats.
                 </p>
             </div>
 
@@ -85,72 +98,61 @@
 
             <div class="stat-card">
                 <div class="stat-icon">
-                    <button data-section-link="schedule" style="background: none; border: none; cursor: pointer;">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="-0.75 -0.75 24 24" height="24" width="24">
-                            <g id="calendar-add--add-calendar-date-day-month">
-                                <path stroke="#17c786" d="M10.809 18.747H1.107V2.871h17.64v7.938" stroke-width="1.5"></path>
-                                <path stroke="#000cfe" d="M18.747 6.399H1.107V2.871h17.64v3.528Z" stroke-width="1.5"></path>
-                                <path stroke="#000cfe" d="M4.635 0.225v2.646" stroke-width="1.5"></path>
-                                <path stroke="#000cfe" d="M15.219 0.225v2.646" stroke-width="1.5"></path>
-                                <path stroke="#000cfe" d="M21.393 16.983h-8.82m4.41-4.41v8.82" stroke-width="1.5"></path>
-                            </g>
-                        </svg>
-                    </button>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="-0.75 -0.75 24 24" height="24" width="24">
+                        <g id="calendar-add--add-calendar-date-day-month">
+                            <path stroke="#17c786" d="M10.809 18.747H1.107V2.871h17.64v7.938" stroke-width="1.5"></path>
+                            <path stroke="#000cfe" d="M18.747 6.399H1.107V2.871h17.64v3.528Z" stroke-width="1.5"></path>
+                            <path stroke="#000cfe" d="M4.635 0.225v2.646" stroke-width="1.5"></path>
+                            <path stroke="#000cfe" d="M15.219 0.225v2.646" stroke-width="1.5"></path>
+                            <path stroke="#000cfe" d="M21.393 16.983h-8.82m4.41-4.41v8.82" stroke-width="1.5"></path>
+                        </g>
+                    </svg>
                 </div>
                 <div class="stat-content">
                     <span>Upcoming Sessions</span>
-                    <strong>2</strong>
+                    <strong id="statUpcoming">3</strong>
                 </div>
             </div>
 
             <div class="stat-card">
                 <div class="stat-icon">
-                    <span>
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="-0.855 -0.855 24 24" height="24" width="24">
-                            <g id="check-square">
-                                <path stroke="#000cfe" stroke-linecap="round" stroke-linejoin="round" d="m15.789 7.563-6.369 7.96-3.184-2.388" stroke-width="1.71"></path>
-                                <path stroke="#2211f1" stroke-linecap="round" stroke-linejoin="round" d="M1.592 3.184v15.922c0 .879.713 1.592 1.592 1.592h15.922c.879 0 1.592-.713 1.592-1.592V3.184c0-.879-.713-1.592-1.592-1.592H3.184c-.879 0-1.592.713-1.592 1.592Z" stroke-width="1.71"></path>
-                            </g>
-                        </svg>
-                    </span>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="-0.855 -0.855 24 24" height="24" width="24">
+                        <g id="check-square">
+                            <path stroke="#000cfe" stroke-linecap="round" stroke-linejoin="round" d="m15.789 7.563-6.369 7.96-3.184-2.388" stroke-width="1.71"></path>
+                            <path stroke="#2211f1" stroke-linecap="round" stroke-linejoin="round" d="M1.592 3.184v15.922c0 .879.713 1.592 1.592 1.592h15.922c.879 0 1.592-.713 1.592-1.592V3.184c0-.879-.713-1.592-1.592-1.592H3.184c-.879 0-1.592.713-1.592 1.592Z" stroke-width="1.71"></path>
+                        </g>
+                    </svg>
                 </div>
                 <div class="stat-content">
                     <span>Completed Sessions</span>
-                    <strong>3</strong>
+                    <strong id="statCompleted">17</strong>
                 </div>
             </div>
 
             <div class="stat-card">
                 <div class="stat-icon">
-                    <span>
-                        <svg width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 14 14" fill="#3532ba">
-                            <g fill="none" stroke="#3532ba" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M12.99 7.005c0 3.837-2.16 5.995-5.996 5.995S1 10.842 1 7.005C1 3.17 3.158 1.011 6.995 1.011"/>
-                                <path d="M6.035 3.988c-1.391.316-2.158 1.368-2.158 3.017C3.877 9 5 10.122 6.995 10.122c1.729 0 2.803-.843 3.058-2.368m-3.058-.749l2.077-2.078m-.001.003l-.124-.404a2 2 0 0 1 .497-2.004L10.965 1l.48 1.555l1.555.48l-1.522 1.522a2 2 0 0 1-2.003.497z"/>
-                            </g>
-                        </svg>
-                    </span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 20 20" fill="#1e41bb">
+                        <g fill="#1e41bb" fill-rule="evenodd" clip-rule="evenodd">
+                            <path d="M11.5 2.5a1 1 0 0 1 .87.507l2.314 4.078l4.527.976a1 1 0 0 1 .537 1.641l-3.106 3.502l.488 4.693a1 1 0 0 1-1.407 1.014L11.5 16.997l-4.223 1.914a1 1 0 0 1-1.407-1.014l.488-4.693l-3.106-3.502a1 1 0 0 1 .537-1.641l4.527-.976l2.314-4.078a1 1 0 0 1 .87-.507Zm0 3.026L9.834 8.462a1 1 0 0 1-.659.484l-3.291.71l2.262 2.55a1 1 0 0 1 .246.768L8.04 16.37l3.047-1.381a1 1 0 0 1 .826 0l3.047 1.38l-.353-3.396a1 1 0 0 1 .247-.766l2.262-2.551l-3.291-.71a1 1 0 0 1-.66-.484L11.5 5.526Z" opacity=".2"/>
+                            <path d="M10 2a.5.5 0 0 1 .435.253l2.425 4.274l4.745 1.023a.5.5 0 0 1 .27.82l-3.253 3.667l.51 4.911a.5.5 0 0 1-.703.507L10 15.448l-4.429 2.007a.5.5 0 0 1-.704-.507l.51-4.91l-3.25-3.668a.5.5 0 0 1 .269-.82L7.14 6.527l2.425-4.274A.5.5 0 0 1 10 2Zm0 1.513L7.9 7.215a.5.5 0 0 1-.33.242l-4.128.89l2.83 3.191a.5.5 0 0 1 .123.384l-.443 4.263l3.842-1.74a.5.5 0 0 1 .412 0l3.842 1.74l-.443-4.263a.5.5 0 0 1 .123-.384l2.83-3.191l-4.128-.89a.5.5 0 0 1-.33-.242L10 3.513Z"/>
+                        </g>
+                    </svg>
                 </div>
                 <div class="stat-content">
-                    <span>Programme Progress</span>
-                    <strong>3 / 5</strong>
+                    <span>Points Earned</span>
+                    <strong id="statPoints">425</strong>
                 </div>
             </div>
 
             <div class="stat-card">
                 <div class="stat-icon">
-                    <span>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 20 20" fill="#1e41bb">
-                            <g fill="#1e41bb" fill-rule="evenodd" clip-rule="evenodd">
-                                <path d="M11.5 2.5a1 1 0 0 1 .87.507l2.314 4.078l4.527.976a1 1 0 0 1 .537 1.641l-3.106 3.502l.488 4.693a1 1 0 0 1-1.407 1.014L11.5 16.997l-4.223 1.914a1 1 0 0 1-1.407-1.014l.488-4.693l-3.106-3.502a1 1 0 0 1 .537-1.641l4.527-.976l2.314-4.078a1 1 0 0 1 .87-.507Zm0 3.026L9.834 8.462a1 1 0 0 1-.659.484l-3.291.71l2.262 2.55a1 1 0 0 1 .246.768L8.04 16.37l3.047-1.381a1 1 0 0 1 .826 0l3.047 1.38l-.353-3.396a1 1 0 0 1 .247-.766l2.262-2.551l-3.291-.71a1 1 0 0 1-.66-.484L11.5 5.526Z" opacity=".2"/>
-                                <path d="M10 2a.5.5 0 0 1 .435.253l2.425 4.274l4.745 1.023a.5.5 0 0 1 .27.82l-3.253 3.667l.51 4.911a.5.5 0 0 1-.703.507L10 15.448l-4.429 2.007a.5.5 0 0 1-.704-.507l.51-4.91l-3.25-3.668a.5.5 0 0 1 .269-.82L7.14 6.527l2.425-4.274A.5.5 0 0 1 10 2Zm0 1.513L7.9 7.215a.5.5 0 0 1-.33.242l-4.128.89l2.83 3.191a.5.5 0 0 1 .123.384l-.443 4.263l3.842-1.74a.5.5 0 0 1 .412 0l3.842 1.74l-.443-4.263a.5.5 0 0 1 .123-.384l2.83-3.191l-4.128-.89a.5.5 0 0 1-.33-.242L10 3.513Z"/>
-                            </g>
-                        </svg>
-                    </span>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 -960 960 960" height="24" width="24">
+                        <path fill="#3532ba" d="M480-120 200-272v-240L40-600l440-240 440 240v320h-80v-276l-80 44v240L480-120Zm0-332 274-148-274-148-274 148 274 148Zm0 241 200-108v-151L480-360 280-470v151l200 108Z"/>
+                    </svg>
                 </div>
                 <div class="stat-content">
-                    <span>Buddy Status</span>
-                    <strong id="buddyStatusStat">Student</strong>
+                    <span>Students Helped</span>
+                    <strong id="statStudents">6</strong>
                 </div>
             </div>
 
@@ -160,12 +162,12 @@
         <!-- MAIN CONTENT GRID -->
         <section class="dashboard-grid">
 
-            <!-- UPCOMING SESSION -->
+            <!-- NEXT TUTORING SESSION -->
             <div class="dashboard-card upcoming-card">
                 <div class="card-header">
                     <div>
                         <span class="card-label">NEXT SESSION</span>
-                        <h2>Upcoming Tutoring</h2>
+                        <h2>Your Next Tutoring Session</h2>
                     </div>
                     <span class="status-badge">Confirmed</span>
                 </div>
@@ -179,85 +181,72 @@
 
                     <div class="session-info">
                         <h3>Programming</h3>
-                        <p>With Daniel (Octo Buddy)</p>
+                        <p>Student: <strong id="assignedStudentName">Kyle Pillay</strong></p>
                         <p>10:00 AM</p>
                         <p>Room: <strong id="assignedRoomCode">OctoBuddy_Daniel_Prog101</strong></p>
                     </div>
                 </div>
 
                 <div class="session-actions">
-                    <button class="primary-button" onclick="joinBuddyRoom()">Join Buddy's Room →</button>
+                    <button class="primary-button" onclick="joinBuddyRoom()">Join Session →</button>
                     <button class="secondary-button" onclick="joinCustomRoomPrompt()">Enter Room Code</button>
                 </div>
             </div>
 
-            <!-- ACADEMIC TRACKER -->
-            <div class="dashboard-card tracker-card">
+            <!-- TEACHING SCHEDULE (assigned by admin) -->
+            <div class="dashboard-card schedule-card">
                 <div class="card-header">
                     <div>
-                        <span class="card-label">ACADEMIC TRACKER</span>
-                        <h2>Your Progress</h2>
+                        <span class="card-label">ASSIGNED BY ADMIN</span>
+                        <h2>Your Teaching Schedule</h2>
                     </div>
-                    <button class="small-button" onclick="openAcademicTracker()">View →</button>
+                    <button class="small-button" onclick="openMySchedule()">View All →</button>
                 </div>
 
-                <div class="progress-item">
-                    <div class="progress-info">
-                        <span>Programming</span>
-                        <strong>72%</strong>
+                <div class="schedule-list">
+
+                    <div class="schedule-row">
+                        <div class="schedule-time">
+                            <strong>MON</strong>
+                            <span>10:00</span>
+                        </div>
+                        <div class="schedule-info">
+                            <h4>Programming</h4>
+                            <p>Kyle Pillay</p>
+                        </div>
+                        <span class="status-badge">Confirmed</span>
                     </div>
-                    <div class="progress-bar">
-                        <div class="progress-fill good" style="width:72%"></div>
+
+                    <div class="schedule-row">
+                        <div class="schedule-time">
+                            <strong>WED</strong>
+                            <span>14:00</span>
+                        </div>
+                        <div class="schedule-info">
+                            <h4>Database Systems</h4>
+                            <p>Sarah Moodley</p>
+                        </div>
+                        <span class="status-badge pending">Pending</span>
                     </div>
-                    <span class="progress-status good-text">Good progress</span>
+
+                    <div class="schedule-row">
+                        <div class="schedule-time">
+                            <strong>FRI</strong>
+                            <span>11:00</span>
+                        </div>
+                        <div class="schedule-info">
+                            <h4>Networking</h4>
+                            <p>Mark Daniels</p>
+                        </div>
+                        <span class="status-badge">Confirmed</span>
+                    </div>
+
                 </div>
 
-                <div class="progress-item">
-                    <div class="progress-info">
-                        <span>Database Systems</span>
-                        <strong>43%</strong>
-                    </div>
-                    <div class="progress-bar">
-                        <div class="progress-fill warning" style="width:43%"></div>
-                    </div>
-                    <span class="progress-status warning-text">We recommend tutoring</span>
-                </div>
-
-                <div class="progress-item">
-                    <div class="progress-info">
-                        <span>Networking</span>
-                        <strong>61%</strong>
-                    </div>
-                    <div class="progress-bar">
-                        <div class="progress-fill average" style="width:61%"></div>
-                    </div>
-                    <span class="progress-status average-text">Keep improving</span>
-                </div>
-            </div>
-
-            <!-- APPLY TO BE A BUDDY CARD -->
-            <div class="dashboard-card buddy-card">
-                <div class="card-header">
-                    <div>
-                        <span class="card-label">PEER TUTORING</span>
-                        <h2>Apply to Be a Buddy</h2>
-                    </div>
-                    <span class="status-badge pending" id="buddyApplicationBadge">Not Applied</span>
-                </div>
-
-                <div class="buddy-info" style="margin: 15px 0;">
-                    <p style="font-size: 0.9rem; color: #555; line-height: 1.5;">
-                        Help fellow students, sharpen your own skills, and earn recognition across campus by becoming a peer tutor.
-                    </p>
-                    <div style="margin-top: 15px; background: #f4f6ff; padding: 12px; border-radius: 8px; border-left: 4px solid #1e41bb;">
-                        <span style="font-size: 0.8rem; color: #666; display: block;">Requirements:</span>
-                        <strong style="font-size: 0.85rem; color: #1e41bb;">70%+ Average in target modules</strong>
-                    </div>
-                </div>
-
-                <div class="session-actions" style="margin-top: auto;">
-                    <button class="primary-button" id="applyBuddyBtn" onclick="becomeOctoBuddy()">Apply Now →</button>
-                </div>
+                <p class="schedule-note">
+                    Sessions are assigned by the Campus Manager. This list will
+                    update automatically once the scheduling system is connected.
+                </p>
             </div>
 
         </section>
@@ -274,32 +263,22 @@
 
             <div class="action-grid">
 
-                <!-- BOOK TUTORING -->
-                <button class="action-card" onclick="bookTutoring()">
-                    <div class="action-icon">📚</div>
+                <!-- MY SCHEDULE -->
+                <button class="action-card" onclick="openMySchedule()">
+                    <div class="action-icon">🗓️</div>
                     <div>
-                        <h3>Book Tutoring</h3>
-                        <p>Find an available Octo Buddy for your module.</p>
+                        <h3>My Schedule</h3>
+                        <p>View all your assigned tutoring sessions.</p>
                     </div>
                     <span class="action-arrow">→</span>
                 </button>
 
-                <!-- ACADEMIC TRACKER -->
-                <button class="action-card" onclick="openAcademicTracker()">
-                    <div class="action-icon">📊</div>
+                <!-- MY STUDENTS -->
+                <button class="action-card" onclick="viewMyStudents()">
+                    <div class="action-icon">🧑‍🎓</div>
                     <div>
-                        <h3>Academic Tracker</h3>
-                        <p>Add your marks and monitor your academic progress.</p>
-                    </div>
-                    <span class="action-arrow">→</span>
-                </button>
-
-                <!-- BECOME OCTO BUDDY -->
-                <button class="action-card" onclick="becomeOctoBuddy()">
-                    <div class="action-icon">🐙</div>
-                    <div>
-                        <h3>Become an Octo Buddy</h3>
-                        <p>Share your knowledge and help other students.</p>
+                        <h3>My Students</h3>
+                        <p>See the students you're currently tutoring.</p>
                     </div>
                     <span class="action-arrow">→</span>
                 </button>
@@ -309,7 +288,7 @@
                     <div class="action-icon">✏️</div>
                     <div>
                         <h3>Update Profile</h3>
-                        <p>Change your display name or account role.</p>
+                        <p>Change your display name or account details.</p>
                     </div>
                     <span class="action-arrow">→</span>
                 </button>
@@ -332,13 +311,6 @@
 
             <label style="display: block; font-size: 0.85rem; color: #555; margin-top: 15px;">Last Name</label>
             <input type="text" id="editLastName" style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box;">
-
-            <label style="display: block; font-size: 0.85rem; color: #555; margin-top: 15px;">Role</label>
-            <select id="editRole" style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box;">
-                <option value="student">Student</option>
-                <option value="buddy">Octo Buddy</option>
-                <option value="admin">Admin</option>
-            </select>
 
             <div style="margin-top: 25px; display: flex; justify-content: flex-end; gap: 10px;">
                 <button onclick="closeEditModal()" style="background: #ccc; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer;">Cancel</button>
@@ -373,7 +345,6 @@
         document.addEventListener('DOMContentLoaded', () => {
             loadLoggedInUser();
             setCurrentDate();
-            checkBuddyStatus();
             loadUpcomingSessionRoom();
         });
 
@@ -400,9 +371,9 @@
 
             // Fallback storage sync
             let user = JSON.parse(sessionStorage.getItem('user')) || JSON.parse(localStorage.getItem('user')) || {};
-            const firstName = user.first_name || localStorage.getItem('first_name') || sessionStorage.getItem('first_name') || 'Student';
+            const firstName = user.first_name || localStorage.getItem('first_name') || sessionStorage.getItem('first_name') || 'Buddy';
             const lastName = user.last_name || localStorage.getItem('last_name') || sessionStorage.getItem('last_name') || '';
-            const role = user.role || localStorage.getItem('role') || sessionStorage.getItem('role') || 'student';
+            const role = user.role || localStorage.getItem('role') || sessionStorage.getItem('role') || 'buddy';
 
             updateDOMProfile(firstName, lastName, role);
         }
@@ -417,7 +388,7 @@
             if (navUserName) navUserName.textContent = `${firstName} ${lastName}`.trim();
             if (navroleDisplay) navroleDisplay.textContent = `@${role.replace(/^@/, '')}`;
 
-            const firstInitial = firstName ? firstName.charAt(0).toUpperCase() : 'S';
+            const firstInitial = firstName ? firstName.charAt(0).toUpperCase() : 'B';
             const lastInitial = lastName ? lastName.charAt(0).toUpperCase() : '';
             if (navUserInitials) navUserInitials.textContent = `${firstInitial}${lastInitial}`;
         }
@@ -425,13 +396,11 @@
         // Profile Update Modal Logic
         function openEditModal() {
             const modal = document.getElementById('editModal');
-            const firstName = localStorage.getItem('first_name') || 'Student';
+            const firstName = localStorage.getItem('first_name') || 'Buddy';
             const lastName = localStorage.getItem('last_name') || '';
-            const role = localStorage.getItem('role') || 'student';
 
             document.getElementById('editFirstName').value = firstName;
             document.getElementById('editLastName').value = lastName;
-            document.getElementById('editRole').value = role;
 
             modal.style.display = 'flex';
         }
@@ -443,7 +412,6 @@
         async function saveProfileChanges() {
             const firstName = document.getElementById('editFirstName').value.trim();
             const lastName = document.getElementById('editLastName').value.trim();
-            const role = document.getElementById('editRole').value;
             const userId = localStorage.getItem('user_id') || sessionStorage.getItem('user_id');
 
             if (!firstName) {
@@ -458,8 +426,7 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             first_name: firstName,
-                            last_name: lastName,
-                            role: role
+                            last_name: lastName
                         })
                     });
 
@@ -475,28 +442,26 @@
 
             localStorage.setItem('first_name', firstName);
             localStorage.setItem('last_name', lastName);
-            localStorage.setItem('role', role);
 
-            updateDOMProfile(firstName, lastName, role);
-            checkBuddyStatus();
+            updateDOMProfile(firstName, lastName, localStorage.getItem('role') || 'buddy');
             closeEditModal();
         }
 
-        // 2. Load Buddy Room Code dynamically
+        // 2. Load Session Room Code dynamically
         function loadUpcomingSessionRoom() {
             const activeRoom = localStorage.getItem('active_buddy_room') || 'OctoBuddy_Daniel_Prog101';
             const roomDisplay = document.getElementById('assignedRoomCode');
             if (roomDisplay) roomDisplay.textContent = activeRoom;
         }
 
-        // 3. Connect to Octo Buddy's specific session room
+        // 3. Connect to the session room
         function joinBuddyRoom() {
             const roomName = localStorage.getItem('active_buddy_room') || 'OctoBuddy_Daniel_Prog101';
             launchJitsiCall(roomName);
         }
 
         function joinCustomRoomPrompt() {
-            const userInput = prompt("Enter the Room Code provided by your Octo Buddy:", "OctoBuddy_Daniel_Prog101");
+            const userInput = prompt("Enter the Room Code for this session:", "OctoBuddy_Daniel_Prog101");
             if (userInput && userInput.trim() !== "") {
                 const sanitizedRoom = userInput.trim().replace(/\s+/g, '_');
                 launchJitsiCall(sanitizedRoom);
@@ -505,7 +470,7 @@
 
         // 4. Core Jitsi Launch Handler
         function launchJitsiCall(roomName) {
-            const firstName = localStorage.getItem('first_name') || sessionStorage.getItem('first_name') || 'Student';
+            const firstName = localStorage.getItem('first_name') || sessionStorage.getItem('first_name') || 'Buddy';
             const lastName = localStorage.getItem('last_name') || sessionStorage.getItem('last_name') || '';
             const displayName = `${firstName} ${lastName}`.trim();
 
@@ -555,16 +520,6 @@
             document.getElementById('jitsiModal').style.display = 'none';
         }
 
-        function checkBuddyStatus() {
-            const userRole = localStorage.getItem('role') || 'student';
-            const status = localStorage.getItem('buddy_status') || 'Not Applied';
-            const badge = document.getElementById('buddyApplicationBadge');
-            const statText = document.getElementById('buddyStatusStat');
-
-            if (badge) badge.textContent = userRole === 'buddy' ? 'Approved' : status;
-            if (statText) statText.textContent = userRole === 'buddy' || status === 'Approved' ? 'Octo Buddy' : 'Student';
-        }
-
         function setCurrentDate() {
             const currentDateElement = document.getElementById('currentDate');
             if (currentDateElement) {
@@ -572,10 +527,6 @@
                 currentDateElement.textContent = new Date().toLocaleDateString('en-US', options);
             }
         }
-
-        function openAcademicTracker() { window.location.href = 'tracker.html'; }
-        function bookTutoring() { window.location.href = 'book-tutoring.html'; }
-        function becomeOctoBuddy() { window.location.href = 'become-buddy.html'; }
     </script>
 
 </body>

@@ -16,6 +16,9 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
+
+    <!-- Jitsi External API Script (needed so the student can join their tutoring session) -->
+    <script src="https://meet.jit.si/external_api.js"></script>
 </head>
 
 <body>
@@ -26,35 +29,58 @@
 
     <header>
 
-       <nav class="navbar">
+        <nav class="navbar">
 
-    <div class="logo">
-        <a href="../homepage/homepage.html">
-            <img src="../LOGIN.png" alt="Octo Buddy Logo">
-        </a>
-    </div>
+            <div class="logo">
+                <a href="../homepage/homepage.html">
+                    <img src="../LOGIN.png" alt="Octo Buddy Logo">
+                </a>
+            </div>
 
-    <ul class="nav-links">
+            <ul class="nav-links" id="navLinks">
 
-        <li>
-            <a href="../homepage/homepage.html">Home</a>
-        </li>
+                <li>
+                    <a href="../homepage/homepage.html">Home</a>
+                </li>
 
-        <li>
-            <a href="../homepage/homepage.html#about">About</a>
-        </li>
+                <li>
+                    <a href="../homepage/homepage.html#about">About</a>
+                </li>
 
-        <li>
-            <a href="../Dashboard/Dashboard.html">Dashboard</a>
-        </li>
+                <li>
+                    <a href="student.html" class="active">Dashboard</a>
+                </li>
 
-        <li>
-            <a href="../octobuddy/apply.html">Octo Buddy</a>
-        </li>
+                <li>
+                    <a href="../octobuddy/apply.html">Octo Buddy</a>
+                </li>
 
-    </ul>
+            </ul>
 
-</nav>
+            <div class="navbar-right">
+
+                <div class="profile-nav" style="cursor: pointer;" onclick="openEditModal()">
+                    <div class="profile-avatar">
+                        <span id="navUserInitials">--</span>
+                    </div>
+                    <div class="profile-info">
+                        <span class="profile-name" id="navUserName">Loading...</span>
+                        <span class="profile-role" id="navroleDisplay">@student</span>
+                    </div>
+                </div>
+
+                <button class="hamburger-btn" id="hamburgerBtn" aria-label="Open menu" onclick="toggleMobileMenu()">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+
+            </div>
+
+        </nav>
+
+        <!-- MOBILE NAV OVERLAY -->
+        <div class="mobile-nav-overlay" id="mobileNavOverlay" onclick="toggleMobileMenu()"></div>
 
     </header>
 
@@ -76,7 +102,7 @@
                 </p>
 
                 <h1>
-                    Welcome back, <span id="studentName">Kyle</span>!
+                    Welcome back, <span id="welcomeFirstName">Student</span>!
                 </h1>
 
                 <p class="welcome-text">
@@ -142,7 +168,7 @@
                         students by becoming an Octo Buddy.
                     </p>
 
-                    <a href="#buddy" class="dashboard-btn">
+                    <a href="../octobuddy/apply.html" class="dashboard-btn">
                         Apply Now →
                     </a>
 
@@ -254,6 +280,10 @@
                             🐙 Octo Buddy: Daniel
                         </p>
 
+                        <p>
+                            Room: <strong id="assignedRoomCode">OctoBuddy_Daniel_Prog101</strong>
+                        </p>
+
                     </div>
 
                     <div class="session-status">
@@ -262,7 +292,7 @@
 
                     <button
                         class="join-btn"
-                        onclick="joinSession('Programming')">
+                        onclick="joinTutorRoom()">
 
                         Join Session
 
@@ -589,7 +619,7 @@
                     </ul>
 
                     <a
-                        href="../Octobuddy/application.html"
+                        href="../octobuddy/apply.html"
                         class="primary-btn">
 
                         Start Application →
@@ -645,31 +675,32 @@
 
                     <div>
                         <span>Full Name</span>
-                        <strong>Kyle Pillay</strong>
+                        <strong id="profileFullName">Loading...</strong>
                     </div>
 
                     <div>
-                        <span>Student Number</span>
-                        <strong>12345678</strong>
+                        <span>Email</span>
+                        <strong id="profileEmail">Loading...</strong>
                     </div>
 
                     <div>
-                        <span>Campus</span>
-                        <strong>Durban</strong>
-                    </div>
-
-                    <div>
-                        <span>Qualification</span>
-                        <strong>
-                            Diploma in Information Technology
-                        </strong>
+                        <span>Qualification / Course</span>
+                        <strong id="profileCourse">Loading...</strong>
                     </div>
 
                     <div>
                         <span>Academic Year</span>
-                        <strong>
-                            Third Year
-                        </strong>
+                        <strong id="profileYear">Loading...</strong>
+                    </div>
+
+                    <div>
+                        <span>Role</span>
+                        <strong id="profileRole">Loading...</strong>
+                    </div>
+
+                    <div>
+                        <span>Points</span>
+                        <strong id="profilePoints">0</strong>
                     </div>
 
                 </div>
@@ -679,6 +710,41 @@
         </section>
 
     </main>
+
+
+    <!-- =========================
+         UPDATE PROFILE MODAL
+    ========================== -->
+    <div id="editModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.6); z-index: 2000; justify-content: center; align-items: center;">
+        <div style="width: 90%; max-width: 450px; background: #fff; border-radius: 12px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+            <h3 style="margin-top: 0; color: #1e41bb;">Update Profile</h3>
+
+            <label style="display: block; font-size: 0.85rem; color: #555; margin-top: 15px;">First Name</label>
+            <input type="text" id="editFirstName" style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box;">
+
+            <label style="display: block; font-size: 0.85rem; color: #555; margin-top: 15px;">Last Name</label>
+            <input type="text" id="editLastName" style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box;">
+
+            <div style="margin-top: 25px; display: flex; justify-content: flex-end; gap: 10px;">
+                <button onclick="closeEditModal()" style="background: #ccc; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer;">Cancel</button>
+                <button onclick="saveProfileChanges()" style="background: #1e41bb; color: #fff; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-weight: bold;">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- =========================
+         JITSI MEET EMBEDDED MODAL
+    ========================== -->
+    <div id="jitsiModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.85); z-index: 2000; justify-content: center; align-items: center; flex-direction: column;">
+        <div style="width: 90%; max-width: 1100px; background: #111; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background: #1e41bb; color: #fff;">
+                <h3 style="margin: 0; font-size: 1.1rem; font-weight: 600;" id="jitsiModalTitle">Octo Buddy Room</h3>
+                <button onclick="closeJitsiSession()" style="background: #ff4d4d; border: none; color: #fff; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold;">Leave & Close</button>
+            </div>
+            <div id="jitsiContainer" style="width: 100%; height: 600px; max-height: 75vh; background: #000;"></div>
+        </div>
+    </div>
 
 
     <!-- ===========================

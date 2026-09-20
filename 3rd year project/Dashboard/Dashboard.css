@@ -21,6 +21,7 @@
     --dark-text: #18354a;
     --muted: #6b7f89;
     --background: #f4f9fa;
+    --border: rgba(33, 58, 87, 0.10);
 }
 
 body {
@@ -42,7 +43,7 @@ body {
 }
 
 .navbar {
-    height: 120px;
+    height: 90px;
     padding: 0 6%;
 
     display: flex;
@@ -56,6 +57,9 @@ body {
     );
 
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+
+    position: relative;
+    z-index: 1100;
 }
 
 .logo img {
@@ -69,6 +73,100 @@ body {
     gap: 45px;
 
     list-style: none;
+}
+
+
+/* =========================================
+   NAVBAR RIGHT (groups profile + hamburger together)
+========================================= */
+
+.navbar-right {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+
+/* =========================================
+   HAMBURGER BUTTON (hidden on desktop)
+========================================= */
+
+.hamburger-btn {
+    display: none;
+
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    gap: 4px;
+
+    width: 36px;
+    height: 36px;
+
+    border: none;
+    background: rgba(255, 255, 255, 0.12);
+
+    border-radius: 9px;
+
+    cursor: pointer;
+
+    flex-shrink: 0;
+
+    z-index: 1200;
+}
+
+.hamburger-btn span {
+    display: block;
+
+    width: 18px;
+    height: 2px;
+
+    background: var(--white);
+
+    border-radius: 2px;
+
+    transition: 0.3s ease;
+}
+
+.hamburger-btn.open span:nth-child(1) {
+    transform: translateY(6px) rotate(45deg);
+}
+
+.hamburger-btn.open span:nth-child(2) {
+    opacity: 0;
+}
+
+.hamburger-btn.open span:nth-child(3) {
+    transform: translateY(-6px) rotate(-45deg);
+}
+
+
+/* =========================================
+   MOBILE NAV OVERLAY
+========================================= */
+
+.mobile-nav-overlay {
+    display: none;
+
+    position: fixed;
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 100%;
+
+    background: rgba(0, 0, 0, 0.45);
+
+    z-index: 1050;
+
+    opacity: 0;
+
+    transition: opacity 0.3s ease;
+}
+
+.mobile-nav-overlay.show {
+    display: block;
+    opacity: 1;
 }
 
 .nav-links a {
@@ -116,6 +214,18 @@ body {
     display: flex;
     align-items: center;
     gap: 12px;
+
+    padding: 8px 16px 8px 8px;
+
+    border-radius: 50px;
+
+    background: rgba(255, 255, 255, 0.08);
+
+    transition: 0.3s ease;
+}
+
+.profile-nav:hover {
+    background: rgba(255, 255, 255, 0.16);
 }
 
 .profile-avatar {
@@ -134,6 +244,8 @@ body {
 
     font-size: 14px;
     font-weight: 700;
+
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .profile-info {
@@ -166,7 +278,7 @@ body {
 
 
 /* =========================================
-   WELCOME
+   WELCOME (bubble gradient banner)
 ========================================= */
 
 .welcome-section {
@@ -174,7 +286,21 @@ body {
     justify-content: space-between;
     align-items: center;
 
+    gap: 30px;
+
+    padding: 45px 50px;
+
     margin-bottom: 40px;
+
+    border-radius: 25px;
+
+    background: linear-gradient(
+        135deg,
+        var(--navy),
+        var(--teal)
+    );
+
+    box-shadow: 0 15px 40px rgba(11, 100, 119, 0.18);
 }
 
 .welcome-label,
@@ -187,17 +313,21 @@ body {
     letter-spacing: 1.5px;
 }
 
+.welcome-section .welcome-label {
+    color: var(--green);
+}
+
 .welcome-text h1 {
     margin-top: 8px;
 
     font-size: 42px;
     line-height: 1.2;
 
-    color: var(--navy);
+    color: var(--white);
 }
 
 .welcome-text h1 span {
-    color: var(--teal);
+    color: var(--mint);
 }
 
 .welcome-text p {
@@ -205,19 +335,25 @@ body {
 
     max-width: 650px;
 
-    color: var(--muted);
+    color: var(--light);
 
     font-size: 16px;
 }
 
 .welcome-date {
     text-align: right;
+
+    padding: 18px 26px;
+
+    border-radius: 18px;
+
+    background: rgba(255, 255, 255, 0.12);
 }
 
 .welcome-date span {
     display: block;
 
-    color: var(--muted);
+    color: var(--light);
 
     font-size: 13px;
 }
@@ -227,7 +363,7 @@ body {
 
     margin-top: 4px;
 
-    color: var(--navy);
+    color: var(--white);
 
     font-size: 18px;
 }
@@ -251,7 +387,7 @@ body {
 .stat-card {
     background: var(--white);
 
-    border-radius: 15px;
+    border-radius: 20px;
 
     padding: 25px;
 
@@ -260,7 +396,7 @@ body {
 
     gap: 18px;
 
-    border: 1px solid #e4edef;
+    border: 1px solid var(--border);
 
     box-shadow:
         0 8px 25px rgba(18, 61, 75, 0.06);
@@ -270,6 +406,8 @@ body {
 
 .stat-card:hover {
     transform: translateY(-4px);
+
+    border-color: var(--mint);
 
     box-shadow:
         0 12px 30px rgba(18, 61, 75, 0.12);
@@ -283,7 +421,7 @@ body {
     align-items: center;
     justify-content: center;
 
-    border-radius: 12px;
+    border-radius: 16px;
 
     background: #e4f8f4;
 
@@ -318,8 +456,8 @@ body {
     display: grid;
 
     grid-template-columns:
-        1.1fr
-        0.9fr;
+        1fr
+        1fr;
 
     gap: 25px;
 
@@ -329,14 +467,24 @@ body {
 .dashboard-card {
     background: var(--white);
 
-    border: 1px solid #e4edef;
+    border: 1px solid var(--border);
 
-    border-radius: 18px;
+    border-radius: 22px;
 
     padding: 30px;
 
+    display: flex;
+    flex-direction: column;
+
     box-shadow:
         0 8px 25px rgba(18, 61, 75, 0.06);
+
+    transition: 0.3s ease;
+}
+
+.dashboard-card:hover {
+    box-shadow:
+        0 14px 32px rgba(18, 61, 75, 0.1);
 }
 
 .card-header {
@@ -358,9 +506,9 @@ body {
 }
 
 .status-badge {
-    padding: 7px 13px;
+    padding: 7px 16px;
 
-    border-radius: 20px;
+    border-radius: 50px;
 
     background: #e4f8f4;
 
@@ -368,6 +516,11 @@ body {
 
     font-size: 11px;
     font-weight: 700;
+}
+
+.status-badge.pending {
+    background: #fdf1de;
+    color: #b47a16;
 }
 
 
@@ -389,7 +542,7 @@ body {
 
     text-align: center;
 
-    border-radius: 13px;
+    border-radius: 18px;
 
     background: linear-gradient(
         145deg,
@@ -442,7 +595,7 @@ body {
 
 
 /* =========================================
-   BUTTONS
+   BUTTONS (rounded/bubble)
 ========================================= */
 
 .primary-button,
@@ -464,7 +617,7 @@ body {
 
     color: var(--navy);
 
-    border-radius: 7px;
+    border-radius: 50px;
 
     font-weight: 700;
 }
@@ -484,7 +637,7 @@ body {
 
     color: var(--teal);
 
-    border-radius: 7px;
+    border-radius: 50px;
 
     font-weight: 600;
 }
@@ -587,6 +740,75 @@ body {
 
 
 /* =========================================
+   TEACHING SCHEDULE CARD
+========================================= */
+
+.schedule-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.schedule-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    padding: 14px 16px;
+
+    background: var(--background);
+
+    border-radius: 14px;
+
+    border: 1px solid var(--border);
+}
+
+.schedule-time {
+    min-width: 54px;
+
+    text-align: center;
+
+    display: flex;
+    flex-direction: column;
+}
+
+.schedule-time strong {
+    color: var(--navy);
+    font-size: 13px;
+}
+
+.schedule-time span {
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.schedule-info {
+    flex: 1;
+}
+
+.schedule-info h4 {
+    color: var(--navy);
+    font-size: 15px;
+}
+
+.schedule-info p {
+    margin-top: 3px;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.schedule-note {
+    margin-top: 20px;
+
+    font-size: 12px;
+
+    color: var(--muted);
+
+    line-height: 1.6;
+}
+
+
+/* =========================================
    QUICK ACTIONS
 ========================================= */
 
@@ -618,9 +840,9 @@ body {
 
     background: var(--white);
 
-    border: 1px solid #e4edef;
+    border: 1px solid var(--border);
 
-    border-radius: 16px;
+    border-radius: 20px;
 
     cursor: pointer;
 
@@ -651,7 +873,7 @@ body {
 
     margin-bottom: 18px;
 
-    border-radius: 12px;
+    border-radius: 14px;
 
     background: #e4f8f4;
 
@@ -689,7 +911,7 @@ body {
 
 
 /* =========================================
-   PROGRAMME
+   PROGRAMME (kept for future use)
 ========================================= */
 
 .programme-card {
@@ -704,7 +926,7 @@ body {
             var(--teal)
         );
 
-    border-radius: 18px;
+    border-radius: 22px;
 
     color: var(--white);
 
@@ -802,19 +1024,19 @@ body {
 
 
 /* =========================================
-   BUDDY BANNER
+   BUDDY BANNER (kept for future use)
 ========================================= */
 
 .buddy-banner {
     padding: 45px;
 
-    border-radius: 18px;
+    border-radius: 25px;
 
     background:
         linear-gradient(
             135deg,
-            #213A57,
-            #0B6477
+            var(--navy),
+            var(--dark)
         );
 
     position: relative;
@@ -888,9 +1110,21 @@ body {
             repeat(2, 1fr);
     }
 
+    .dashboard-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
     .action-grid {
         grid-template-columns:
             repeat(2, 1fr);
+    }
+
+}
+
+@media (max-width: 850px) {
+
+    .navbar {
+        gap: 12px;
     }
 
 }
@@ -899,11 +1133,64 @@ body {
 @media (max-width: 850px) {
 
     .navbar {
-        padding: 0 25px;
+        padding: 0 20px;
+    }
+
+    .hamburger-btn {
+        display: flex;
     }
 
     .nav-links {
+        position: fixed;
+
+        top: 90px;
+        right: -100%;
+
+        width: 240px;
+        height: calc(100vh - 90px);
+
+        flex-direction: column;
+
+        align-items: flex-start;
+
+        gap: 0;
+
+        padding: 20px 0;
+
+        background: var(--navy);
+
+        box-shadow: -6px 0 25px rgba(0, 0, 0, 0.2);
+
+        transition: right 0.3s ease;
+
+        z-index: 1100;
+    }
+
+    .nav-links.mobile-open {
+        right: 0;
+    }
+
+    .nav-links li {
+        width: 100%;
+    }
+
+    .nav-links a {
+        display: block;
+
+        width: 100%;
+
+        padding: 16px 25px;
+
+        font-size: 16px;
+    }
+
+    .nav-links a.active::after {
         display: none;
+    }
+
+    .nav-links a.active {
+        background: rgba(69, 223, 177, 0.15);
+        color: var(--green);
     }
 
     .profile-info {
@@ -967,7 +1254,8 @@ body {
     }
 
     .programme-card,
-    .buddy-banner {
+    .buddy-banner,
+    .welcome-section {
         padding: 25px;
     }
 
