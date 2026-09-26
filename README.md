@@ -1,6 +1,6 @@
 # Octo Buddy
 
-This version connects the existing frontend pages to the Flask backend without changing the visual design.
+
 
 ## Run the project
 
@@ -37,7 +37,7 @@ Set `DATABASE_URL` to your Supabase/PostgreSQL connection string when using the 
 
 If `DATABASE_URL` is not set, the project uses a local SQLite database named `octobuddy_local.db`, which is useful for testing.
 
-Never put a real database password directly into `app.py`.
+
 
 ## Important
 
