@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Success</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Konkhmer+Sleokchher&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background: linear-gradient(to bottom, #47DEB1 0%, #0C6478 80%);
+    font-family:'Inter', sans-serif;
+}
+
+/* CENTER TEXT */
+.message{
+    text-align:center;
+    color:white;
+    animation: fadeIn 1s ease;
+}
+
+.message h1{
+    font-family:'Konkhmer Sleokchher';
+    font-size:42px;
+    letter-spacing:1px;
+}
+
+/* FADE ANIMATION */
+@keyframes fadeIn{
+    from{
+        opacity:0;
+        transform:translateY(20px);
+    }
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="message">
+    <h1>Registered Successfully</h1>
+</div>
+
+</body>
+</html>
