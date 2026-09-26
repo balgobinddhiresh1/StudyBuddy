@@ -383,7 +383,7 @@ LOGIN
 
 <div class="curve-box">
 <h1>HELLO, WELCOME</h1>
-<img src="C:\Users\balgo\Downloads\OctoBuddy_admin_login_fixed\3rd year project\frontend\LOGIN.png" class="graphic" alt="Login Graphic">
+<img src="../LOGIN.png" class="graphic" alt="Login Graphic">
 </div>
 
 </div>
@@ -509,7 +509,7 @@ async function handleRegister() {
             alert(`Registration successful! [DEV CODE: ${data.dev_otp}]`);
             
             // Redirect to OTP verification page
-            window.location.href = "otp.html"; 
+            window.location.href = "../../Email_otp/otp.html"; 
         } else {
             alert(data.message || "Registration failed.");
         }
@@ -567,11 +567,11 @@ async function handleLogin() {
             // Use project-relative paths instead of a computer-specific
             // Windows path. This means the project works on another PC too.
             if (role === 'admin') {
-                window.location.href = "../frontend/Admin/admin.html";
+                window.location.href = "../Admin/admin.html";
             } else if (role === 'buddy') {
-                window.location.href = "../frontend/Dashboard/Dashboard.html";
+                window.location.href = "../Dashboard/Dashboard.html";
             } else {
-                window.location.href = "../frontend/Student/student.html";
+                window.location.href = "../Student/student.html";
             }
         }, 400);
 

@@ -55,7 +55,7 @@ function checkAdminLogin() {
         // manually: only redirect when a user record exists with another role.
         if (storedUser) {
             alert("You do not have Campus Manager access.");
-            window.location.href = "C:\Users\balgo\Downloads\OctoBuddy_admin_login_fixed\3rd year project\frontend\signin_login\project.html";
+            window.location.href = "../signin_login/project.html";
             return false;
         }
     }
@@ -779,7 +779,7 @@ function setupAdminActions() {
         logoutBtn.addEventListener("click", () => {
             if (!confirm("Are you sure you want to logout?")) return;
             clearLogin();
-            window.location.href = "../project.html";
+            window.location.href = "../signin_login/project.html";
         });
     }
 

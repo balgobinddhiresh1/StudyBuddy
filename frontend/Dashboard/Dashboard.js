@@ -515,5 +515,5 @@ function logout() {
     localStorage.removeItem("role");
     localStorage.removeItem("active_buddy_room");
 
-    window.location.href = "../project.html";
+    window.location.href = "../signin_login/project.html";
 }

@@ -130,7 +130,7 @@
 
 <div class="container">
 
-    <img src="LOGIN.png" class="logo" alt="Octo Buddy Logo">
+    <img src="../frontend/LOGIN.png" class="logo" alt="Octo Buddy Logo">
 
     <!-- FORM WITH ONSUBMIT EVENT -->
     <form onsubmit="handleVerify(event)">
@@ -172,7 +172,7 @@
 
         if (!email) {
             alert("No registration session found. Please register again.");
-            window.location.href = "project.html";
+            window.location.href = "../frontend/signin_login/project.html";
             return;
         }
 
@@ -188,7 +188,7 @@
             if (response.ok && data.status === 'success') {
                 alert("Account verified successfully! You can now log in.");
                 localStorage.removeItem('pending_email');
-                window.location.href = "project.html"; // Redirect back to login screen
+                window.location.href = "../frontend/signin_login/project.html"; // Redirect back to login screen
             } else {
                 alert(data.message || "Invalid OTP");
             }

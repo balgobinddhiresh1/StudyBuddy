@@ -29,7 +29,7 @@ function setupApplicationForm() {
 
         if (!userId) {
             alert("Please log in before applying to become an Octo Buddy.");
-            window.location.href = "../project.html";
+            window.location.href = "../signin_login/project.html";
             return;
         }
 
