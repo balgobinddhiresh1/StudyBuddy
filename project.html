@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Study Buddy Auth</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Konkhmer+Sleokchher&display=swap" rel="stylesheet">
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    min-height:100vh;
+    overflow-y:auto;
+    display:flex;
+    background: linear-gradient(to bottom, #47DEB1 0%, #0C6478 80%);
+}
+
+/* CONTAINER */
+.container{
+    width:100%;
+    display:flex;
+    position:relative;
+    overflow:hidden;
+}
+
+/* PANELS */
+.left,
+.right{
+    width:50%;
+    transition:0.6s ease;
+}
+
+.left{
+    padding:40px 60px;
+    color:white;
+    display:flex;
+    flex-direction:column;
+}
+
+.right{
+    position:relative;
+}
+
+.container.login-active .left{
+    transform:translateX(100%);
+}
+
+.container.login-active .right{
+    transform:translateX(-100%);
+}
+
+/* FORM */
+.form-wrapper{
+    margin-top:40px;
+}
+
+h2{
+    text-align:center;
+    font-family:'Konkhmer Sleokchher';
+    margin-bottom:25px;
+}
+
+:root{
+    --space:20px;
+    --accent:#82EE99;
+}
+
+.name-group{
+    display:flex;
+    gap:var(--space);
+    margin-bottom:var(--space);
+}
+
+.name-group input{
+    flex:1;
+}
+
+input{
+    width:100%;
+    height:70px;
+    padding:10px;
+    margin-bottom:var(--space);
+    border:2px solid transparent;
+    border-radius:10px;
+    background:rgba(255,255,255,0.25);
+    color:#353535;
+    font-size:20px;
+    font-family:'Inter';
+    outline:none;
+}
+
+input::placeholder{
+    color:#4a4a4a;
+}
+
+input:focus{
+    border:2px solid var(--accent);
+}
+
+/* PASSWORD STRENGTH */
+#passwordStrength{
+    font-family: Inter;
+    font-size: 14px;
+    margin-bottom: 15px;
+    color: white;
+}
+
+/* BUTTONS */
+button{
+    display:block;
+    margin:20px auto;
+    border:none;
+    border-radius:25px;
+    font-family:'Konkhmer Sleokchher';
+    color:white;
+    cursor:pointer;
+}
+
+.register-btn{
+    width:317px;
+    height:55px;
+    background:linear-gradient(to right,#82EE99 0%,#1EA17A 100%);
+}
+
+/* BOTTOM TEXT */
+.bottom-text{
+    margin-top:auto;
+    text-align:center;
+}
+
+.account-text{
+    font-size:15px;
+    font-family:'Inter';
+    color:white;
+}
+
+.login-text{
+    font-size:15px;
+    font-family:'Inter';
+    color:#82EE99;
+    margin-top:5px;
+    cursor:pointer;
+}
+
+/* RIGHT PANEL */
+.curve-box{
+    position:absolute;
+    width:100%;
+    height:100%;
+    background:#47DEB1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    border-top-left-radius:250px;
+    transition:0.6s ease;
+}
+
+.container.login-active .curve-box{
+    border-top-left-radius:0;
+    border-top-right-radius:250px;
+}
+
+.curve-box h1{
+    font-family:'Konkhmer Sleokchher';
+    font-size:58px;
+    margin-bottom:25px;
+    color:white;
+}
+
+.graphic{
+    width:320px;
+}
+
+.login-form{
+    display:none;
+}
+
+/* LOADING OVERLAY */
+#loadingOverlay{
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.4);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.spinner{
+    width: 60px;
+    height: 60px;
+    border: 6px solid rgba(255,255,255,0.3);
+    border-top: 6px solid #82EE99;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin{
+    0%{ transform: rotate(0deg); }
+    100%{ transform: rotate(360deg); }
+}
+
+#passwordRules{
+    margin-top:-10px;
+    margin-bottom:15px;
+    font-family:'Inter';
+    font-size:14px;
+    color:white;
+}
+
+#passwordRules p{
+    margin:4px 0;
+}
+
+.valid{
+    color:#82EE99;
+}
+
+.invalid{
+    color:#ff4d4d;
+}
+
+/* ==========================================================
+   MOBILE RESPONSIVE
+========================================================== */
+
+@media screen and (max-width:768px){
+
+body{
+    overflow-x:hidden;
+}
+
+.container{
+    flex-direction:column-reverse;
+    overflow:visible;
+}
+
+.left,
+.right{
+    width:100%;
+}
+
+.right{
+    height:100vh;
+    position:relative;
+    display:flex;
+}
+
+.left{
+    min-height:100vh;
+    padding:40px 25px;
+}
+
+.curve-box{
+    position:relative;
+    width:100%;
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    flex-direction:column;
+}
+
+.curve-box h1{
+    font-size:38px;
+}
+
+.graphic{
+    width:220px;
+    max-width:70%;
+    height:auto;
+    margin-top:20px;
+}
+
+.form-wrapper{
+    margin-top:0;
+}
+
+.name-group{
+    flex-direction:column;
+    gap:0;
+}
+
+input{
+    height:58px;
+    font-size:18px;
+}
+
+.register-btn{
+    width:100%;
+}
+
+.bottom-text{
+    margin-top:40px;
+    padding-bottom:40px;
+}
+
+.container.login-active .left{
+    transform:none;
+}
+
+.container.login-active .right{
+    transform:none;  
+}
+}
+</style>
+</head>
+
+<body>
+
+<div class="container" id="container">
+
+<!-- LEFT -->
+<div class="left">
+
+<div class="form-wrapper">
+
+<!-- REGISTER -->
+<div class="register-form">
+
+<h2>CREATE AN ACCOUNT</h2>
+
+<div class="name-group">
+<input type="text" id="firstName" placeholder="First Name" maxlength="30">
+<input type="text" id="lastName" placeholder="Last Name" maxlength="30">
+</div>
+
+<input type="email" id="registerEmail" placeholder="Email Address">
+<input type="password" id="registerPassword" placeholder="Password" maxlength="10">
+<div id="passwordRules">
+    <p id="lengthRule">❌ 8–10 characters</p>
+    <p id="numberRule">❌ At least 1 number</p>
+</div>
+
+<div id="passwordStrength">Password strength: -</div>
+
+<input type="password" id="confirmPassword" placeholder="Confirm Password" maxlength="10">
+
+<button class="register-btn" id="registerButton" onclick="handleRegister()">
+GET STARTED
+</button>
+
+</div>
+
+<!-- LOGIN -->
+<div class="login-form">
+
+<h2>LOGIN</h2>
+
+<input type="email" id="loginEmail" placeholder="Email Address">
+<input type="password" id="loginPassword" placeholder="Password" maxlength="10">
+
+<button class="register-btn" id="loginButton" onclick="handleLogin()">
+LOGIN
+</button>
+
+</div>
+
+</div>
+
+<div class="bottom-text">
+
+<div class="account-text" id="accountText">ALREADY HAVE AN ACCOUNT?</div>
+<div class="login-text" id="loginToggleText" onclick="showLogin()">LOGIN</div>
+
+</div>
+
+</div>
+
+<!-- RIGHT -->
+<div class="right">
+
+<div class="curve-box">
+<h1>HELLO, WELCOME</h1>
+<img src="LOGIN.png" class="graphic" alt="Login Graphic">
+</div>
+
+</div>
+
+</div>
+
+<!-- LOADING SPINNER -->
+<div id="loadingOverlay">
+    <div class="spinner"></div>
+</div>
+
+<script>
+// SPINNER OVERLAY FUNCTIONS
+function showLoading() {
+    document.getElementById('loadingOverlay').style.display = 'flex';
+}
+
+function hideLoading() {
+    document.getElementById('loadingOverlay').style.display = 'none';
+}
+
+// TOGGLE BETWEEN REGISTER AND LOGIN VIEWS
+function showLogin() {
+    const registerForm = document.querySelector('.register-form');
+    const loginForm = document.querySelector('.login-form');
+    const accountText = document.getElementById('accountText');
+    const loginToggleText = document.getElementById('loginToggleText');
+    const container = document.getElementById('container');
+
+    if (loginForm.style.display === 'block') {
+        registerForm.style.display = 'block';
+        loginForm.style.display = 'none';
+        accountText.innerText = "ALREADY HAVE AN ACCOUNT?";
+        loginToggleText.innerText = "LOGIN";
+        container.classList.remove('login-active');
+    } else {
+        registerForm.style.display = 'none';
+        loginForm.style.display = 'block';
+        accountText.innerText = "DON'T HAVE AN ACCOUNT?";
+        loginToggleText.innerText = "REGISTER";
+        container.classList.add('login-active');
+    }
+}
+
+// PASSWORD RULES EVENT LISTENERS
+const regPasswordInput = document.getElementById('registerPassword');
+if (regPasswordInput) {
+    regPasswordInput.addEventListener('input', function() {
+        const val = this.value;
+        const lengthRule = document.getElementById('lengthRule');
+        const numberRule = document.getElementById('numberRule');
+        const strength = document.getElementById('passwordStrength');
+
+        if (val.length >= 8 && val.length <= 10) {
+            lengthRule.innerHTML = "✅ 8–10 characters";
+            lengthRule.className = "valid";
+        } else {
+            lengthRule.innerHTML = "❌ 8–10 characters";
+            lengthRule.className = "invalid";
+        }
+
+        if (/\d/.test(val)) {
+            numberRule.innerHTML = "✅ At least 1 number";
+            numberRule.className = "valid";
+        } else {
+            numberRule.innerHTML = "❌ At least 1 number";
+            numberRule.className = "invalid";
+        }
+
+        if (val.length >= 8 && /\d/.test(val)) {
+            strength.innerText = "Password strength: Strong";
+            strength.style.color = "#82EE99";
+        } else {
+            strength.innerText = "Password strength: Weak";
+            strength.style.color = "#ff4d4d";
+        }
+    });
+}
+
+// REGISTER API HANDLER
+async function handleRegister() {
+    showLoading();
+
+    const firstName = document.getElementById('firstName').value.trim();
+    const lastName = document.getElementById('lastName').value.trim();
+    const email = document.getElementById('registerEmail').value.trim();
+    const password = document.getElementById('registerPassword').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+
+    if (!firstName || !lastName || !email || !password) {
+        hideLoading();
+        alert("Please fill in all fields.");
+        return;
+    }
+
+    if (password !== confirmPassword) {
+        hideLoading();
+        alert("Passwords do not match.");
+        return;
+    }
+
+    try {
+        const response = await fetch('http://127.0.0.1:5000/api/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                first_name: firstName,
+                last_name: lastName,
+                email: email,
+                password: password,
+                role: 'student'
+            })
+        });
+
+        const data = await response.json();
+        hideLoading();
+
+        if (response.ok && data.status === 'success') {
+            // Save email for the OTP page to use
+            localStorage.setItem('pending_email', email);
+            
+            // Helpful dev alert showing the OTP directly on screen
+            alert(`Registration successful! [DEV CODE: ${data.dev_otp}]`);
+            
+            // Redirect to OTP verification page
+            window.location.href = "otp.html"; 
+        } else {
+            alert(data.message || "Registration failed.");
+        }
+    } catch (error) {
+        hideLoading();
+        console.error("Register Error:", error);
+        alert("Could not connect to the backend server.");
+    }
+}
+
+// LOGIN API HANDLER WITH ROLE-BASED ROUTING
+async function handleLogin() {
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    const loginBtn = document.getElementById('loginButton');
+
+    if (!email || !password) {
+        alert("Please enter both email and password.");
+        return;
+    }
+
+    showLoading();
+
+    try {
+        const response = await fetch('http://127.0.0.1:5000/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        });
+
+        const data = await response.json();
+        hideLoading();
+
+        if (!response.ok || data.status !== 'success') {
+            alert(data.message || 'Login failed.');
+            return;
+        }
+
+        // The API returns the user inside data.user.
+        // Saving these values lets the dashboard know who is logged in.
+        const user = data.user;
+
+        localStorage.setItem('user_id', user.id);
+        localStorage.setItem('user', JSON.stringify(user));
+        localStorage.setItem('first_name', user.first_name);
+        localStorage.setItem('last_name', user.last_name || '');
+        localStorage.setItem('role', user.role || 'student');
+
+        loginBtn.innerText = "SUCCESS";
+        loginBtn.style.background = "#1EA17A";
+
+        setTimeout(() => {
+            const role = (user.role || 'student').toLowerCase();
+
+            // Use project-relative paths instead of a computer-specific
+            // Windows path. This means the project works on another PC too.
+            if (role === 'admin') {
+                window.location.href = "Admin/admin.html";
+            } else if (role === 'buddy') {
+                window.location.href = "Dashboard/Dashboard.html";
+            } else {
+                window.location.href = "Student/student.html";
+            }
+        }, 400);
+
+    } catch (error) {
+        hideLoading();
+        console.error('Login error:', error);
+        alert('Could not connect to the backend server. Make sure app.py is running.');
+    }
+}
+</script>
+
+</body>
+</html>

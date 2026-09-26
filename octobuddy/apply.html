@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Become an Octo Buddy | OctoBuddy</title>
+
+    <link rel="stylesheet" href="apply.css">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+
+    <!-- ===========================
+            NAVBAR
+    =========================== -->
+
+    <header>
+
+        <nav class="navbar">
+
+            <div class="logo">
+                <img src="../LOGIN.png" alt="Octo Buddy Logo">
+            </div>
+
+            <ul class="nav-links">
+
+                <li>
+                    <a href="../homepage/homepage.html">Home</a>
+                </li>
+
+                <li>
+                    <a href="../homepage/homepage.html#about">About</a>
+                </li>
+
+                <li>
+                    <a href="../Student/student.html">Dashboard</a>
+                </li>
+
+                <li>
+                    <a href="#" class="active">Octo Buddy</a>
+                </li>
+
+            </ul>
+
+            <div class="profile">
+                <img src="../homepage/Welcome banner .jpeg" alt="Profile">
+            </div>
+
+        </nav>
+
+    </header>
+
+
+    <!-- ===========================
+            APPLICATION SECTION
+    =========================== -->
+
+    <main class="application-page">
+
+        <div class="application-container">
+
+            <!-- PAGE INTRO -->
+
+            <div class="page-heading">
+
+                <span class="small-heading">
+                    OCTO BUDDY PROGRAMME
+                </span>
+
+                <h1>
+                    Become an <span>Octo Buddy</span>
+                </h1>
+
+                <p>
+                    Share your knowledge, support fellow students,
+                    and earn points while gaining valuable mentoring
+                    experience.
+                </p>
+
+            </div>
+
+
+            <!-- APPLICATION CARD -->
+
+            <div class="application-card">
+
+                <div class="card-heading">
+
+                    <div>
+                        <h2>Octo Buddy Application</h2>
+
+                        <p>
+                            Complete the application below to apply
+                            to become an approved Octo Buddy.
+                        </p>
+                    </div>
+
+                    <div class="status-badge">
+                        PENDING
+                    </div>
+
+                </div>
+
+
+                <form id="buddyApplicationForm">
+
+
+                    <!-- ===========================
+                            PERSONAL INFORMATION
+                    =========================== -->
+
+                    <div class="form-section">
+
+                        <h3>Personal Information</h3>
+
+                        <div class="form-grid">
+
+                            <div class="form-group">
+
+                                <label for="fullName">
+                                    Full Name
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="fullName"
+                                    placeholder="Enter your full name"
+                                    required>
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label for="studentNumber">
+                                    Student Number
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="studentNumber"
+                                    placeholder="Enter your student number"
+                                    required>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ===========================
+                            ACADEMIC INFORMATION
+                    =========================== -->
+
+                    <div class="form-section">
+
+                        <h3>Academic Information</h3>
+
+                        <div class="form-grid">
+
+                            <div class="form-group">
+
+                                <label for="qualification">
+                                    Qualification
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="qualification"
+                                    value="Diploma in Information Technology"
+                                    readonly>
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label for="academicYear">
+                                    Academic Year
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="academicYear"
+                                    value="Third Year"
+                                    readonly>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ===========================
+                            MODULES
+                    =========================== -->
+
+                    <div class="form-section">
+
+                        <h3>Modules You Can Tutor</h3>
+
+                        <p class="section-description">
+                            Select the modules you are confident
+                            enough to tutor other students in.
+                        </p>
+
+
+                        <div class="module-grid">
+
+                            <label class="module-option">
+
+                                <input
+                                    type="checkbox"
+                                    name="modules"
+                                    value="Programming">
+
+                                <span class="custom-checkbox"></span>
+
+                                <span>Programming</span>
+
+                            </label>
+
+
+                            <label class="module-option">
+
+                                <input
+                                    type="checkbox"
+                                    name="modules"
+                                    value="Database Systems">
+
+                                <span class="custom-checkbox"></span>
+
+                                <span>Database Systems</span>
+
+                            </label>
+
+
+                            <label class="module-option">
+
+                                <input
+                                    type="checkbox"
+                                    name="modules"
+                                    value="Networking">
+
+                                <span class="custom-checkbox"></span>
+
+                                <span>Networking</span>
+
+                            </label>
+
+
+                            <label class="module-option">
+
+                                <input
+                                    type="checkbox"
+                                    name="modules"
+                                    value="Web Development">
+
+                                <span class="custom-checkbox"></span>
+
+                                <span>Web Development</span>
+
+                            </label>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ===========================
+                            AVAILABILITY
+                    =========================== -->
+
+                    <div class="form-section">
+
+                        <h3>Availability</h3>
+
+                        <p class="section-description">
+                            Select the days you are normally available
+                            for online tutoring sessions.
+                        </p>
+
+
+                        <div class="availability-grid">
+
+                            <label class="day-option">
+
+                                <input
+                                    type="checkbox"
+                                    name="availability"
+                                    value="Monday">
+
+                                <span>Monday</span>
+
+                            </label>
+
+
+                            <label class="day-option">
+
+                                <input
+                                    type="checkbox"
+                                    name="availability"
+                                    value="Tuesday">
+
+                                <span>Tuesday</span>
+
+                            </label>
+
+
+                            <label class="day-option">
+
+                                <input
+                                    type="checkbox"
+                                    name="availability"
+                                    value="Wednesday">
+
+                                <span>Wednesday</span>
+
+                            </label>
+
+
+                            <label class="day-option">
+
+                                <input
+                                    type="checkbox"
+                                    name="availability"
+                                    value="Thursday">
+
+                                <span>Thursday</span>
+
+                            </label>
+
+
+                            <label class="day-option">
+
+                                <input
+                                    type="checkbox"
+                                    name="availability"
+                                    value="Friday">
+
+                                <span>Friday</span>
+
+                            </label>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ===========================
+                            DAILY LIMIT
+                    =========================== -->
+
+                    <div class="form-section">
+
+                        <h3>Daily Tutoring Limit</h3>
+
+                        <p class="section-description">
+                            Choose the maximum number of tutoring
+                            sessions you can comfortably handle per day.
+                        </p>
+
+
+                        <div class="limit-options">
+
+                            <label>
+
+                                <input
+                                    type="radio"
+                                    name="dailyLimit"
+                                    value="3"
+                                    checked>
+
+                                <span>3 Sessions</span>
+
+                            </label>
+
+
+                            <label>
+
+                                <input
+                                    type="radio"
+                                    name="dailyLimit"
+                                    value="4">
+
+                                <span>4 Sessions</span>
+
+                            </label>
+
+
+                            <label>
+
+                                <input
+                                    type="radio"
+                                    name="dailyLimit"
+                                    value="5">
+
+                                <span>5 Sessions</span>
+
+                            </label>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ===========================
+                            MOTIVATION
+                    =========================== -->
+
+                    <div class="form-section">
+
+                        <h3>Motivation</h3>
+
+                        <p class="section-description">
+                            Tell us why you would like to become
+                            an Octo Buddy.
+                        </p>
+
+
+                        <div class="form-group">
+
+                            <textarea
+                                id="motivation"
+                                rows="6"
+                                placeholder="Explain why you would like to become an Octo Buddy..."
+                                required></textarea>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ===========================
+                            AGREEMENT
+                    =========================== -->
+
+                    <div class="agreement">
+
+                        <label>
+
+                            <input
+                                type="checkbox"
+                                id="agreement"
+                                required>
+
+                            <span>
+                                I confirm that the information provided
+                                is accurate and understand that my
+                                application will be reviewed by the
+                                Campus Manager.
+                            </span>
+
+                        </label>
+
+                    </div>
+
+
+                    <!-- ===========================
+                            BUTTONS
+                    =========================== -->
+
+                    <div class="form-actions">
+
+                        <a
+                            href="../Student/student.html"
+                            class="cancel-btn">
+                            Cancel
+                        </a>
+
+                        <button
+                            type="submit"
+                            class="submit-btn">
+
+                            Submit Application →
+
+                        </button>
+
+                    </div>
+
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </main>
+
+
+    <!-- ===========================
+            FOOTER
+    =========================== -->
+
+    <div id="footer-container"></div>
+
+
+    <!-- ===========================
+            JAVASCRIPT
+    =========================== -->
+
+    <script src="../footer.js"></script>
+    <script src="apply.js"></script>
+
+</body>
+
+</html>
