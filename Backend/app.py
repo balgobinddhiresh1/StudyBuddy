@@ -12,14 +12,9 @@ It handles:
 - admin approval/scheduling
 - simple dashboard statistics
 
-The frontend keeps its existing look. This API simply gives the
-existing pages real data to work with.
-
-IMPORTANT:
-Set DATABASE_URL in your environment when using your Supabase/PostgreSQL
-database. If DATABASE_URL is not set, the app uses a local SQLite database
-so the project can still be run and tested without external setup.
 """
+
+
 
 import os
 import re
