@@ -1,24 +1,5 @@
 # Octo Buddy
-
-
-
 ## Run the project
-
-1. Open a terminal in this folder.
-2. Install the Python packages:
-
-```bash
-pip install -r requirements.txt
-```
-
-3. Start the backend:
-
-```bash
-python app.py
-```
-
-4. Open `project.html` in a browser.
-
 ## Main flow
 
 Register -> OTP verification -> Login -> role-based dashboard.
