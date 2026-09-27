@@ -7,3 +7,4 @@ python-dotenv
 bcrypt>=4.1
 gunicorn>=21.2
 psycopg2-binary
+psycopg-binary
