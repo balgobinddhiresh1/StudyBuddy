@@ -2,6 +2,7 @@
 <html lang="en">
 
 <head>
+    <link rel="stylesheet" href="../loader/loader.css">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -30,7 +31,7 @@
 
             <div class="logo">
                 <a href="../homepage/homepage.html">
-                    <img src="../LOGIN.png" alt="Octo Buddy Logo">
+                    <img src="../homepage/logo.png" alt="Octo Buddy Logo">
                 </a>
             </div>
 
@@ -38,6 +39,9 @@
 
                 <li>
                     <a href="../homepage/homepage.html">Home</a>
+                </li>
+                <li>
+                    <a href ="../homepage/homepage.html#about">About</a>
                 </li>
 
                 <li>
@@ -50,13 +54,20 @@
 
             </ul>
 
-            <div class="profile">
+            <div class="profile-menu">
+    <button class="profile-icon" id="profileBtn" aria-label="Account menu">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+            <path d="M12 12c2.7 0 4.9-2.2 4.9-4.9S14.7 2.2 12 2.2 7.1 4.4 7.1 7.1 9.3 12 12 12zm0 2.2c-3.3 0-9.8 1.6-9.8 4.9v2.7h19.6v-2.7c0-3.3-6.5-4.9-9.8-4.9z"/>
+        </svg>
+    </button>
 
-                <a href="../student/profile.html">
-                    <img src="../Welcome banner .jpeg" alt="Profile">
-                </a>
-
-            </div>
+    <div class="profile-dropdown" id="profileDropdown">
+        <a href="../student/profile.html">Edit Profile</a>
+        <a href="../dashboard/dashboard.html">Dashboard</a>
+        <a href="sessions.html">Sessions</a>
+        <a href="../project.html">Logout</a>
+    </div>
+</div>
 
         </nav>
 
@@ -579,10 +590,62 @@
     ========================= -->
 
     <script src="../footer.js"></script>
+    <!-- =========================
+        BOTTOM MOBILE NAV
+========================= -->
+<nav class="bottom-nav" id="bottomNav">
+
+    <div class="bottom-nav-circle" id="bottomNavCircle"></div>
+
+    <div class="bottom-nav-items">
+
+        <a href="../homepage/homepage.html" class="bottom-nav-item" data-label="Home">
+            <span class="bottom-nav-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 11.5 12 4l9 7.5"/>
+                    <path d="M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9"/>
+                </svg>
+            </span>
+        </a>
+
+        <a href="../homepage/homepage.html#about" class="bottom-nav-item" data-label="About">
+            <span class="bottom-nav-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="9"/>
+                    <line x1="12" y1="11" x2="12" y2="16"/>
+                    <circle cx="12" cy="7.5" r="0.6" fill="currentColor" stroke="none"/>
+                </svg>
+            </span>
+        </a>
+
+        <a href="../dashboard/dashboard.html" class="bottom-nav-item" data-label="Dashboard">
+            <span class="bottom-nav-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="6" y1="20" x2="6" y2="12"/>
+                    <line x1="12" y1="20" x2="12" y2="8"/>
+                    <line x1="18" y1="20" x2="18" y2="14"/>
+                </svg>
+            </span>
+        </a>
+
+        <a href="sessions.html" class="bottom-nav-item active" data-label="Sessions">
+            <span class="bottom-nav-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="5" width="18" height="16" rx="2"/>
+                    <line x1="3" y1="10" x2="21" y2="10"/>
+                    <line x1="8" y1="3" x2="8" y2="7"/>
+                    <line x1="16" y1="3" x2="16" y2="7"/>
+                </svg>
+            </span>
+        </a>
+
+    </div>
+
+</nav>
     <script src="sessions.js"></script>
 
    
-
+<script src="../loader/loader.js"></script>
 </body>
 
 </html>

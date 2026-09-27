@@ -79,9 +79,11 @@ header {
 }
 
 .nav-links a {
+    position: relative;
+
     color: var(--white);
     text-decoration: none;
-    font-size: 17px;
+    font-size: 18px;
     font-weight: 600;
     transition: 0.3s ease;
 }
@@ -91,7 +93,23 @@ header {
 }
 
 .nav-links .active {
-    color: var(--green);
+    color: var(--white);
+}
+
+.nav-links .active::after {
+    content: "";
+
+    position: absolute;
+
+    left: 0;
+    bottom: -9px;
+
+    width: 100%;
+    height: 3px;
+
+    background: var(--green);
+
+    border-radius: 10px;
 }
 
 
@@ -193,100 +211,91 @@ header {
    PROFILE NAV (top-right, avatar + name)
 ========================================================= */
 
-.profile-nav {
-    display: flex;
-    align-items: center;
-    gap: 12px;
+/* ===========================
+        PROFILE MENU
+=========================== */
 
-    padding: 8px 16px 8px 8px;
-
-    border-radius: 50px;
-
-    background: rgba(255, 255, 255, 0.08);
-
-    transition: 0.3s ease;
+.profile-menu {
+    position: relative;
 }
 
-.profile-nav:hover {
-    background: rgba(255, 255, 255, 0.16);
-}
-
-.profile-avatar {
-    width: 48px;
-    height: 48px;
+.profile-icon {
+    width: 46px;
+    height: 46px;
 
     display: flex;
     align-items: center;
     justify-content: center;
 
+    background: var(--mint);
+    color: var(--navy);
+
+    border: none;
     border-radius: 50%;
 
-    background: var(--mint);
+    cursor: pointer;
+
+    transition: 0.3s ease;
+}
+
+.profile-icon img {
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+
+    border-radius: 50%;
+}
+
+.profile-icon:hover {
+    background: var(--green);
+}
+
+.profile-dropdown {
+    position: absolute;
+    top: 60px;
+    right: 0;
+
+    min-width: 180px;
+
+    background: var(--white);
+
+    border-radius: 10px;
+
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+
+    overflow: hidden;
+
+    display: none;
+    flex-direction: column;
+
+    z-index: 1100;
+}
+
+.profile-dropdown.show {
+    display: flex;
+}
+
+.profile-dropdown a {
+    padding: 14px 20px;
+
+    text-decoration: none;
 
     color: var(--navy);
 
-    font-size: 14px;
-    font-weight: 700;
+    font-size: 15px;
+    font-weight: 500;
 
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: 0.2s ease;
 }
 
-.profile-info {
-    display: flex;
-    flex-direction: column;
+.profile-dropdown a:hover {
+    background: var(--light);
 }
 
-.profile-name {
-    color: var(--white);
-    font-size: 14px;
-    font-weight: 600;
+.profile-dropdown a + a {
+    border-top: 1px solid var(--light);
 }
-
-.profile-role {
-    color: var(--light);
-    font-size: 12px;
-}
-
-/* PROFILE DROPDOWN (legacy, kept in case referenced elsewhere) */
-
-.profile-menu {
-    display: none;
-
-    position: absolute;
-    right: 0;
-    top: 65px;
-
-    width: 180px;
-
-    background: var(--navy);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-
-    padding: 10px;
-
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
-}
-
-.profile-menu.show {
-    display: block;
-}
-
-.profile-menu a {
-    display: block;
-    padding: 12px 15px;
-
-    color: var(--white);
-    text-decoration: none;
-
-    font-size: 14px;
-    border-radius: 8px;
-}
-
-.profile-menu a:hover {
-    background: rgba(69, 223, 177, 0.15);
-    color: var(--green);
-}
-
 /* =========================================================
    DASHBOARD
 ========================================================= */
@@ -882,6 +891,7 @@ header {
 
 @media (max-width: 1100px) {
 
+
     .nav-links {
         gap: 20px;
     }
@@ -889,7 +899,7 @@ header {
     .nav-links a {
         font-size: 15px;
     }
-
+   
     .action-grid {
         grid-template-columns: repeat(2, 1fr);
     }
@@ -910,52 +920,22 @@ header {
         padding: 0 20px;
     }
 
-    .hamburger-btn {
-        display: flex;
+
+    .navbar {
+        min-height: 80px;
+        padding: 0 20px;
+    }
+
+    .logo img {
+        width: 80px;
     }
 
     .nav-links {
-        position: fixed;
-
-        top: 80px;
-        right: -100%;
-
-        width: 240px;
-        height: calc(100vh - 80px);
-
-        flex-direction: column;
-
-        align-items: flex-start;
-
-        gap: 0;
-
-        padding: 20px 0;
-
-        background: var(--navy);
-
-        box-shadow: -6px 0 25px rgba(0, 0, 0, 0.2);
-
-        transition: right 0.3s ease;
-
-        z-index: 1100;
+        display: none;
     }
-
-    .nav-links.mobile-open {
-        right: 0;
-    }
-
-    .nav-links li {
-        width: 100%;
-    }
-
-    .nav-links a {
-        display: block;
-
-        width: 100%;
-
-        padding: 16px 25px;
-
-        font-size: 16px;
+   
+    .nav-links {
+        display: none;
     }
 
     .profile-info {
@@ -1067,4 +1047,147 @@ header {
     .buddy-content h2 {
         font-size: 30px;
     }
+}
+header {
+    transition: transform 0.35s ease;
+}
+
+header.nav-hidden {
+    transform: translateY(-100%);
+}
+/* =========================================
+   BOTTOM MOBILE NAV
+========================================= */
+
+.bottom-nav {
+    display: none;
+
+    position: fixed;
+    bottom: 0;
+    left: 0;
+
+    width: 100%;
+    height: 64px;
+
+    background: var(--navy);
+
+    box-shadow: 0 -6px 20px rgba(0, 0, 0, 0.25);
+
+    z-index: 1300;
+}
+
+.bottom-nav-items {
+    position: relative;
+
+    display: flex;
+    align-items: center;
+
+    height: 100%;
+
+    z-index: 3;
+}
+
+.bottom-nav-item {
+    position: relative;
+
+    flex: 1;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    height: 100%;
+
+    background: none;
+    border: none;
+
+    text-decoration: none;
+
+    color: var(--light);
+}
+
+.bottom-nav-icon {
+    display: flex;
+
+    width: 22px;
+    height: 22px;
+}
+
+.bottom-nav-icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+.bottom-nav-item.active .bottom-nav-icon {
+    opacity: 0;
+}
+
+.bottom-nav-circle {
+    position: absolute;
+    top: -20px;
+
+    width: 76px;
+    height: 76px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: none;
+
+    z-index: 4;
+}
+
+.bottom-nav-circle::before {
+    content: "";
+
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 100%;
+
+    background-color: var(--mint);
+
+    -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><path d='M50 10 C30 10 15 25 15 45 C15 55 20 62 26 67 C24 70 20 72 16 72 C15 72 15 74 16 75 C21 78 27 77 31 74 C33 77 37 79 41 79 C40 76 39 73 39 70 C42 72 46 73 50 73 C54 73 58 72 61 70 C61 73 60 76 59 79 C63 79 67 77 69 74 C73 77 79 78 84 75 C85 74 85 72 84 72 C80 72 76 70 74 67 C80 62 85 55 85 45 C85 25 70 10 50 10 Z'/></svg>");
+
+    mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><path d='M50 10 C30 10 15 25 15 45 C15 55 20 62 26 67 C24 70 20 72 16 72 C15 72 15 74 16 75 C21 78 27 77 31 74 C33 77 37 79 41 79 C40 76 39 73 39 70 C42 72 46 73 50 73 C54 73 58 72 61 70 C61 73 60 76 59 79 C63 79 67 77 69 74 C73 77 79 78 84 75 C85 74 85 72 84 72 C80 72 76 70 74 67 C80 62 85 55 85 45 C85 25 70 10 50 10 Z'/></svg>");
+
+    -webkit-mask-size: contain;
+    mask-size: contain;
+
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+
+    -webkit-mask-position: center;
+    mask-position: center;
+
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.25));
+}
+
+.bottom-nav-circle .bottom-nav-icon {
+    position: relative;
+
+    width: 22px;
+    height: 22px;
+
+    margin-top: -6px;
+
+    color: var(--navy);
+
+    z-index: 1;
+}
+
+
+@media (max-width: 850px) {
+
+    .bottom-nav {
+        display: block;
+    }
+
+    body {
+        padding-bottom: 64px;
+    }
+
 }
