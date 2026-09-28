@@ -383,7 +383,7 @@ LOGIN
 
 <div class="curve-box">
 <h1>HELLO, WELCOME</h1>
-<img src="LOGIN.png" class="graphic" alt="Login Graphic">
+<img src="../LOGIN.png" class="graphic" alt="Login Graphic">
 </div>
 
 </div>
@@ -486,7 +486,7 @@ async function handleRegister() {
     }
 
     try {
-        const response = await fetch('http://127.0.0.1:5000/api/register', {
+        const response = await fetch('https://studybuddy-bl8d.onrender.com/api/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -502,8 +502,14 @@ async function handleRegister() {
         hideLoading();
 
         if (response.ok && data.status === 'success') {
-            alert("Registration successful! Please log in.");
-            showLogin();
+            // Save email for the OTP page to use
+            localStorage.setItem('pending_email', email);
+            
+            // Helpful dev alert showing the OTP directly on screen
+            alert(`Registration successful! [DEV CODE: ${data.dev_otp}]`);
+            
+            // Redirect to OTP verification page
+            window.location.href = "../../Email_otp/otp.html"; 
         } else {
             alert(data.message || "Registration failed.");
         }
@@ -516,52 +522,63 @@ async function handleRegister() {
 
 // LOGIN API HANDLER WITH ROLE-BASED ROUTING
 async function handleLogin() {
-    showLoading();
-
     const email = document.getElementById('loginEmail').value.trim();
     const password = document.getElementById('loginPassword').value;
     const loginBtn = document.getElementById('loginButton');
 
     if (!email || !password) {
-        hideLoading();
         alert("Please enter both email and password.");
         return;
     }
 
+    showLoading();
+
     try {
-        const response = await fetch('http://127.0.0.1:5000/api/login', {
+        const response = await fetch('https://studybuddy-bl8d.onrender.com/api/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: email, password: password })
+            body: JSON.stringify({ email, password })
         });
 
         const data = await response.json();
         hideLoading();
 
-        if (response.ok && data.status === 'success') {
-            localStorage.setItem('user_id', data.user_id);
-            localStorage.setItem('first_name', data.first_name);
-            localStorage.setItem('last_name', data.last_name || '');
-            localStorage.setItem('role', data.role || 'student');
-
-            loginBtn.innerText = "SUCCESS";
-            loginBtn.style.background = "#1EA17A";
-
-            setTimeout(() => {
-                if (data.role === 'admin') {
-                    window.location.href = "C:\\Users\\balgo\\3rd year project\\3rd year project\\Admin\\admin.html";
-                } else {
-                    window.location.href = "C:\\Users\\balgo\\3rd year project\\3rd year project\\Dashboard\\Dashboard.html";
-                }
-            }, 500);
-
-        } else {
-            alert(data.message || 'Login failed');
+        if (!response.ok || data.status !== 'success') {
+            alert(data.message || 'Login failed.');
+            return;
         }
+
+        // The API returns the user inside data.user.
+        // Saving these values lets the dashboard know who is logged in.
+        const user = data.user;
+
+        localStorage.setItem('user_id', user.id);
+        localStorage.setItem('user', JSON.stringify(user));
+        localStorage.setItem('first_name', user.first_name);
+        localStorage.setItem('last_name', user.last_name || '');
+        localStorage.setItem('role', user.role || 'student');
+
+        loginBtn.innerText = "SUCCESS";
+        loginBtn.style.background = "#1EA17A";
+
+        setTimeout(() => {
+            const role = (user.role || 'student').toLowerCase();
+
+            // Use project-relative paths instead of a computer-specific
+            // Windows path. This means the project works on another PC too.
+            if (role === 'admin') {
+                window.location.href = "../Admin/admin.html";
+            } else if (role === 'buddy') {
+                window.location.href = "../Dashboard/Dashboard.html";
+            } else {
+                window.location.href = "../Student/student.html";
+            }
+        }, 400);
+
     } catch (error) {
         hideLoading();
         console.error('Login error:', error);
-        alert('Could not connect to the server.');
+        alert('Could not connect to the backend server. Make sure app.py is running.');
     }
 }
 </script>

@@ -4,6 +4,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (!footerContainer) return;
 
+    // Resolve all footer links from the footer.js location, not from the page
+    // currently being viewed. This keeps the footer working from any folder.
+    const footerScript = document.currentScript || Array.from(document.scripts).find(s => s.src.includes("footer.js"));
+    const frontendRoot = footerScript
+        ? new URL("../", footerScript.src).href
+        : new URL("../", window.location.href).href;
+    const page = path => new URL(path, frontendRoot).href;
+
 
     /* ===========================
        FOOTER STYLES
@@ -191,7 +199,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 <div class="footer-brand">
 
                     <img
-                        src="LOGIN.png"
+                        src="${page("LOGIN.png")}"
                         alt="Octo Buddy Logo"
                         class="footer-logo"
                     >
@@ -221,19 +229,19 @@ document.addEventListener("DOMContentLoaded", function () {
 
                     <h3>Octo Buddy</h3>
 
-                    <a href="homepage.html">
+                    <a href="${page("homepage/homepage.html")}">
                         Home
                     </a>
 
-                    <a href="#about">
+                    <a href="${page("homepage/homepage.html#about")}">
                         About Us
                     </a>
 
-                    <a href="../Dashboard/Dashboard.html">
+                    <a href="${page("Dashboard/Dashboard.html")}">
                         Student Dashboard
                     </a>
 
-                    <a href="../octobuddy/apply.html">
+                    <a href="${page("octobuddy/apply.html")}">
                         Become an Octo Buddy
                     </a>
 
@@ -246,19 +254,19 @@ document.addEventListener("DOMContentLoaded", function () {
 
                     <h3>Platform</h3>
 
-                    <a href="../Dashboard/Dashboard.html">
+                    <a href="${page("Dashboard/Dashboard.html")}">
                         Student Dashboard
                     </a>
 
-                    <a href="../sessions/sessions.html">
+                    <a href="${page("sessions/sessions.html")}">
                         Book a Session
                     </a>
 
-                    <a href="../octobuddy/apply.html">
+                    <a href="${page("octobuddy/apply.html")}">
                         Become an Octo Buddy
                     </a>
 
-                    <a href="#about">
+                    <a href="${page("homepage/homepage.html#about")}">
                         Academic Support
                     </a>
 

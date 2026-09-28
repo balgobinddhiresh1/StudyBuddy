@@ -15,7 +15,7 @@
     <script src="https://meet.jit.si/external_api.js"></script>
 
     <!-- Dashboard CSS -->
-    <link rel="stylesheet" href="dashboard.css">
+    <link rel="stylesheet" href="Dashboard.css">
 </head>
 
 <body>
@@ -35,7 +35,7 @@
             <ul class="nav-links" id="navLinks">
                 <li><a href="../homepage/homepage.html">Home</a></li>
                 <li><a href="../homepage/homepage.html#about">About</a></li>
-                <li><a href="dashboard.html" class="active">Dashboard</a></li>
+                <li><a href="Dashboard.html" class="active">Dashboard</a></li>
                 <li><a href="../sessions/sessions.html">Sessions</a></li>
             </ul>
 
@@ -302,6 +302,7 @@
     <!-- =========================
          UPDATE PROFILE MODAL
     ========================== -->
+<!-- this is the drop down menu where you can edit you profile name-->
     <div id="editModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.6); z-index: 2000; justify-content: center; align-items: center;">
         <div style="width: 90%; max-width: 450px; background: #fff; border-radius: 12px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
             <h3 style="margin-top: 0; color: #1e41bb;">Update Profile</h3>
@@ -311,6 +312,8 @@
 
             <label style="display: block; font-size: 0.85rem; color: #555; margin-top: 15px;">Last Name</label>
             <input type="text" id="editLastName" style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box;">
+
+            </select>
 
             <div style="margin-top: 25px; display: flex; justify-content: flex-end; gap: 10px;">
                 <button onclick="closeEditModal()" style="background: #ccc; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer;">Cancel</button>
@@ -334,201 +337,12 @@
     </div>
 
 
-    <!-- External Script Load -->
-    <script src="dashboard.js"></script>
+    <!-- Dashboard functionality is handled by Dashboard.js. -->
+    <script src="Dashboard.js"></script>
 
-    <!-- Dynamic User Session & Jitsi Integration Script -->
-    <script>
-        const API_BASE_URL = "http://127.0.0.1:5000/api";
-        let jitsiApi = null;
 
-        document.addEventListener('DOMContentLoaded', () => {
-            loadLoggedInUser();
-            setCurrentDate();
-            loadUpcomingSessionRoom();
-        });
-
-        // 1. Fetch current user from local/session storage or sync from backend API
-        async function loadLoggedInUser() {
-            const userId = localStorage.getItem('user_id') || sessionStorage.getItem('user_id');
-            
-            if (userId) {
-                try {
-                    const response = await fetch(`${API_BASE_URL}/user/${userId}`);
-                    if (response.ok) {
-                        const data = await response.json();
-                        localStorage.setItem('first_name', data.first_name);
-                        localStorage.setItem('last_name', data.last_name);
-                        localStorage.setItem('role', data.role);
-                        
-                        updateDOMProfile(data.first_name, data.last_name, data.role);
-                        return;
-                    }
-                } catch (err) {
-                    console.warn("Backend unavailable, loading cached profile from storage:", err);
-                }
-            }
-
-            // Fallback storage sync
-            let user = JSON.parse(sessionStorage.getItem('user')) || JSON.parse(localStorage.getItem('user')) || {};
-            const firstName = user.first_name || localStorage.getItem('first_name') || sessionStorage.getItem('first_name') || 'Buddy';
-            const lastName = user.last_name || localStorage.getItem('last_name') || sessionStorage.getItem('last_name') || '';
-            const role = user.role || localStorage.getItem('role') || sessionStorage.getItem('role') || 'buddy';
-
-            updateDOMProfile(firstName, lastName, role);
-        }
-
-        function updateDOMProfile(firstName, lastName, role) {
-            const navUserName = document.getElementById('navUserName');
-            const navUserInitials = document.getElementById('navUserInitials');
-            const welcomeFirstName = document.getElementById('welcomeFirstName');
-            const navroleDisplay = document.getElementById('navroleDisplay');
-
-            if (welcomeFirstName) welcomeFirstName.textContent = firstName;
-            if (navUserName) navUserName.textContent = `${firstName} ${lastName}`.trim();
-            if (navroleDisplay) navroleDisplay.textContent = `@${role.replace(/^@/, '')}`;
-
-            const firstInitial = firstName ? firstName.charAt(0).toUpperCase() : 'B';
-            const lastInitial = lastName ? lastName.charAt(0).toUpperCase() : '';
-            if (navUserInitials) navUserInitials.textContent = `${firstInitial}${lastInitial}`;
-        }
-
-        // Profile Update Modal Logic
-        function openEditModal() {
-            const modal = document.getElementById('editModal');
-            const firstName = localStorage.getItem('first_name') || 'Buddy';
-            const lastName = localStorage.getItem('last_name') || '';
-
-            document.getElementById('editFirstName').value = firstName;
-            document.getElementById('editLastName').value = lastName;
-
-            modal.style.display = 'flex';
-        }
-
-        function closeEditModal() {
-            document.getElementById('editModal').style.display = 'none';
-        }
-
-        async function saveProfileChanges() {
-            const firstName = document.getElementById('editFirstName').value.trim();
-            const lastName = document.getElementById('editLastName').value.trim();
-            const userId = localStorage.getItem('user_id') || sessionStorage.getItem('user_id');
-
-            if (!firstName) {
-                alert("First name is required");
-                return;
-            }
-
-            if (userId) {
-                try {
-                    const res = await fetch(`${API_BASE_URL}/user/${userId}`, {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            first_name: firstName,
-                            last_name: lastName
-                        })
-                    });
-
-                    if (!res.ok) {
-                        const err = await res.json();
-                        alert(`Update failed: ${err.message}`);
-                        return;
-                    }
-                } catch (err) {
-                    console.error("Failed to update profile on backend:", err);
-                }
-            }
-
-            localStorage.setItem('first_name', firstName);
-            localStorage.setItem('last_name', lastName);
-
-            updateDOMProfile(firstName, lastName, localStorage.getItem('role') || 'buddy');
-            closeEditModal();
-        }
-
-        // 2. Load Session Room Code dynamically
-        function loadUpcomingSessionRoom() {
-            const activeRoom = localStorage.getItem('active_buddy_room') || 'OctoBuddy_Daniel_Prog101';
-            const roomDisplay = document.getElementById('assignedRoomCode');
-            if (roomDisplay) roomDisplay.textContent = activeRoom;
-        }
-
-        // 3. Connect to the session room
-        function joinBuddyRoom() {
-            const roomName = localStorage.getItem('active_buddy_room') || 'OctoBuddy_Daniel_Prog101';
-            launchJitsiCall(roomName);
-        }
-
-        function joinCustomRoomPrompt() {
-            const userInput = prompt("Enter the Room Code for this session:", "OctoBuddy_Daniel_Prog101");
-            if (userInput && userInput.trim() !== "") {
-                const sanitizedRoom = userInput.trim().replace(/\s+/g, '_');
-                launchJitsiCall(sanitizedRoom);
-            }
-        }
-
-        // 4. Core Jitsi Launch Handler
-        function launchJitsiCall(roomName) {
-            const firstName = localStorage.getItem('first_name') || sessionStorage.getItem('first_name') || 'Buddy';
-            const lastName = localStorage.getItem('last_name') || sessionStorage.getItem('last_name') || '';
-            const displayName = `${firstName} ${lastName}`.trim();
-
-            const modal = document.getElementById('jitsiModal');
-            const container = document.getElementById('jitsiContainer');
-            const title = document.getElementById('jitsiModalTitle');
-
-            if (title) title.textContent = `Octo Buddy Room: ${roomName}`;
-            modal.style.display = 'flex';
-            container.innerHTML = '';
-
-            if (typeof JitsiMeetExternalAPI !== 'undefined') {
-                const domain = 'meet.jit.si';
-                const options = {
-                    roomName: roomName,
-                    width: '100%',
-                    height: '100%',
-                    parentNode: container,
-                    userInfo: {
-                        displayName: displayName
-                    },
-                    configOverwrite: {
-                        startWithAudioMuted: false,
-                        startWithVideoMuted: false,
-                        prejoinPageEnabled: false
-                    }
-                };
-                
-                jitsiApi = new JitsiMeetExternalAPI(domain, options);
-                
-                jitsiApi.addEventListeners({
-                    videoConferenceLeft: function() {
-                        closeJitsiSession();
-                    }
-                });
-            } else {
-                window.open(`https://meet.jit.si/${encodeURIComponent(roomName)}`, '_blank');
-                closeJitsiSession();
-            }
-        }
-
-        function closeJitsiSession() {
-            if (jitsiApi) {
-                jitsiApi.dispose();
-                jitsiApi = null;
-            }
-            document.getElementById('jitsiModal').style.display = 'none';
-        }
-
-        function setCurrentDate() {
-            const currentDateElement = document.getElementById('currentDate');
-            if (currentDateElement) {
-                const options = { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' };
-                currentDateElement.textContent = new Date().toLocaleDateString('en-US', options);
-            }
-        }
-    </script>
-
+    <div id="footer-container"></div>
+    <script src="../footer/footer.js"></script>
 </body>
 
 </html>
