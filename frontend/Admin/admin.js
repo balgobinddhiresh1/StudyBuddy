@@ -15,7 +15,7 @@
    - Handle logout and admin-page protection
 ========================================================= */
 
-const API_BASE_URL = "https://studybuddy-bl8d.onrender.com/";
+const API_BASE_URL = "https://studybuddy-bl8d.onrender.com/api/";
 
 let allUsers = [];
 let allBuddies = [];
@@ -118,7 +118,7 @@ function setupNavigation() {
 
 async function loadAdminDashboard() {
     try {
-        const response = await fetch(`${API_BASE_URL}/admin/dashboard`);
+        const response = await fetch(`${API_BASE_URL}admin/dashboard`);
         if (!response.ok) throw new Error("Dashboard request failed");
 
         const data = await response.json();
@@ -175,7 +175,7 @@ async function loadApplications() {
     if (!table) return;
 
     try {
-        const response = await fetch(`${API_BASE_URL}/buddy-applications`);
+        const response = await fetch(`${API_BASE_URL}buddy-applications`);
         if (!response.ok) throw new Error("Could not load applications");
 
         const data = await response.json();
