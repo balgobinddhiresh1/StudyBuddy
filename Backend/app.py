@@ -12,14 +12,9 @@ It handles:
 - admin approval/scheduling
 - simple dashboard statistics
 
-The frontend keeps its existing look. This API simply gives the
-existing pages real data to work with.
-
-IMPORTANT:
-Set DATABASE_URL in your environment when using your Supabase/PostgreSQL
-database. If DATABASE_URL is not set, the app uses a local SQLite database
-so the project can still be run and tested without external setup.
 """
+
+
 
 import os
 import re
@@ -1131,9 +1126,9 @@ def admin_dashboard():
     }), 200
 
 
+
+
 if __name__ == "__main__":
-    app.run(
-        host="127.0.0.1",
-        port=5000,
-        debug=True
-    )
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
+    

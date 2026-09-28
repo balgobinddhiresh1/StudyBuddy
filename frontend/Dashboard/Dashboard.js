@@ -3,7 +3,7 @@
    Connects the existing Buddy dashboard to the Flask backend.
 ========================================================= */
 
-const API_BASE_URL = "http://127.0.0.1:5000/api";
+const API_BASE_URL = "https://studybuddy-bl8d.onrender.com";
 let jitsiApi = null;
 
 
@@ -581,7 +581,7 @@ function logout() {
     localStorage.removeItem("role");
     localStorage.removeItem("active_buddy_room");
 
-    window.location.href = "../project.html";
+    window.location.href = "../signin_login/project.html";
 }
     let lastScrollY = window.scrollY;
     const siteHeader = document.querySelector('header');

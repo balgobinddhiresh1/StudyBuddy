@@ -15,7 +15,7 @@
    - Handle logout and admin-page protection
 ========================================================= */
 
-const API_BASE_URL = "http://127.0.0.1:5000/api";
+const API_BASE_URL = "https://studybuddy-bl8d.onrender.com/";
 
 let allUsers = [];
 let allBuddies = [];
@@ -55,7 +55,7 @@ function checkAdminLogin() {
         // manually: only redirect when a user record exists with another role.
         if (storedUser) {
             alert("You do not have Campus Manager access.");
-            window.location.href = "../project.html";
+            window.location.href = "../frontend/signin_login/project.html";
             return false;
         }
     }

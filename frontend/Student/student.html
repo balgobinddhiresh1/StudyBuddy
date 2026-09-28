@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Student Dashboard | OctoBuddy</title>
+
+    <link rel="stylesheet" href="student.css">
+
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Jitsi External API Script (needed so the student can join their tutoring session) -->
+    <script src="https://meet.jit.si/external_api.js"></script>
+</head>
+
+<body>
+
+    <!-- ===========================
+            NAVBAR
+    =========================== -->
+
+    <header>
+
+        <nav class="navbar">
+
+            <div class="logo">
+                <a href="../homepage/homepage.html">
+                    <img src="../LOGIN.png" alt="Octo Buddy Logo">
+                </a>
+            </div>
+
+            <ul class="nav-links" id="navLinks">
+
+                <li>
+                    <a href="../homepage/homepage.html">Home</a>
+                </li>
+
+                <li>
+                    <a href="../homepage/homepage.html#about">About</a>
+                </li>
+
+                <li>
+                    <a href="student.html" class="active">Dashboard</a>
+                </li>
+
+                <li>
+                    <a href="../octobuddy/apply.html">Octo Buddy</a>
+                </li>
+
+            </ul>
+
+            <div class="navbar-right">
+
+                <div class="profile-nav" style="cursor: pointer;" onclick="openEditModal()">
+                    <div class="profile-avatar">
+                        <span id="navUserInitials">--</span>
+                    </div>
+                    <div class="profile-info">
+                        <span class="profile-name" id="navUserName">Loading...</span>
+                        <span class="profile-role" id="navroleDisplay">@student</span>
+                    </div>
+                </div>
+
+                <button class="hamburger-btn" id="hamburgerBtn" aria-label="Open menu" onclick="toggleMobileMenu()">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+
+            </div>
+
+        </nav>
+
+        <!-- MOBILE NAV OVERLAY -->
+        <div class="mobile-nav-overlay" id="mobileNavOverlay" onclick="toggleMobileMenu()"></div>
+
+    </header>
+
+
+    <!-- ===========================
+            MAIN DASHBOARD
+    =========================== -->
+
+    <main class="dashboard">
+
+        <!-- WELCOME -->
+
+        <section class="welcome-section">
+
+            <div>
+
+                <p class="welcome-small">
+                    STUDENT DASHBOARD
+                </p>
+
+                <h1>
+                    Welcome back, <span id="welcomeFirstName">Student</span>!
+                </h1>
+
+                <p class="welcome-text">
+                    Manage your tutoring sessions, track your academic
+                    progress and get the support you need.
+                </p>
+
+            </div>
+
+            <div class="student-avatar">
+
+                <img src="../LOGIN.png" alt="Student">
+
+            </div>
+
+        </section>
+
+
+        <!-- ===========================
+                QUICK ACTIONS
+        =========================== -->
+
+        <section class="quick-actions">
+
+            <h2>What would you like to do?</h2>
+
+            <div class="action-grid">
+
+                <!-- BOOK -->
+
+                <div class="action-card">
+
+                    <div class="action-icon">
+                        📚
+                    </div>
+
+                    <h3>Book Tutoring</h3>
+
+                    <p>
+                        Find an available Octo Buddy and book
+                        an online tutoring session.
+                    </p>
+
+                    <a href="#book" class="dashboard-btn">
+                        Book a Session →
+                    </a>
+
+                </div>
+
+
+                <!-- BUDDY -->
+
+                <div class="action-card">
+
+                    <div class="action-icon">
+                        🐙
+                    </div>
+
+                    <h3>Become an Octo Buddy</h3>
+
+                    <p>
+                        Share your knowledge and help fellow
+                        students by becoming an Octo Buddy.
+                    </p>
+
+                    <a href="../octobuddy/apply.html" class="dashboard-btn">
+                        Apply Now →
+                    </a>
+
+                </div>
+
+
+                <!-- ACADEMIC -->
+
+                <div class="action-card">
+
+                    <div class="action-icon">
+                        📊
+                    </div>
+
+                    <h3>Academic Tracker</h3>
+
+                    <p>
+                        Enter your marks and see if you should
+                        consider getting additional academic support.
+                    </p>
+
+                    <a href="#academic" class="dashboard-btn">
+                        View Progress →
+                    </a>
+
+                </div>
+
+
+                <!-- PROFILE -->
+
+                <div class="action-card">
+
+                    <div class="action-icon">
+                        👤
+                    </div>
+
+                    <h3>My Profile</h3>
+
+                    <p>
+                        View your student information and
+                        academic details.
+                    </p>
+
+                    <a href="#profile" class="dashboard-btn">
+                        View Profile →
+                    </a>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ===========================
+                UPCOMING SESSIONS
+        =========================== -->
+
+        <section class="dashboard-section">
+
+            <div class="section-heading">
+
+                <div>
+
+                    <p class="section-label">
+                        TUTORING
+                    </p>
+
+                    <h2>Upcoming Sessions</h2>
+
+                </div>
+
+                <a href="#book" class="view-all">
+                    Book New Session →
+                </a>
+
+            </div>
+
+
+            <div class="sessions-container">
+
+                <!-- SESSION -->
+
+                <div class="session-card">
+
+                    <div class="session-date">
+
+                        <span class="day">
+                            18
+                        </span>
+
+                        <span class="month">
+                            AUG
+                        </span>
+
+                    </div>
+
+                    <div class="session-info">
+
+                        <h3>
+                            Programming
+                        </h3>
+
+                        <p>
+                            🕙 10:00 AM
+                        </p>
+
+                        <p>
+                            🐙 Octo Buddy: Daniel
+                        </p>
+
+                        <p>
+                            Room: <strong id="assignedRoomCode">OctoBuddy_Daniel_Prog101</strong>
+                        </p>
+
+                    </div>
+
+                    <div class="session-status">
+                        Confirmed
+                    </div>
+
+                    <button
+                        class="join-btn"
+                        onclick="joinTutorRoom()">
+
+                        Join Session
+
+                    </button>
+
+                </div>
+
+
+                <!-- EMPTY / FUTURE -->
+
+                <div class="no-session">
+
+                    <div>
+                        📅
+                    </div>
+
+                    <p>
+                        Your other upcoming sessions will
+                        appear here.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ===========================
+                BOOK TUTORING
+        =========================== -->
+
+        <section
+            id="book"
+            class="dashboard-section booking-section">
+
+            <div class="section-heading">
+
+                <div>
+
+                    <p class="section-label">
+                        ACADEMIC SUPPORT
+                    </p>
+
+                    <h2>Book Tutoring</h2>
+
+                </div>
+
+            </div>
+
+
+            <div class="booking-box">
+
+                <div class="booking-intro">
+
+                    <h3>
+                        Find an Octo Buddy
+                    </h3>
+
+                    <p>
+                        Tutors shown below are matched according
+                        to your qualification, academic year,
+                        module and availability.
+                    </p>
+
+                </div>
+
+
+                <form id="bookingForm">
+
+                    <div class="form-group">
+
+                        <label for="module">
+                            Module
+                        </label>
+
+                        <select id="module" required>
+
+                            <option value="">
+                                Select a module
+                            </option>
+
+                            <option value="Programming">
+                                Programming
+                            </option>
+
+                            <option value="Database Systems">
+                                Database Systems
+                            </option>
+
+                            <option value="Networking">
+                                Networking
+                            </option>
+
+                            <option value="Web Development">
+                                Web Development
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="date">
+                            Date
+                        </label>
+
+                        <input
+                            type="date"
+                            id="date"
+                            required>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="time">
+                            Preferred Time
+                        </label>
+
+                        <select id="time" required>
+
+                            <option value="">
+                                Select a time
+                            </option>
+
+                            <option value="09:00">
+                                09:00
+                            </option>
+
+                            <option value="10:00">
+                                10:00
+                            </option>
+
+                            <option value="11:00">
+                                11:00
+                            </option>
+
+                            <option value="13:00">
+                                13:00
+                            </option>
+
+                            <option value="14:00">
+                                14:00
+                            </option>
+
+                            <option value="15:00">
+                                15:00
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <button
+                        type="submit"
+                        class="primary-btn">
+
+                        Request Tutoring
+
+                    </button>
+
+                </form>
+
+            </div>
+
+        </section>
+
+
+        <!-- ===========================
+                ACADEMIC TRACKER
+        =========================== -->
+
+        <section
+            id="academic"
+            class="dashboard-section">
+
+            <div class="section-heading">
+
+                <div>
+
+                    <p class="section-label">
+                        YOUR PERFORMANCE
+                    </p>
+
+                    <h2>Academic Tracker</h2>
+
+                </div>
+
+            </div>
+
+
+            <div class="academic-grid">
+
+                <div class="academic-form">
+
+                    <h3>
+                        Add Your Marks
+                    </h3>
+
+                    <p>
+                        Enter your latest assessment result.
+                    </p>
+
+                    <form id="marksForm">
+
+                        <div class="form-group">
+
+                            <label for="subject">
+                                Subject
+                            </label>
+
+                            <input
+                                type="text"
+                                id="subject"
+                                placeholder="e.g. Programming"
+                                required>
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label for="score">
+                                Score (%)
+                            </label>
+
+                            <input
+                                type="number"
+                                id="score"
+                                min="0"
+                                max="100"
+                                placeholder="e.g. 45"
+                                required>
+
+                        </div>
+
+
+                        <button
+                            type="submit"
+                            class="primary-btn">
+
+                            Check Progress
+
+                        </button>
+
+                    </form>
+
+                </div>
+
+
+                <div
+                    id="academicResult"
+                    class="academic-result">
+
+                    <div class="result-icon">
+                        📈
+                    </div>
+
+                    <h3>
+                        Your recommendations
+                    </h3>
+
+                    <p>
+                        Enter a mark to receive an academic
+                        support recommendation.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ===========================
+                BECOME OCTO BUDDY
+        =========================== -->
+
+        <section
+            id="buddy"
+            class="dashboard-section buddy-section">
+
+            <div class="buddy-box">
+
+                <div class="buddy-content">
+
+                    <p class="section-label">
+                        MAKE A DIFFERENCE
+                    </p>
+
+                    <h2>
+                        Become an Octo Buddy
+                    </h2>
+
+                    <p>
+                        Are you confident in your modules?
+                        Help fellow Richfield students while
+                        building valuable mentoring experience.
+                    </p>
+
+                    <ul>
+
+                        <li>
+                            ✓ Tutor students in your course
+                        </li>
+
+                        <li>
+                            ✓ Choose the modules you can teach
+                        </li>
+
+                        <li>
+                            ✓ Set your availability
+                        </li>
+
+                        <li>
+                            ✓ Earn 25 points for every completed session
+                        </li>
+
+                    </ul>
+
+                    <a
+                        href="../octobuddy/apply.html"
+                        class="primary-btn">
+
+                        Start Application →
+
+                    </a>
+
+                </div>
+
+                <div class="buddy-icon">
+                    🐙
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ===========================
+                PROFILE
+        =========================== -->
+
+        <section
+            id="profile"
+            class="dashboard-section">
+
+            <div class="section-heading">
+
+                <div>
+
+                    <p class="section-label">
+                        ACCOUNT
+                    </p>
+
+                    <h2>My Profile</h2>
+
+                </div>
+
+            </div>
+
+
+            <div class="profile-card">
+
+                <div class="profile-image">
+
+                    <img
+                        src="../LOGIN.png"
+                        alt="Student Profile">
+
+                </div>
+
+
+                <div class="profile-details">
+
+                    <div>
+                        <span>Full Name</span>
+                        <strong id="profileFullName">Loading...</strong>
+                    </div>
+
+                    <div>
+                        <span>Email</span>
+                        <strong id="profileEmail">Loading...</strong>
+                    </div>
+
+                    <div>
+                        <span>Qualification / Course</span>
+                        <strong id="profileCourse">Loading...</strong>
+                    </div>
+
+                    <div>
+                        <span>Academic Year</span>
+                        <strong id="profileYear">Loading...</strong>
+                    </div>
+
+                    <div>
+                        <span>Role</span>
+                        <strong id="profileRole">Loading...</strong>
+                    </div>
+
+                    <div>
+                        <span>Points</span>
+                        <strong id="profilePoints">0</strong>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- =========================
+         UPDATE PROFILE MODAL
+    ========================== -->
+    <div id="editModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.6); z-index: 2000; justify-content: center; align-items: center;">
+        <div style="width: 90%; max-width: 450px; background: #fff; border-radius: 12px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+            <h3 style="margin-top: 0; color: #1e41bb;">Update Profile</h3>
+
+            <label style="display: block; font-size: 0.85rem; color: #555; margin-top: 15px;">First Name</label>
+            <input type="text" id="editFirstName" style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box;">
+
+            <label style="display: block; font-size: 0.85rem; color: #555; margin-top: 15px;">Last Name</label>
+            <input type="text" id="editLastName" style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box;">
+
+            <!-- Qualification and academic year are saved to the Users table. -->
+            <label style="display: block; font-size: 0.85rem; color: #555; margin-top: 15px;">Qualification</label>
+            <select id="editCourse" style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box;">
+                <option value="">Select qualification</option>
+                <option value="Bachelor of Science in Information Technology">Bachelor of Science in Information Technology</option>
+                <option value="Diploma in Information Technology">Diploma in Information Technology</option>
+                <option value="Bachelor of Computer Science">Bachelor of Computer Science</option>
+                <option value="Bachelor of Business Administration">Bachelor of Business Administration</option>
+                <option value="Other">Other</option>
+            </select>
+
+            <label style="display: block; font-size: 0.85rem; color: #555; margin-top: 15px;">Academic Year</label>
+            <select id="editAcademicYear" style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box;">
+                <option value="1">Year 1</option>
+                <option value="2">Year 2</option>
+                <option value="3">Year 3</option>
+                <option value="4">Year 4</option>
+            </select>
+
+            <div style="margin-top: 25px; display: flex; justify-content: flex-end; gap: 10px;">
+                <button onclick="closeEditModal()" style="background: #ccc; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer;">Cancel</button>
+                <button onclick="saveProfileChanges()" style="background: #1e41bb; color: #fff; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-weight: bold;">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- =========================
+         JITSI MEET EMBEDDED MODAL
+    ========================== -->
+    <div id="jitsiModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.85); z-index: 2000; justify-content: center; align-items: center; flex-direction: column;">
+        <div style="width: 90%; max-width: 1100px; background: #111; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background: #1e41bb; color: #fff;">
+                <h3 style="margin: 0; font-size: 1.1rem; font-weight: 600;" id="jitsiModalTitle">Octo Buddy Room</h3>
+                <button onclick="closeJitsiSession()" style="background: #ff4d4d; border: none; color: #fff; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold;">Leave & Close</button>
+            </div>
+            <div id="jitsiContainer" style="width: 100%; height: 600px; max-height: 75vh; background: #000;"></div>
+        </div>
+    </div>
+
+
+    <!-- ===========================
+            FOOTER
+    =========================== -->
+
+    <div id="footer-container"></div>
+
+
+    <!-- ===========================
+            JAVASCRIPT
+    =========================== -->
+
+    <script src="../footer/footer.js"></script>
+    <script src="student.js"></script>
+
+</body>
+
+</html>
