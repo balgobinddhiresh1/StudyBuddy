@@ -7,7 +7,7 @@
    behaves like a real web application.
 ========================================================= */
 
-const API_BASE_URL = "https://studybuddy-bl8d.onrender.com/";
+const API_BASE_URL = "https://studybuddy-bl8d.onrender.com";
 let jitsiApi = null;
 
 
