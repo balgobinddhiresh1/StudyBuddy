@@ -1339,3 +1339,10 @@ body {
     }
 
 }
+header {
+    transition: transform 0.35s ease;
+}
+
+header.nav-hidden {
+    transform: translateY(-100%);
+}

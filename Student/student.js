@@ -796,4 +796,23 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         lastScrollY = currentScrollY;
+
+
+
+        let lastScrollY = window.scrollY;
+const siteHeader = document.querySelector('header');
+
+window.addEventListener('scroll', function () {
+    const currentScrollY = window.scrollY;
+
+    if (currentScrollY > lastScrollY && currentScrollY > 100) {
+        siteHeader.classList.add('nav-hidden');
+    } else {
+        siteHeader.classList.remove('nav-hidden');
+    }
+
+    lastScrollY = currentScrollY;
+});
     });
+
+    

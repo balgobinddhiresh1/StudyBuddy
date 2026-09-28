@@ -222,7 +222,7 @@ header {
 .hero {
     min-height: 100vh;
 
-    background-image: url("../homepage/Welcome\ banner\ .jpeg");
+    background-image: url("../homepage/welcome\ banner\.jpg");
 
     background-size: cover;
     background-position: center;
@@ -245,7 +245,7 @@ header {
 
     background: linear-gradient(
         90deg,
-        rgba(0, 0, 0, 0.48),
+        rgba(0, 0, 0, 0.88),
         rgba(0, 0, 0, 0.12)
     );
 
@@ -286,7 +286,7 @@ header {
 .hero h1 span {
     display: block;
 
-    color: #000000;
+    color: #3cedc4;
 }
 
 
@@ -853,4 +853,11 @@ header {
         padding-bottom: 64px;
     }
 
+}
+header {
+    transition: transform 0.35s ease;
+}
+
+header.nav-hidden {
+    transform: translateY(-100%);
 }
