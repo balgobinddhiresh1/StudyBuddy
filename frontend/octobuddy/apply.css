@@ -1147,3 +1147,120 @@ header.nav-hidden {
     }
 
 }
+/* =========================================
+   OCTO BUDDY APPLICATION - PERSONALISATION
+========================================= */
+
+/* Darker, more readable text */
+.application-page {
+    color: #102b35;
+}
+
+.page-heading h1 {
+    color: #102b35;
+}
+
+.page-heading p {
+    color: #29434b;
+}
+
+.application-card,
+.application-card h2,
+.application-card h3,
+.application-card label,
+.application-card p,
+.application-card span {
+    color: #173640;
+}
+
+/* Heading and hey.png illustration */
+.heading-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 30px;
+    width: 100%;
+}
+
+.heading-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.hey-icon {
+    width: 200px;
+    height: 115px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+/* Keep the bubble shape, soften its border and add
+   a translucent light-green gradient */
+.application-card {
+    background: linear-gradient(
+        135deg,
+        rgba(128, 237, 153, 0.50),
+        rgba(69, 223, 177, 0.50),
+        rgba(255, 255, 255, 0.50)
+    );
+
+    border: none;
+    border-radius: 28px;
+
+    box-shadow: 0 12px 35px rgba(11, 100, 119, 0.08);
+
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+/* White outlines around form fields */
+.application-card input[type="text"],
+.application-card input[type="email"],
+.application-card input[type="number"],
+.application-card input[type="tel"],
+.application-card input[readonly],
+.application-card textarea,
+.application-card select {
+    border: 1px solid rgba(255, 255, 255, 0.95);
+    background: rgba(255, 255, 255, 0.45);
+    color: #102b35;
+}
+
+/* White outlines when a field is selected */
+.application-card input:focus,
+.application-card textarea:focus,
+.application-card select:focus {
+    outline: none;
+    border-color: #ffffff;
+    box-shadow: 0 0 0 3px rgba(128, 237, 153, 0.25);
+}
+
+/* White lines separating sections and form elements */
+.application-card hr,
+.application-card .form-section,
+.application-card .form-group {
+    border-color: rgba(255, 255, 255, 0.85);
+}
+
+/* Make placeholders readable */
+.application-card input::placeholder,
+.application-card textarea::placeholder {
+    color: #536b70;
+    opacity: 1;
+}
+
+/* Keep the form comfortable on smaller screens */
+@media (max-width: 600px) {
+    .heading-content {
+        gap: 12px;
+    }
+
+    .hey-icon {
+        width: 75px;
+        height: 75px;
+    }
+
+    .page-heading h1 {
+        font-size: 1.8rem;
+    }
+}
