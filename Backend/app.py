@@ -18,10 +18,13 @@ It handles:
 
 import os
 import re
-import random
+import secrets
+import smtplib
+import ssl
 import hashlib
 import hmac
 from datetime import datetime, date
+from email.message import EmailMessage
 
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
@@ -190,6 +193,50 @@ with app.app_context():
 
 
 # ============================================================
+# EMAIL / OTP DELIVERY
+# ============================================================
+
+def send_otp_email(recipient_email, otp):
+    """Send a verification code using SMTP credentials from environment variables."""
+    smtp_host = os.environ.get("SMTP_HOST", "smtp.gmail.com")
+    smtp_port = int(os.environ.get("SMTP_PORT", "587"))
+    smtp_username = os.environ.get("SMTP_USERNAME")
+    smtp_password = os.environ.get("SMTP_PASSWORD")
+    sender_email = os.environ.get("SMTP_FROM", smtp_username)
+
+    if not smtp_username or not smtp_password or not sender_email:
+        raise RuntimeError(
+            "Email is not configured. Set SMTP_USERNAME, SMTP_PASSWORD, "
+            "and SMTP_FROM in the hosting environment."
+        )
+
+    message = EmailMessage()
+    message["Subject"] = "Your Octo Buddy verification code"
+    message["From"] = sender_email
+    message["To"] = recipient_email
+    message.set_content(
+        f"""Hi,
+
+Your Octo Buddy verification code is: {otp}
+
+Enter this five-digit code on the Octo Buddy verification page to verify your account.
+
+If you did not create an Octo Buddy account, you can ignore this email.
+
+Octo Buddy
+"""
+    )
+
+    tls_context = ssl.create_default_context()
+    with smtplib.SMTP(smtp_host, smtp_port, timeout=20) as server:
+        server.ehlo()
+        server.starttls(context=tls_context)
+        server.ehlo()
+        server.login(smtp_username, smtp_password)
+        server.send_message(message)
+
+
+# ============================================================
 # VALIDATION / HELPERS
 # ============================================================
 
@@ -355,7 +402,7 @@ def health():
 
 @app.route("/api/register", methods=["POST"])
 def register():
-    """Create a student account and generate an OTP."""
+    """Create an account and email its verification OTP."""
     try:
         data = request.get_json() or {}
 
@@ -388,7 +435,8 @@ def register():
                 "message": "Email already exists."
             }), 409
 
-        otp = str(random.randint(10000, 99999))
+        # Generate a cryptographically secure five-digit code.
+        otp = str(secrets.randbelow(90000) + 10000)
 
         user = User(
             first_name=first_name,
@@ -406,21 +454,42 @@ def register():
         db.session.add(user)
         db.session.commit()
 
-        # Development/testing OTP. Replace with an email provider later.
-        print(f"\n[DEV OTP] {email}: {otp}\n")
+        # Do not return the OTP to the frontend or print it in the logs.
+        try:
+            send_otp_email(email, otp)
+        except Exception:
+            app.logger.exception("Failed to send verification email.")
+
+            # Avoid leaving an unusable, unverified account if delivery fails.
+            try:
+                db.session.delete(user)
+                db.session.commit()
+            except Exception:
+                db.session.rollback()
+                app.logger.exception(
+                    "Could not remove account after email delivery failed."
+                )
+
+            return jsonify({
+                "status": "error",
+                "message": (
+                    "We could not send the verification email. "
+                    "Please try again later."
+                )
+            }), 503
 
         return jsonify({
             "status": "success",
-            "message": "Registration successful. Please verify your OTP.",
-            "dev_otp": otp,
+            "message": "Registration successful. Check your email for the verification code.",
             "email": email
         }), 201
 
-    except Exception as exc:
+    except Exception:
         db.session.rollback()
+        app.logger.exception("Registration failed.")
         return jsonify({
             "status": "error",
-            "message": str(exc)
+            "message": "Registration failed. Please try again."
         }), 500
 
 
