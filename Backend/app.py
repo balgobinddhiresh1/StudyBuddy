@@ -19,8 +19,6 @@ It handles:
 import os
 import re
 import secrets
-import smtplib
-import ssl
 import hashlib
 import hmac
 from datetime import datetime, date
@@ -197,43 +195,45 @@ with app.app_context():
 # ============================================================
 
 def send_otp_email(recipient_email, otp):
-    """Send a verification code using SMTP credentials from environment variables."""
-    smtp_host = os.environ.get("SMTP_HOST", "smtp.gmail.com")
-    smtp_port = int(os.environ.get("SMTP_PORT", "587"))
-    smtp_username = os.environ.get("SMTP_USERNAME")
-    smtp_password = os.environ.get("SMTP_PASSWORD")
-    sender_email = os.environ.get("SMTP_FROM", smtp_username)
+    """Send a five-digit OTP through the Google Apps Script HTTPS email relay."""
+    import json
+    from urllib.request import Request, urlopen
+    from urllib.error import URLError, HTTPError
 
-    if not smtp_username or not smtp_password or not sender_email:
+    script_url = os.environ.get("EMAIL_SCRIPT_URL", "").strip()
+    shared_secret = os.environ.get("OCTO_BUDDY_SECRET", "")
+
+    if not script_url or not shared_secret:
         raise RuntimeError(
-            "Email is not configured. Set SMTP_USERNAME, SMTP_PASSWORD, "
-            "and SMTP_FROM in the hosting environment."
+            "Email relay is not configured. Set EMAIL_SCRIPT_URL and "
+            "OCTO_BUDDY_SECRET in the hosting environment."
         )
 
-    message = EmailMessage()
-    message["Subject"] = "Your Octo Buddy verification code"
-    message["From"] = sender_email
-    message["To"] = recipient_email
-    message.set_content(
-        f"""Hi,
+    payload = json.dumps({
+        "secret": shared_secret,
+        "email": recipient_email,
+        "otp": str(otp)
+    }).encode("utf-8")
 
-Your Octo Buddy verification code is: {otp}
-
-Enter this five-digit code on the Octo Buddy verification page to verify your account.
-
-If you did not create an Octo Buddy account, you can ignore this email.
-
-Octo Buddy
-"""
+    req = Request(
+        script_url,
+        data=payload,
+        headers={"Content-Type": "application/json"},
+        method="POST"
     )
 
-    tls_context = ssl.create_default_context()
-    with smtplib.SMTP(smtp_host, smtp_port, timeout=20) as server:
-        server.ehlo()
-        server.starttls(context=tls_context)
-        server.ehlo()
-        server.login(smtp_username, smtp_password)
-        server.send_message(message)
+    try:
+        # Apps Script ContentService may redirect its response; urllib follows
+        # standard HTTPS redirects automatically.
+        with urlopen(req, timeout=25) as response:
+            response_text = response.read().decode("utf-8", errors="replace")
+        result = json.loads(response_text)
+    except (HTTPError, URLError, TimeoutError, ValueError) as exc:
+        raise RuntimeError("The email relay request failed.") from exc
+
+    if not isinstance(result, dict) or result.get("success") is not True:
+        # Do not log the OTP, shared secret, or recipient address.
+        raise RuntimeError("The email relay did not confirm delivery.")
 
 
 # ============================================================
