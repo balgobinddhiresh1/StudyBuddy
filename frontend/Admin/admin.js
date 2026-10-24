@@ -779,7 +779,7 @@ function setupAdminActions() {
         logoutBtn.addEventListener("click", () => {
             if (!confirm("Are you sure you want to logout?")) return;
             clearLogin();
-            window.location.href = "../project.html";
+           window.location.href = "../signin_login/project.html";
         });
     }
 
