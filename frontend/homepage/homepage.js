@@ -38,23 +38,22 @@ document.addEventListener('DOMContentLoaded', function () {
        PROFILE DROPDOWN
     ========================================= */
 
-    const profileBtn = document.getElementById('profileBtn');
-    const profileDropdown = document.getElementById('profileDropdown');
-
     if (profileBtn && profileDropdown) {
-        profileBtn.addEventListener('click', function (e) {
-            e.stopPropagation();
-            profileDropdown.classList.toggle('show');
-        });
+    profileBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        profileDropdown.classList.toggle('show');
+    });
 
-        document.addEventListener('click', function (e) {
-            if (!profileDropdown.contains(e.target) && e.target !== profileBtn) {
-                profileDropdown.classList.remove('show');
-            }
-        });
-    }
+    document.addEventListener('click', function (e) {
+        // Use .closest() so clicking inside the button (like the SVG) still counts as clicking the button
+        const clickedInsideBtn = e.target.closest('#profileBtn');
+        const clickedInsideDropdown = profileDropdown.contains(e.target);
 
-
+        if (!clickedInsideBtn && !clickedInsideDropdown) {
+            profileDropdown.classList.remove('show');
+        }
+    });
+}
     /* =========================================
        NAVBAR SHOW/HIDE ON SCROLL
     ========================================= */

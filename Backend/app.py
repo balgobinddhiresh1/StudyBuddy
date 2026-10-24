@@ -21,7 +21,7 @@ import re
 import secrets
 import hashlib
 import hmac
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from email.message import EmailMessage
 
 from flask import Flask, request, jsonify
@@ -135,6 +135,26 @@ class User(db.Model):
             "is_verified": bool(self.is_verified),
             "points": self.points or 0,
         }
+
+class PasswordResetCode(db.Model):
+    """Temporary, one-time password reset codes."""
+
+    __tablename__ = "password_reset_codes"
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey("Users.User_id"),
+        nullable=False,
+        index=True
+    )
+
+    code_hash = db.Column(db.String(64), nullable=False)
+    expires_at = db.Column(db.DateTime, nullable=False)
+    attempts = db.Column(db.Integer, default=0, nullable=False)
+    used = db.Column(db.Boolean, default=False, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 
 class BuddyApplication(db.Model):
@@ -567,6 +587,224 @@ def login():
             "status": "error",
             "message": str(exc)
         }), 500
+
+    
+# ============================================================
+# PASSWORD RESET
+# ============================================================
+
+@app.route("/api/forgot-password", methods=["POST"])
+def forgot_password():
+    """Send a password reset code to a registered email."""
+
+    data = request.get_json() or {}
+    email = str(data.get("email", "")).strip().lower()
+
+    # Always return the same public message to avoid revealing
+    # whether an email address has an account.
+    generic_message = (
+        "If an eligible account exists for that email, "
+        "a reset code will be sent."
+    )
+
+    if not valid_email(email):
+        return jsonify({
+            "status": "success",
+            "message": generic_message
+        }), 200
+
+    user = User.query.filter_by(email=email).first()
+
+    # Only send reset codes to verified accounts.
+    if not user or not user.is_verified:
+        return jsonify({
+            "status": "success",
+            "message": generic_message
+        }), 200
+
+    try:
+        # Invalidate previous unused reset codes for this user.
+        PasswordResetCode.query.filter_by(
+            user_id=user.id,
+            used=False
+        ).delete(synchronize_session=False)
+
+        # Keep the five-digit format used by your existing email relay.
+        code = str(secrets.randbelow(90000) + 10000)
+
+        reset_record = PasswordResetCode(
+            user_id=user.id,
+            code_hash=hashlib.sha256(
+                code.encode("utf-8")
+            ).hexdigest(),
+            expires_at=datetime.utcnow() + timedelta(minutes=10),
+            attempts=0,
+            used=False
+        )
+
+        db.session.add(reset_record)
+        db.session.commit()
+
+        # Reuse the email system already used by registration.
+        try:
+            send_otp_email(user.email, code)
+        except Exception:
+            app.logger.exception("Password reset email delivery failed.")
+
+            # Remove the code if delivery fails.
+            PasswordResetCode.query.filter_by(
+                id=reset_record.id
+            ).delete()
+            db.session.commit()
+
+        return jsonify({
+            "status": "success",
+            "message": generic_message
+        }), 200
+
+    except Exception:
+        db.session.rollback()
+        app.logger.exception("Password reset request failed.")
+
+        return jsonify({
+            "status": "success",
+            "message": generic_message
+        }), 200
+
+
+@app.route("/api/reset-password", methods=["POST"])
+def reset_password():
+    """Validate a reset code and save a new password."""
+
+    data = request.get_json() or {}
+
+    email = str(data.get("email", "")).strip().lower()
+    code = str(data.get("code", "")).strip()
+    new_password = data.get("new_password", "")
+    confirm_password = data.get("confirm_password", "")
+
+    if not valid_email(email):
+        return jsonify({
+            "status": "error",
+            "message": "Enter a valid email address."
+        }), 400
+
+    if not code or not code.isdigit() or len(code) != 5:
+        return jsonify({
+            "status": "error",
+            "message": "Enter the five-digit reset code."
+        }), 400
+
+    if not isinstance(new_password, str) or not valid_password(new_password):
+        return jsonify({
+            "status": "error",
+            "message": (
+                "Password must be 8–10 characters "
+                "and contain at least one number."
+            )
+        }), 400
+
+    if new_password != confirm_password:
+        return jsonify({
+            "status": "error",
+            "message": "The passwords do not match."
+        }), 400
+
+    try:
+        user = User.query.filter_by(email=email).first()
+
+        if not user or not user.is_verified:
+            return jsonify({
+                "status": "error",
+                "message": "Invalid or expired reset code."
+            }), 400
+
+        reset_record = PasswordResetCode.query.filter_by(
+            user_id=user.id,
+            used=False
+        ).order_by(
+            PasswordResetCode.created_at.desc()
+        ).first()
+
+        if not reset_record:
+            return jsonify({
+                "status": "error",
+                "message": "Invalid or expired reset code."
+            }), 400
+
+        if datetime.utcnow() > reset_record.expires_at:
+            reset_record.used = True
+            db.session.commit()
+
+            return jsonify({
+                "status": "error",
+                "message": "This reset code has expired. Request a new one."
+            }), 400
+
+        if reset_record.attempts >= 5:
+            reset_record.used = True
+            db.session.commit()
+
+            return jsonify({
+                "status": "error",
+                "message": "Too many attempts. Request a new reset code."
+            }), 400
+
+        entered_hash = hashlib.sha256(
+            code.encode("utf-8")
+        ).hexdigest()
+
+        if not hmac.compare_digest(
+            reset_record.code_hash,
+            entered_hash
+        ):
+            reset_record.attempts += 1
+
+            if reset_record.attempts >= 5:
+                reset_record.used = True
+
+            db.session.commit()
+
+            return jsonify({
+                "status": "error",
+                "message": "Invalid or expired reset code."
+            }), 400
+
+        # Update the password using your existing secure hash method.
+        user.set_password(new_password)
+
+        # A reset code can only be used once.
+        reset_record.used = True
+
+        # Invalidate any other unused reset codes for this user.
+        PasswordResetCode.query.filter(
+            PasswordResetCode.user_id == user.id,
+            PasswordResetCode.id != reset_record.id,
+            PasswordResetCode.used.is_(False)
+        ).update(
+            {"used": True},
+            synchronize_session=False
+        )
+
+        db.session.commit()
+
+        return jsonify({
+            "status": "success",
+            "message": (
+                "Password reset successfully. "
+                "Please log in with your new password."
+            )
+        }), 200
+
+    except Exception:
+        db.session.rollback()
+        app.logger.exception("Password reset failed.")
+
+        return jsonify({
+            "status": "error",
+            "message": "Could not reset your password. Please try again."
+        }), 500
+
 
 
 # ============================================================

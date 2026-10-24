@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,183 +9,174 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Konkhmer+Sleokchher&display=swap" rel="stylesheet">
 
 <style>
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
-body{
-    min-height:100vh;
-    overflow-y:auto;
-    display:flex;
+body {
+    min-height: 100vh;
+    overflow-y: auto;
+    display: flex;
     background: linear-gradient(to bottom, #47DEB1 0%, #0C6478 80%);
 }
 
-/* CONTAINER */
-.container{
-    width:100%;
-    display:flex;
-    position:relative;
-    overflow:hidden;
+.container {
+    width: 100%;
+    display: flex;
+    position: relative;
+    overflow: hidden;
 }
 
-/* PANELS */
-.left,
-.right{
-    width:50%;
-    transition:0.6s ease;
+.left, .right {
+    width: 50%;
+    transition: 0.6s ease;
 }
 
-.left{
-    padding:40px 60px;
-    color:white;
-    display:flex;
-    flex-direction:column;
+.left {
+    padding: 40px 60px;
+    color: white;
+    display: flex;
+    flex-direction: column;
 }
 
-.right{
-    position:relative;
+.right {
+    position: relative;
 }
 
-.container.login-active .left{
-    transform:translateX(100%);
+.container.login-active .left {
+    transform: translateX(100%);
 }
 
-.container.login-active .right{
-    transform:translateX(-100%);
+.container.login-active .right {
+    transform: translateX(-100%);
 }
 
-/* FORM */
-.form-wrapper{
-    margin-top:40px;
+.form-wrapper {
+    margin-top: 40px;
 }
 
-h2{
-    text-align:center;
-    font-family:'Konkhmer Sleokchher';
-    margin-bottom:25px;
+h2 {
+    text-align: center;
+    font-family: 'Konkhmer Sleokchher';
+    margin-bottom: 25px;
 }
 
-:root{
-    --space:20px;
-    --accent:#82EE99;
+:root {
+    --space: 20px;
+    --accent: #82EE99;
 }
 
-.name-group{
-    display:flex;
-    gap:var(--space);
-    margin-bottom:var(--space);
+.name-group {
+    display: flex;
+    gap: var(--space);
+    margin-bottom: var(--space);
 }
 
-.name-group input{
-    flex:1;
+.name-group input {
+    flex: 1;
 }
 
-input{
-    width:100%;
-    height:70px;
-    padding:10px;
-    margin-bottom:var(--space);
-    border:2px solid transparent;
-    border-radius:10px;
-    background:rgba(255,255,255,0.25);
-    color:#353535;
-    font-size:20px;
-    font-family:'Inter';
-    outline:none;
+input {
+    width: 100%;
+    height: 70px;
+    padding: 10px;
+    margin-bottom: var(--space);
+    border: 2px solid transparent;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.25);
+    color: #353535;
+    font-size: 20px;
+    font-family: 'Inter';
+    outline: none;
 }
 
-input::placeholder{
-    color:#4a4a4a;
+input::placeholder {
+    color: #4a4a4a;
 }
 
-input:focus{
-    border:2px solid var(--accent);
+input:focus {
+    border: 2px solid var(--accent);
 }
 
-/* PASSWORD STRENGTH */
-#passwordStrength{
+#passwordStrength {
     font-family: Inter;
     font-size: 14px;
     margin-bottom: 15px;
     color: white;
 }
 
-/* BUTTONS */
-button{
-    display:block;
-    margin:20px auto;
-    border:none;
-    border-radius:25px;
-    font-family:'Konkhmer Sleokchher';
-    color:white;
-    cursor:pointer;
+button {
+    display: block;
+    margin: 20px auto;
+    border: none;
+    border-radius: 25px;
+    font-family: 'Konkhmer Sleokchher';
+    color: white;
+    cursor: pointer;
 }
 
-.register-btn{
-    width:317px;
-    height:55px;
-    background:linear-gradient(to right,#82EE99 0%,#1EA17A 100%);
+.register-btn {
+    width: 317px;
+    height: 55px;
+    background: linear-gradient(to right, #82EE99 0%, #1EA17A 100%);
 }
 
-/* BOTTOM TEXT */
-.bottom-text{
-    margin-top:auto;
-    text-align:center;
+.bottom-text {
+    margin-top: auto;
+    text-align: center;
 }
 
-.account-text{
-    font-size:15px;
-    font-family:'Inter';
-    color:white;
+.account-text {
+    font-size: 15px;
+    font-family: 'Inter';
+    color: white;
 }
 
-.login-text{
-    font-size:15px;
-    font-family:'Inter';
-    color:#82EE99;
-    margin-top:5px;
-    cursor:pointer;
+.login-text {
+    font-size: 15px;
+    font-family: 'Inter';
+    color: #82EE99;
+    margin-top: 5px;
+    cursor: pointer;
 }
 
-/* RIGHT PANEL */
-.curve-box{
-    position:absolute;
-    width:100%;
-    height:100%;
-    background:#47DEB1;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    text-align:center;
-    border-top-left-radius:250px;
-    transition:0.6s ease;
+.curve-box {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: #47DEB1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    border-top-left-radius: 250px;
+    transition: 0.6s ease;
 }
 
-.container.login-active .curve-box{
-    border-top-left-radius:0;
-    border-top-right-radius:250px;
+.container.login-active .curve-box {
+    border-top-left-radius: 0;
+    border-top-right-radius: 250px;
 }
 
-.curve-box h1{
-    font-family:'Konkhmer Sleokchher';
-    font-size:58px;
-    margin-bottom:25px;
-    color:white;
+.curve-box h1 {
+    font-family: 'Konkhmer Sleokchher';
+    font-size: 58px;
+    margin-bottom: 25px;
+    color: white;
 }
 
-.graphic{
-    width:320px;
+.graphic {
+    width: 320px;
 }
 
-.login-form{
-    display:none;
+.login-form {
+    display: none;
 }
 
-/* LOADING OVERLAY */
-#loadingOverlay{
+#loadingOverlay {
     position: fixed;
     top: 0;
     left: 0;
@@ -197,7 +189,7 @@ button{
     z-index: 9999;
 }
 
-.spinner{
+.spinner {
     width: 60px;
     height: 60px;
     border: 6px solid rgba(255,255,255,0.3);
@@ -206,113 +198,122 @@ button{
     animation: spin 1s linear infinite;
 }
 
-@keyframes spin{
-    0%{ transform: rotate(0deg); }
-    100%{ transform: rotate(360deg); }
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 
-#passwordRules{
-    margin-top:-10px;
-    margin-bottom:15px;
-    font-family:'Inter';
-    font-size:14px;
-    color:white;
+#passwordRules {
+    margin-top: -10px;
+    margin-bottom: 15px;
+    font-family: 'Inter';
+    font-size: 14px;
+    color: white;
 }
 
-#passwordRules p{
-    margin:4px 0;
+#passwordRules p {
+    margin: 4px 0;
 }
 
-.valid{
-    color:#82EE99;
+.valid {
+    color: #82EE99;
 }
 
-.invalid{
-    color:#ff4d4d;
+.invalid {
+    color: #ff4d4d;
 }
 
-/* ==========================================================
-   MOBILE RESPONSIVE
-========================================================== */
-
-@media screen and (max-width:768px){
-
-body{
-    overflow-x:hidden;
+.forgot-password {
+    display: block;
+    text-align: right;
+    margin-top: -10px;
+    margin-bottom: 15px;
+    color: white;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    text-decoration: none;
 }
 
-.container{
-    flex-direction:column-reverse;
-    overflow:visible;
+.forgot-password:hover {
+    text-decoration: underline;
 }
 
-.left,
-.right{
-    width:100%;
-}
+@media screen and (max-width: 768px) {
+    body {
+        overflow-x: hidden;
+    }
 
-.right{
-    height:100vh;
-    position:relative;
-    display:flex;
-}
+    .container {
+        flex-direction: column-reverse;
+        overflow: visible;
+    }
 
-.left{
-    min-height:100vh;
-    padding:40px 25px;
-}
+    .left, .right {
+        width: 100%;
+    }
 
-.curve-box{
-    position:relative;
-    width:100%;
-    height:100vh;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    flex-direction:column;
-}
+    .right {
+        height: 100vh;
+        position: relative;
+        display: flex;
+    }
 
-.curve-box h1{
-    font-size:38px;
-}
+    .left {
+        min-height: 100vh;
+        padding: 40px 25px;
+    }
 
-.graphic{
-    width:220px;
-    max-width:70%;
-    height:auto;
-    margin-top:20px;
-}
+    .curve-box {
+        position: relative;
+        width: 100%;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+    }
 
-.form-wrapper{
-    margin-top:0;
-}
+    .curve-box h1 {
+        font-size: 38px;
+    }
 
-.name-group{
-    flex-direction:column;
-    gap:0;
-}
+    .graphic {
+        width: 220px;
+        max-width: 70%;
+        height: auto;
+        margin-top: 20px;
+    }
 
-input{
-    height:58px;
-    font-size:18px;
-}
+    .form-wrapper {
+        margin-top: 0;
+    }
 
-.register-btn{
-    width:100%;
-}
+    .name-group {
+        flex-direction: column;
+        gap: 0;
+    }
 
-.bottom-text{
-    margin-top:40px;
-    padding-bottom:40px;
-}
+    input {
+        height: 58px;
+        font-size: 18px;
+    }
 
-.container.login-active .left{
-    transform:none;
-}
+    .register-btn {
+        width: 100%;
+    }
 
-.container.login-active .right{
-    transform:none;  
-}
+    .bottom-text {
+        margin-top: 40px;
+        padding-bottom: 40px;
+    }
+
+    .container.login-active .left {
+        transform: none;
+    }
+
+    .container.login-active .right {
+        transform: none;
+    }
 }
 </style>
 </head>
@@ -321,72 +322,65 @@ input{
 
 <div class="container" id="container">
 
-<!-- LEFT -->
-<div class="left">
+    <div class="left">
+        <div class="form-wrapper">
 
-<div class="form-wrapper">
+            <!-- REGISTER -->
+            <div class="register-form">
+                <h2>CREATE AN ACCOUNT</h2>
 
-<!-- REGISTER -->
-<div class="register-form">
+                <div class="name-group">
+                    <input type="text" id="firstName" placeholder="First Name" maxlength="30">
+                    <input type="text" id="lastName" placeholder="Last Name" maxlength="30">
+                </div>
 
-<h2>CREATE AN ACCOUNT</h2>
+                <input type="email" id="registerEmail" placeholder="Email Address">
+                <input type="password" id="registerPassword" placeholder="Password" maxlength="10">
 
-<div class="name-group">
-<input type="text" id="firstName" placeholder="First Name" maxlength="30">
-<input type="text" id="lastName" placeholder="Last Name" maxlength="30">
-</div>
+                <div id="passwordRules">
+                    <p id="lengthRule">❌ 8–10 characters</p>
+                    <p id="numberRule">❌ At least 1 number</p>
+                </div>
 
-<input type="email" id="registerEmail" placeholder="Email Address">
-<input type="password" id="registerPassword" placeholder="Password" maxlength="10">
-<div id="passwordRules">
-    <p id="lengthRule">❌ 8–10 characters</p>
-    <p id="numberRule">❌ At least 1 number</p>
-</div>
+                <div id="passwordStrength">Password strength: -</div>
 
-<div id="passwordStrength">Password strength: -</div>
+                <input type="password" id="confirmPassword" placeholder="Confirm Password" maxlength="10">
 
-<input type="password" id="confirmPassword" placeholder="Confirm Password" maxlength="10">
+                <button class="register-btn" id="registerButton" onclick="handleRegister()">
+                    GET STARTED
+                </button>
+            </div>
 
-<button class="register-btn" id="registerButton" onclick="handleRegister()">
-GET STARTED
-</button>
+            <!-- LOGIN -->
+            <div class="login-form">
+                <h2>LOGIN</h2>
 
-</div>
+                <input type="email" id="loginEmail" placeholder="Email Address">
+                <input type="password" id="loginPassword" placeholder="Password" maxlength="10">
 
-<!-- LOGIN -->
-<div class="login-form">
+                <a href="../signin_login/forgot-password.html" class="forgot-password">
+                    Forgot Password?
+                </a>
 
-<h2>LOGIN</h2>
+                <button class="register-btn" id="loginButton" onclick="handleLogin()">
+                    LOGIN
+                </button>
+            </div>
 
-<input type="email" id="loginEmail" placeholder="Email Address">
-<input type="password" id="loginPassword" placeholder="Password" maxlength="10">
+        </div>
 
-<button class="register-btn" id="loginButton" onclick="handleLogin()">
-LOGIN
-</button>
+        <div class="bottom-text">
+            <div class="account-text" id="accountText">ALREADY HAVE AN ACCOUNT?</div>
+            <div class="login-text" id="loginToggleText" onclick="showLogin()">LOGIN</div>
+        </div>
+    </div>
 
-</div>
-
-</div>
-
-<div class="bottom-text">
-
-<div class="account-text" id="accountText">ALREADY HAVE AN ACCOUNT?</div>
-<div class="login-text" id="loginToggleText" onclick="showLogin()">LOGIN</div>
-
-</div>
-
-</div>
-
-<!-- RIGHT -->
-<div class="right">
-
-<div class="curve-box">
-<h1>HELLO, WELCOME</h1>
-<img src="../LOGIN.png" class="graphic" alt="Login Graphic">
-</div>
-
-</div>
+    <div class="right">
+        <div class="curve-box">
+            <h1>HELLO, WELCOME</h1>
+            <img src="../LOGIN.png" class="graphic" alt="Login Graphic">
+        </div>
+    </div>
 
 </div>
 
@@ -395,8 +389,11 @@ LOGIN
     <div class="spinner"></div>
 </div>
 
+<!-- STYLED POPUPS -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <script>
-// SPINNER OVERLAY FUNCTIONS
+// SPINNER FUNCTIONS
 function showLoading() {
     document.getElementById('loadingOverlay').style.display = 'flex';
 }
@@ -405,7 +402,14 @@ function hideLoading() {
     document.getElementById('loadingOverlay').style.display = 'none';
 }
 
-// TOGGLE BETWEEN REGISTER AND LOGIN VIEWS
+// COMMON POPUP COLOURS
+const popupOptions = {
+    confirmButtonColor: '#159A78',
+    background: '#FFFFFF',
+    color: '#164E4A'
+};
+
+// TOGGLE BETWEEN REGISTER AND LOGIN
 function showLogin() {
     const registerForm = document.querySelector('.register-form');
     const loginForm = document.querySelector('.login-form');
@@ -428,8 +432,9 @@ function showLogin() {
     }
 }
 
-// PASSWORD RULES EVENT LISTENERS
+// PASSWORD RULES
 const regPasswordInput = document.getElementById('registerPassword');
+
 if (regPasswordInput) {
     regPasswordInput.addEventListener('input', function() {
         const val = this.value;
@@ -453,7 +458,7 @@ if (regPasswordInput) {
             numberRule.className = "invalid";
         }
 
-        if (val.length >= 8 && /\d/.test(val)) {
+        if (val.length >= 8 && val.length <= 10 && /\d/.test(val)) {
             strength.innerText = "Password strength: Strong";
             strength.style.color = "#82EE99";
         } else {
@@ -463,7 +468,7 @@ if (regPasswordInput) {
     });
 }
 
-// REGISTER API HANDLER
+// REGISTRATION
 async function handleRegister() {
     showLoading();
 
@@ -473,15 +478,29 @@ async function handleRegister() {
     const password = document.getElementById('registerPassword').value;
     const confirmPassword = document.getElementById('confirmPassword').value;
 
-    if (!firstName || !lastName || !email || !password) {
+    if (!firstName || !lastName || !email || !password || !confirmPassword) {
         hideLoading();
-        alert("Please fill in all fields.");
+
+        Swal.fire({
+            ...popupOptions,
+            icon: 'warning',
+            title: 'Missing information',
+            text: 'Please fill in all the required fields.',
+            confirmButtonText: 'Okay'
+        });
         return;
     }
 
     if (password !== confirmPassword) {
         hideLoading();
-        alert("Passwords do not match.");
+
+        Swal.fire({
+            ...popupOptions,
+            icon: 'error',
+            title: 'Passwords don’t match',
+            text: 'Please make sure both passwords are the same.',
+            confirmButtonText: 'Try again'
+        });
         return;
     }
 
@@ -502,32 +521,57 @@ async function handleRegister() {
         hideLoading();
 
         if (response.ok && data.status === 'success') {
-            // Save email for the OTP page to use
             localStorage.setItem('pending_email', email);
-            
-            // Helpful dev alert showing the OTP directly on screen
-            alert(`Registration successful! [DEV CODE: ${data.dev_otp}]`);
-            
-            // Redirect to OTP verification page
-            window.location.href = "../../Email_otp/otp.html"; 
+
+            Swal.fire({
+                ...popupOptions,
+                icon: 'success',
+                title: 'You’re registered!',
+                text: 'We’ve sent a verification code to your email. Please check your inbox.',
+                confirmButtonText: 'Verify my email',
+                allowOutsideClick: false
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = "../../Email_otp/otp.html";
+                }
+            });
         } else {
-            alert(data.message || "Registration failed.");
+            Swal.fire({
+                ...popupOptions,
+                icon: 'error',
+                title: 'Registration unsuccessful',
+                text: data.message || 'Registration failed. Please try again.',
+                confirmButtonText: 'Okay'
+            });
         }
+
     } catch (error) {
         hideLoading();
         console.error("Register Error:", error);
-        alert("Could not connect to the backend server.");
+
+        Swal.fire({
+            ...popupOptions,
+            icon: 'error',
+            title: 'Connection problem',
+            text: 'We couldn’t connect to the server. Please check your internet connection and try again.',
+            confirmButtonText: 'Okay'
+        });
     }
 }
 
-// LOGIN API HANDLER WITH ROLE-BASED ROUTING
+// LOGIN
 async function handleLogin() {
     const email = document.getElementById('loginEmail').value.trim();
     const password = document.getElementById('loginPassword').value;
-    const loginBtn = document.getElementById('loginButton');
 
     if (!email || !password) {
-        alert("Please enter both email and password.");
+        Swal.fire({
+            ...popupOptions,
+            icon: 'warning',
+            title: 'Missing information',
+            text: 'Please enter both your email and password.',
+            confirmButtonText: 'Okay'
+        });
         return;
     }
 
@@ -544,12 +588,16 @@ async function handleLogin() {
         hideLoading();
 
         if (!response.ok || data.status !== 'success') {
-            alert(data.message || 'Login failed.');
+            Swal.fire({
+                ...popupOptions,
+                icon: 'error',
+                title: 'Login unsuccessful',
+                text: data.message || 'Incorrect email or password. Please try again.',
+                confirmButtonText: 'Try again'
+            });
             return;
         }
 
-        // The API returns the user inside data.user.
-        // Saving these values lets the dashboard know who is logged in.
         const user = data.user;
 
         localStorage.setItem('user_id', user.id);
@@ -558,27 +606,39 @@ async function handleLogin() {
         localStorage.setItem('last_name', user.last_name || '');
         localStorage.setItem('role', user.role || 'student');
 
-        loginBtn.innerText = "SUCCESS";
-        loginBtn.style.background = "#1EA17A";
+        const role = (user.role || 'student').toLowerCase();
+        let dashboardPage;
 
-        setTimeout(() => {
-            const role = (user.role || 'student').toLowerCase();
+        if (role === 'admin') {
+            dashboardPage = '../Admin/admin.html';
+        } else if (role === 'buddy') {
+            dashboardPage = '../Dashboard/Dashboard.html';
+        } else {
+            dashboardPage = '../Student/student.html';
+        }
 
-            // Use project-relative paths instead of a computer-specific
-            // Windows path. This means the project works on another PC too.
-            if (role === 'admin') {
-                window.location.href = "../Admin/admin.html";
-            } else if (role === 'buddy') {
-                window.location.href = "../Dashboard/Dashboard.html";
-            } else {
-                window.location.href = "../Student/student.html";
-            }
-        }, 400);
+        Swal.fire({
+            ...popupOptions,
+            icon: 'success',
+            title: 'Welcome back!',
+            text: `You’ve successfully logged in, ${user.first_name}.`,
+            confirmButtonText: 'Continue',
+            allowOutsideClick: false
+        }).then(() => {
+            window.location.href = dashboardPage;
+        });
 
     } catch (error) {
         hideLoading();
         console.error('Login error:', error);
-        alert('Could not connect to the backend server. Make sure app.py is running.');
+
+        Swal.fire({
+            ...popupOptions,
+            icon: 'error',
+            title: 'Connection problem',
+            text: 'We couldn’t connect to the server. Please try again.',
+            confirmButtonText: 'Okay'
+        });
     }
 }
 </script>
