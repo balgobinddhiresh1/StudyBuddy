@@ -130,7 +130,7 @@
 
 <div class="container">
 
-    <img src="../frontend/LOGIN.png" class="logo" alt="Octo Buddy Logo">
+    <img src="../LOGIN.png" class="logo" alt="Octo Buddy Logo">
 
     <!-- FORM WITH ONSUBMIT EVENT -->
     <form onsubmit="handleVerify(event)">
@@ -157,9 +157,7 @@
 
     <div class="bottom">
         Didn't receive code?<br>
-        <a href="#" onclick="alert('Check your Flask terminal output or the registration alert for the code!')">
-            Press Here
-        </a>
+        <a href="../signin_login/project.html">Return to registration and try again</a>
     </div>
 
 </div>
@@ -172,7 +170,7 @@
 
         if (!email) {
             alert("No registration session found. Please register again.");
-            window.location.href = "../frontend/signin_login/project.html";
+            window.location.href = "../signin_login/project.html";
             return;
         }
 
@@ -188,7 +186,7 @@
             if (response.ok && data.status === 'success') {
                 alert("Account verified successfully! You can now log in.");
                 localStorage.removeItem('pending_email');
-                window.location.href = "../frontend/signin_login/project.html"; // Redirect back to login screen
+                window.location.href = "../signin_login/project.html"; // Redirect back to login screen
             } else {
                 alert(data.message || "Invalid OTP");
             }
@@ -199,5 +197,22 @@
     }
 </script>
 
+
+<script>
+/* Octo Buddy API session helper: attaches the signed login token to protected API calls. */
+(() => {
+  if (window.__octoFetchWrapped) return;
+  window.__octoFetchWrapped = true;
+  const originalFetch = window.fetch.bind(window);
+  window.fetch = (input, init = {}) => {
+    const url = typeof input === "string" ? input : (input && input.url) || "";
+    if (!url.includes("/api/")) return originalFetch(input, init);
+    const headers = new Headers(init.headers || (input instanceof Request ? input.headers : undefined));
+    const token = localStorage.getItem("auth_token");
+    if (token && !headers.has("Authorization")) headers.set("Authorization", `Bearer ${token}`);
+    return originalFetch(input, { ...init, headers });
+  };
+})();
+</script>
 </body>
 </html>

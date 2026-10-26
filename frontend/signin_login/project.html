@@ -96,9 +96,14 @@ input::placeholder {
     color: #4a4a4a;
 }
 
-input:focus {
-    border: 2px solid var(--accent);
-}
+input:focus { border: 2px solid var(--accent); }
+input.invalid-field { border: 2px solid #d93025 !important; background: rgba(255,230,230,.7); }
+input.valid-field { border: 2px solid #159A78 !important; }
+.field-hint { display:block; margin:-14px 0 14px; font:12px Inter,sans-serif; color:#fff; }
+.field-hint.error { color:#ffe0df; }
+.field-hint.success { color:#d7ffe1; }
+.email-help { margin:-14px 0 14px; padding:9px 12px; border-radius:8px; background:rgba(255,255,255,.22); color:#fff; font:12px Inter,sans-serif; }
+.email-help ul { margin:5px 0 0 17px; }
 
 #passwordStrength {
     font-family: Inter;
@@ -330,21 +335,22 @@ button {
                 <h2>CREATE AN ACCOUNT</h2>
 
                 <div class="name-group">
-                    <input type="text" id="firstName" placeholder="First Name" maxlength="30">
-                    <input type="text" id="lastName" placeholder="Last Name" maxlength="30">
+                    <input type="text" id="firstName" placeholder="First Name" maxlength="30" autocomplete="given-name" required pattern="[A-Za-zÀ-ÖØ-öø-ÿ]+([ '-][A-Za-zÀ-ÖØ-öø-ÿ]+)*" title="Use letters only; spaces, apostrophes and hyphens are allowed">
+                    <input type="text" id="lastName" placeholder="Last Name" maxlength="30" autocomplete="family-name" required pattern="[A-Za-zÀ-ÖØ-öø-ÿ]+([ '-][A-Za-zÀ-ÖØ-öø-ÿ]+)*" title="Use letters only; spaces, apostrophes and hyphens are allowed">
                 </div>
 
-                <input type="email" id="registerEmail" placeholder="Email Address">
-                <input type="password" id="registerPassword" placeholder="Password" maxlength="10">
+                <input type="email" id="registerEmail" placeholder="Email Address" autocomplete="email" required><div class="email-help" id="emailHelp">Email format: <strong>name@example.com</strong><ul><li id="emailAt">Include @</li><li id="emailDomain">Include a valid domain, e.g. example.com</li><li id="emailSpaces">No spaces</li></ul></div>
+                <input type="password" id="registerPassword" placeholder="Password" maxlength="10" minlength="8" required autocomplete="new-password">
 
                 <div id="passwordRules">
                     <p id="lengthRule">❌ 8–10 characters</p>
                     <p id="numberRule">❌ At least 1 number</p>
+                    <p id="letterRule">❌ At least 1 letter</p>
                 </div>
 
                 <div id="passwordStrength">Password strength: -</div>
 
-                <input type="password" id="confirmPassword" placeholder="Confirm Password" maxlength="10">
+                <input type="password" id="confirmPassword" placeholder="Confirm Password" maxlength="10" minlength="8" required autocomplete="new-password">
 
                 <button class="register-btn" id="registerButton" onclick="handleRegister()">
                     GET STARTED
@@ -355,8 +361,8 @@ button {
             <div class="login-form">
                 <h2>LOGIN</h2>
 
-                <input type="email" id="loginEmail" placeholder="Email Address">
-                <input type="password" id="loginPassword" placeholder="Password" maxlength="10">
+                <input type="email" id="loginEmail" placeholder="Email Address" required autocomplete="email">
+                <input type="password" id="loginPassword" placeholder="Password" maxlength="10" required autocomplete="current-password">
 
                 <a href="../signin_login/forgot-password.html" class="forgot-password">
                     Forgot Password?
@@ -432,6 +438,31 @@ function showLogin() {
     }
 }
 
+// Open the requested form directly when arriving from Login or Sign Up.
+// Supported URLs: project.html?mode=login and project.html?mode=register.
+(function initialiseAuthMode() {
+    const params = new URLSearchParams(window.location.search);
+    const mode = (params.get('mode') || 'register').toLowerCase();
+    const registerForm = document.querySelector('.register-form');
+    const loginForm = document.querySelector('.login-form');
+    const accountText = document.getElementById('accountText');
+    const toggleText = document.getElementById('loginToggleText');
+    const container = document.getElementById('container');
+    if (mode === 'login') {
+        registerForm.style.display = 'none';
+        loginForm.style.display = 'block';
+        accountText.innerText = "DON'T HAVE AN ACCOUNT?";
+        toggleText.innerText = 'REGISTER';
+        container.classList.add('login-active');
+    } else {
+        registerForm.style.display = 'block';
+        loginForm.style.display = 'none';
+        accountText.innerText = 'ALREADY HAVE AN ACCOUNT?';
+        toggleText.innerText = 'LOGIN';
+        container.classList.remove('login-active');
+    }
+})();
+
 // PASSWORD RULES
 const regPasswordInput = document.getElementById('registerPassword');
 
@@ -450,6 +481,15 @@ if (regPasswordInput) {
             lengthRule.className = "invalid";
         }
 
+        const letterRule = document.getElementById('letterRule');
+        if (/[A-Za-z]/.test(val)) {
+            letterRule.innerHTML = "✅ At least 1 letter";
+            letterRule.className = "valid";
+        } else {
+            letterRule.innerHTML = "❌ At least 1 letter";
+            letterRule.className = "invalid";
+        }
+
         if (/\d/.test(val)) {
             numberRule.innerHTML = "✅ At least 1 number";
             numberRule.className = "valid";
@@ -458,7 +498,7 @@ if (regPasswordInput) {
             numberRule.className = "invalid";
         }
 
-        if (val.length >= 8 && val.length <= 10 && /\d/.test(val)) {
+        if (val.length >= 8 && val.length <= 10 && /\d/.test(val) && /[A-Za-z]/.test(val)) {
             strength.innerText = "Password strength: Strong";
             strength.style.color = "#82EE99";
         } else {
@@ -467,6 +507,35 @@ if (regPasswordInput) {
         }
     });
 }
+
+// Live field validation: show exactly which fields need attention.
+const emailInput = document.getElementById('registerEmail');
+const emailHelp = document.getElementById('emailHelp');
+const emailPattern = /^[A-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?(?:\.[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?)+$/i;
+function checkField(input, valid, message) {
+    if (!input) return valid;
+    input.classList.toggle('invalid-field', !valid);
+    input.classList.toggle('valid-field', valid && Boolean(input.value));
+    input.setCustomValidity(valid ? '' : message);
+    return valid;
+}
+emailInput.addEventListener('input', () => {
+    const value = emailInput.value.trim();
+    const valid = emailPattern.test(value);
+    checkField(emailInput, !value || valid, 'Enter a valid email address, for example name@example.com.');
+    document.getElementById('emailAt').textContent = value.includes('@') ? '✓ Includes @' : '✗ Include @';
+    document.getElementById('emailDomain').textContent = /@[^.]+\.[A-Za-z]{2,}$/.test(value) ? '✓ Valid domain format' : '✗ Include a valid domain, e.g. example.com';
+    document.getElementById('emailSpaces').textContent = /\s/.test(value) ? '✗ Remove spaces' : '✓ No spaces';
+    emailHelp.classList.toggle('success', valid);
+    emailHelp.classList.toggle('error', Boolean(value) && !valid);
+});
+['firstName','lastName'].forEach(id => {
+    const input = document.getElementById(id);
+    input.addEventListener('input', () => {
+        const valid = /^[A-Za-zÀ-ÖØ-öø-ÿ]+(?:[ '\u2019-][A-Za-zÀ-ÖØ-öø-ÿ]+)*$/.test(input.value.trim());
+        checkField(input, !input.value || valid, 'Use letters only; spaces, apostrophes and hyphens are allowed.');
+    });
+});
 
 // REGISTRATION
 async function handleRegister() {
@@ -488,6 +557,20 @@ async function handleRegister() {
             text: 'Please fill in all the required fields.',
             confirmButtonText: 'Okay'
         });
+        return;
+    }
+
+    const nameValid = /^[A-Za-zÀ-ÖØ-öø-ÿ]+(?:[ '\u2019-][A-Za-zÀ-ÖØ-öø-ÿ]+)*$/;
+    const missing = [];
+    [['firstName', firstName, nameValid.test(firstName)], ['lastName', lastName, nameValid.test(lastName)], ['registerEmail', email, emailPattern.test(email)], ['registerPassword', password, password.length >= 8 && password.length <= 10 && /[A-Za-z]/.test(password) && /\d/.test(password)], ['confirmPassword', confirmPassword, Boolean(confirmPassword)]] .forEach(([id, value, valid]) => {
+        const el = document.getElementById(id);
+        checkField(el, Boolean(value) && valid, 'Please correct this field.');
+        if (!value || !valid) missing.push(id);
+    });
+    if (missing.length) {
+        hideLoading();
+        document.getElementById(missing[0]).focus();
+        Swal.fire({...popupOptions, icon:'warning', title:'Check the highlighted fields', text:'Names need letters only, email must be valid, and password must contain letters and numbers (8–10 characters).'});
         return;
     }
 
@@ -532,7 +615,7 @@ async function handleRegister() {
                 allowOutsideClick: false
             }).then((result) => {
                 if (result.isConfirmed) {
-                    window.location.href = "../../Email_otp/otp.html";
+                    window.location.href = "../Email_otp/otp.html";
                 }
             });
         } else {
@@ -564,12 +647,18 @@ async function handleLogin() {
     const email = document.getElementById('loginEmail').value.trim();
     const password = document.getElementById('loginPassword').value;
 
-    if (!email || !password) {
+    const loginEmailInput = document.getElementById('loginEmail');
+    const loginPasswordInput = document.getElementById('loginPassword');
+    const validLoginEmail = emailPattern.test(email);
+    checkField(loginEmailInput, Boolean(email) && validLoginEmail, 'Enter a valid email address, for example name@example.com.');
+    checkField(loginPasswordInput, Boolean(password), 'Password is required.');
+    if (!email || !password || !validLoginEmail) {
+        if (!email || !validLoginEmail) loginEmailInput.focus(); else loginPasswordInput.focus();
         Swal.fire({
             ...popupOptions,
             icon: 'warning',
             title: 'Missing information',
-            text: 'Please enter both your email and password.',
+            text: 'Enter a valid email address and your password. The highlighted fields need attention.',
             confirmButtonText: 'Okay'
         });
         return;
@@ -601,6 +690,7 @@ async function handleLogin() {
         const user = data.user;
 
         localStorage.setItem('user_id', user.id);
+        if (data.token) localStorage.setItem('auth_token', data.token);
         localStorage.setItem('user', JSON.stringify(user));
         localStorage.setItem('first_name', user.first_name);
         localStorage.setItem('last_name', user.last_name || '');
@@ -625,7 +715,13 @@ async function handleLogin() {
             confirmButtonText: 'Continue',
             allowOutsideClick: false
         }).then(() => {
-            window.location.href = dashboardPage;
+            const next = new URLSearchParams(window.location.search).get('next');
+            // Only allow local relative paths, never external redirects.
+            if (next && next.startsWith('../') && !next.startsWith('//') && !next.includes('://')) {
+                window.location.href = next;
+            } else {
+                window.location.href = dashboardPage;
+            }
         });
 
     } catch (error) {
@@ -643,5 +739,22 @@ async function handleLogin() {
 }
 </script>
 
+
+<script>
+/* Octo Buddy API session helper: attaches the signed login token to protected API calls. */
+(() => {
+  if (window.__octoFetchWrapped) return;
+  window.__octoFetchWrapped = true;
+  const originalFetch = window.fetch.bind(window);
+  window.fetch = (input, init = {}) => {
+    const url = typeof input === "string" ? input : (input && input.url) || "";
+    if (!url.includes("/api/")) return originalFetch(input, init);
+    const headers = new Headers(init.headers || (input instanceof Request ? input.headers : undefined));
+    const token = localStorage.getItem("auth_token");
+    if (token && !headers.has("Authorization")) headers.set("Authorization", `Bearer ${token}`);
+    return originalFetch(input, { ...init, headers });
+  };
+})();
+</script>
 </body>
 </html>

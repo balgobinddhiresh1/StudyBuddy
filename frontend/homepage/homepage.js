@@ -1,4 +1,18 @@
 document.addEventListener('DOMContentLoaded', function () {
+    /* Require an authenticated session before opening protected areas. */
+    document.querySelectorAll('[data-protected-destination]').forEach(link => {
+        link.addEventListener('click', function (event) {
+            const userId = localStorage.getItem('user_id');
+            const token = localStorage.getItem('auth_token');
+            if (!userId || !token) {
+                event.preventDefault();
+                const target = this.dataset.protectedDestination === 'application'
+                    ? '../octobuddy/apply.html' : '../Dashboard/Dashboard.html';
+                window.location.href = `../signin_login/login.html?next=${encodeURIComponent(target)}`;
+            }
+        });
+    });
+
 
     /* =========================================
        SCROLL SPY (underline active nav link)

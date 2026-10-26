@@ -2,6 +2,63 @@
 const API_URL = "https://studybuddy-bl8d.onrender.com/api";
 
 document.addEventListener("DOMContentLoaded", function () {
+    // This page is private: redirect to Login before exposing the application.
+    const signedInUserId = localStorage.getItem("user_id");
+    const signedInToken = localStorage.getItem("auth_token");
+    if (!signedInUserId || !signedInToken) {
+        const target = "../octobuddy/apply.html";
+        window.location.replace(`../signin_login/login.html?next=${encodeURIComponent(target)}`);
+        return;
+    }
+
+    // Enforce input rules while the student types.
+    const studentNumberInput = document.getElementById("studentNumber");
+    const motivationInput = document.getElementById("motivation");
+    const motivationWordCount = document.getElementById("motivationWordCount");
+
+    if (studentNumberInput) {
+        studentNumberInput.addEventListener("input", function () {
+            this.value = this.value.replace(/\D/g, "").slice(0, 9);
+            this.setCustomValidity(this.value.length === 9 ? "" : "Enter exactly 9 digits.");
+        });
+    }
+
+    function wordCount(value) {
+        const trimmed = value.trim();
+        return trimmed ? trimmed.split(/\s+/).length : 0;
+    }
+    if (motivationInput) {
+        motivationInput.addEventListener("input", function () {
+            const words = this.value.trim().split(/\s+/).filter(Boolean);
+            if (words.length > 30) this.value = words.slice(0, 30).join(" ");
+            const count = wordCount(this.value);
+            if (motivationWordCount) motivationWordCount.textContent = `${count} / 30 words`;
+            this.setCustomValidity(count > 30 ? "Motivation must be 30 words or fewer." : "");
+        });
+    }
+
+    // Populate read-only academic details from the signed-in profile.
+    try {
+        const user = JSON.parse(localStorage.getItem("user") || "{}");
+        const qualification = document.getElementById("qualification");
+        const academicYear = document.getElementById("academicYear");
+        const fullName = document.getElementById("fullName");
+        if (qualification && user.course) qualification.value = user.course;
+        if (academicYear && user.academic_year) academicYear.value = `Year ${user.academic_year}`;
+        if (fullName && (user.first_name || user.last_name)) {
+            fullName.value = `${user.first_name || ""} ${user.last_name || ""}`.trim();
+            fullName.readOnly = true;
+        }
+        const year = Number(user.academic_year || 1);
+        document.querySelectorAll('input[name="modules"][data-year]').forEach(input => {
+            const available = Number(input.dataset.year) <= year;
+            input.disabled = !available;
+            if (!available) input.checked = false;
+            const label = input.closest('.module-option');
+            if (label) label.hidden = !available;
+        });
+    } catch (error) { console.warn("Could not load profile details", error); }
+
     const form = document.getElementById("buddyApplicationForm");
     const submitButton = form.querySelector('button[type="submit"]');
     const statusBadge = document.querySelector(".status-badge");
@@ -97,6 +154,18 @@ document.addEventListener("DOMContentLoaded", function () {
             daily_limit: Number(dailyLimit.value),
             motivation: document.getElementById("motivation").value.trim()
         };
+
+        const motivationWords = applicationData.motivation.split(/\s+/).filter(Boolean);
+        if (!/^[0-9]{9}$/.test(applicationData.student_number)) {
+            showMessage({ icon: "warning", title: "Check student number", text: "Student number must contain exactly 9 digits and numbers only." });
+            studentNumberInput?.focus();
+            return;
+        }
+        if (motivationWords.length > 30) {
+            showMessage({ icon: "warning", title: "Motivation too long", text: "Your motivation must be no more than 30 words." });
+            motivationInput?.focus();
+            return;
+        }
 
         if (
             !applicationData.full_name ||

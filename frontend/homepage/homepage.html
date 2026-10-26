@@ -53,12 +53,12 @@
 
         <!-- DASHBOARD -->
         <li>
-            <a href="../Dashboard/Dashboard.html">Dashboard</a>
+            <a href="../Dashboard/Dashboard.html" data-protected-destination="dashboard">Dashboard</a>
         </li>
 
         <!-- OCTO BUDDY -->
         <li>
-            <a href="../octobuddy/apply.html">Octo Buddy</a>
+            <a href="../octobuddy/apply.html" data-protected-destination="application">Octo Buddy</a>
         </li>
 
     </ul>
@@ -72,8 +72,8 @@
     </button>
 
     <div class="profile-dropdown" id="profileDropdown">
-        <a href="../signin_login/project.html">Login</a>
-        <a href="../signin_login/project.html">Sign Up</a>
+        <a href="../signin_login/login.html">Login</a>
+        <a href="../signin_login/register.html">Sign Up</a>
     </div>
 </div>
 
@@ -114,7 +114,7 @@
                 <a href="#about" class="btn">
                     ABOUT US →
                 </a>
-<a href="../octobuddy/apply.html" class="btn secondary-btn">
+<a href="../signin_login/register.html" class="btn secondary-btn">
     GET STARTED →
 </a>
 
@@ -291,6 +291,23 @@
 <script src="../footer/footer.js"></script>
 <script src="../loader/loader.js"></script>
 
+
+<script>
+/* Octo Buddy API session helper: attaches the signed login token to protected API calls. */
+(() => {
+  if (window.__octoFetchWrapped) return;
+  window.__octoFetchWrapped = true;
+  const originalFetch = window.fetch.bind(window);
+  window.fetch = (input, init = {}) => {
+    const url = typeof input === "string" ? input : (input && input.url) || "";
+    if (!url.includes("/api/")) return originalFetch(input, init);
+    const headers = new Headers(init.headers || (input instanceof Request ? input.headers : undefined));
+    const token = localStorage.getItem("auth_token");
+    if (token && !headers.has("Authorization")) headers.set("Authorization", `Bearer ${token}`);
+    return originalFetch(input, { ...init, headers });
+  };
+})();
+</script>
 </body>
 </html>
 
@@ -333,7 +350,7 @@
             <span class="bottom-nav-label">About</span>
         </a>
 
-        <a href="../Dashboard/Dashboard.html" class="bottom-nav-item" data-label="Dashboard">
+        <a href="../Dashboard/Dashboard.html" class="bottom-nav-item" data-label="Dashboard" data-protected-destination="dashboard">
             <span class="bottom-nav-icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                     <line x1="6" y1="20" x2="6" y2="12"/>
@@ -344,7 +361,7 @@
             <span class="bottom-nav-label">Dashboard</span>
         </a>
 
-        <a href="../octobuddy/apply.html" class="bottom-nav-item" data-label="Octo Buddy">
+        <a href="../octobuddy/apply.html" class="bottom-nav-item" data-label="Octo Buddy" data-protected-destination="application">
             <span class="bottom-nav-icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M9 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"/>
@@ -365,7 +382,41 @@
 <div id="footer-container"></div>
 
 <script src="../footer/footer.js"></script>
+
+<script>
+/* Octo Buddy API session helper: attaches the signed login token to protected API calls. */
+(() => {
+  if (window.__octoFetchWrapped) return;
+  window.__octoFetchWrapped = true;
+  const originalFetch = window.fetch.bind(window);
+  window.fetch = (input, init = {}) => {
+    const url = typeof input === "string" ? input : (input && input.url) || "";
+    if (!url.includes("/api/")) return originalFetch(input, init);
+    const headers = new Headers(init.headers || (input instanceof Request ? input.headers : undefined));
+    const token = localStorage.getItem("auth_token");
+    if (token && !headers.has("Authorization")) headers.set("Authorization", `Bearer ${token}`);
+    return originalFetch(input, { ...init, headers });
+  };
+})();
+</script>
 </body>
 
+
+<script>
+/* Octo Buddy API session helper: attaches the signed login token to protected API calls. */
+(() => {
+  if (window.__octoFetchWrapped) return;
+  window.__octoFetchWrapped = true;
+  const originalFetch = window.fetch.bind(window);
+  window.fetch = (input, init = {}) => {
+    const url = typeof input === "string" ? input : (input && input.url) || "";
+    if (!url.includes("/api/")) return originalFetch(input, init);
+    const headers = new Headers(init.headers || (input instanceof Request ? input.headers : undefined));
+    const token = localStorage.getItem("auth_token");
+    if (token && !headers.has("Authorization")) headers.set("Authorization", `Bearer ${token}`);
+    return originalFetch(input, { ...init, headers });
+  };
+})();
+</script>
 </body>
 </html>

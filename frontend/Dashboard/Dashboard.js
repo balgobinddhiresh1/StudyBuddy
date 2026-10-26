@@ -156,7 +156,7 @@ async function loadBuddyProfile() {
 
     try {
         const response =
-            await fetch(`${API_BASE_URL}/user/${userId}`);
+            await fetch(`${API_BASE_URL}user/${userId}`);
 
         if (!response.ok) {
             throw new Error("Profile could not be loaded.");
@@ -267,6 +267,7 @@ function closeEditModal() {
 
 
 async function saveProfileChanges() {
+    const namePattern = /^[A-Za-zÀ-ÖØ-öø-ÿ]+(?:[ '\u2019-][A-Za-zÀ-ÖØ-öø-ÿ]+)*$/;
     const userId =
         localStorage.getItem("user_id");
 
@@ -276,14 +277,15 @@ async function saveProfileChanges() {
     const lastName =
         document.getElementById("editLastName").value.trim();
 
-    if (!userId || !firstName) {
-        alert("A valid user and first name are required.");
+    if (!userId || !namePattern.test(firstName) || !namePattern.test(lastName)) {
+        alert("A valid user is required. First and last names must contain letters only (spaces, apostrophes and hyphens are allowed).");
+        document.getElementById(!namePattern.test(firstName) ? "editFirstName" : "editLastName").focus();
         return;
     }
 
     try {
         const response =
-            await fetch(`${API_BASE_URL}/user/${userId}`, {
+            await fetch(`${API_BASE_URL}user/${userId}`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json"
@@ -342,7 +344,7 @@ async function loadBuddySessions() {
 
     try {
         const response =
-            await fetch(`${API_BASE_URL}/sessions/buddy/${userId}`);
+            await fetch(`${API_BASE_URL}sessions/buddy/${userId}`);
 
         if (!response.ok) return;
 
@@ -403,7 +405,7 @@ async function loadBuddyStudents() {
 
     try {
         const response =
-            await fetch(`${API_BASE_URL}/sessions/buddy/${userId}`);
+            await fetch(`${API_BASE_URL}sessions/buddy/${userId}`);
 
         if (!response.ok) return;
 
@@ -574,6 +576,7 @@ function closeJitsiSession() {
 ========================================================= */
 
 function logout() {
+    localStorage.removeItem("auth_token");
     localStorage.removeItem("user_id");
     localStorage.removeItem("user");
     localStorage.removeItem("first_name");

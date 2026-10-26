@@ -1,9 +1,6 @@
 {
-"rewrites": [
-    {
-      "source": "/",
-      "destination": "/homepage/homepage.html"
-    }
-  ]
-
+  "rewrites": [
+    { "source": "/", "destination": "/homepage/homepage.html" }
+  ],
+  "trailingSlash": false
 }

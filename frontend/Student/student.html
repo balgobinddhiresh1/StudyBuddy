@@ -719,10 +719,10 @@
             <h3 style="margin-top: 0; color: #1e41bb;">Update Profile</h3>
 
             <label style="display: block; font-size: 0.85rem; color: #555; margin-top: 15px;">First Name</label>
-            <input type="text" id="editFirstName" style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box;">
+            <input type="text" id="editFirstName" maxlength="50" pattern="[A-Za-zÀ-ÖØ-öø-ÿ]+([ '-][A-Za-zÀ-ÖØ-öø-ÿ]+)*" title="Letters only; spaces, apostrophes and hyphens are allowed" style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box;">
 
             <label style="display: block; font-size: 0.85rem; color: #555; margin-top: 15px;">Last Name</label>
-            <input type="text" id="editLastName" style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box;">
+            <input type="text" id="editLastName" maxlength="50" pattern="[A-Za-zÀ-ÖØ-öø-ÿ]+([ '-][A-Za-zÀ-ÖØ-öø-ÿ]+)*" title="Letters only; spaces, apostrophes and hyphens are allowed" style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box;">
 
             <!-- Qualification and academic year are saved to the Users table. -->
             <label style="display: block; font-size: 0.85rem; color: #555; margin-top: 15px;">Qualification</label>
@@ -834,6 +834,26 @@
 
     <script src="../Student/student.js"></script>
 
+<script id="booking-date-min">
+(function(){ const field=document.getElementById('date'); if(!field)return; const now=new Date(); field.min=[now.getFullYear(),String(now.getMonth()+1).padStart(2,'0'),String(now.getDate()).padStart(2,'0')].join('-'); })();
+</script>
+
+<script>
+/* Octo Buddy API session helper: attaches the signed login token to protected API calls. */
+(() => {
+  if (window.__octoFetchWrapped) return;
+  window.__octoFetchWrapped = true;
+  const originalFetch = window.fetch.bind(window);
+  window.fetch = (input, init = {}) => {
+    const url = typeof input === "string" ? input : (input && input.url) || "";
+    if (!url.includes("/api/")) return originalFetch(input, init);
+    const headers = new Headers(init.headers || (input instanceof Request ? input.headers : undefined));
+    const token = localStorage.getItem("auth_token");
+    if (token && !headers.has("Authorization")) headers.set("Authorization", `Bearer ${token}`);
+    return originalFetch(input, { ...init, headers });
+  };
+})();
+</script>
 </body>
 
 </html>

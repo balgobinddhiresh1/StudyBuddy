@@ -59,8 +59,8 @@
     </button>
 
     <div class="profile-dropdown" id="profileDropdown">
-        <a href="../project.html">Login</a>
-        <a href="../project.html">Sign Up</a>
+        <a href="../signin_login/project.html">Login</a>
+        <a href="../signin_login/project.html">Sign Up</a>
     </div>
 </div>
         </nav>
@@ -165,8 +165,17 @@
                                 <input
                                     type="text"
                                     id="studentNumber"
-                                    placeholder="Enter your student number"
+                                    name="studentNumber"
+                                    placeholder="Enter your 9-digit student number"
+                                    inputmode="numeric"
+                                    pattern="[0-9]{9}"
+                                    minlength="9"
+                                    maxlength="9"
+                                    autocomplete="off"
+                                    aria-describedby="studentNumberHelp"
+                                    title="Enter exactly 9 digits (numbers only)."
                                     required>
+                                <small id="studentNumberHelp" class="field-help">Enter exactly 9 digits. Numbers only.</small>
 
                             </div>
 
@@ -240,7 +249,7 @@
                                 <input
                                     type="checkbox"
                                     name="modules"
-                                    value="Programming">
+                                    value="Programming" data-year="1">
 
                                 <span class="custom-checkbox"></span>
 
@@ -254,7 +263,7 @@
                                 <input
                                     type="checkbox"
                                     name="modules"
-                                    value="Database Systems">
+                                    value="Database Systems" data-year="1">
 
                                 <span class="custom-checkbox"></span>
 
@@ -268,7 +277,7 @@
                                 <input
                                     type="checkbox"
                                     name="modules"
-                                    value="Networking">
+                                    value="Networking" data-year="2">
 
                                 <span class="custom-checkbox"></span>
 
@@ -282,7 +291,7 @@
                                 <input
                                     type="checkbox"
                                     name="modules"
-                                    value="Web Development">
+                                    value="Web Development" data-year="2">
 
                                 <span class="custom-checkbox"></span>
 
@@ -451,8 +460,11 @@
                             <textarea
                                 id="motivation"
                                 rows="6"
-                                placeholder="Explain why you would like to become an Octo Buddy..."
+                                maxlength="500"
+                                placeholder="Explain why you would like to become an Octo Buddy (maximum 30 words)..."
+                                aria-describedby="motivationWordCount"
                                 required></textarea>
+                            <small id="motivationWordCount" class="field-help">0 / 30 words</small>
 
                         </div>
 
@@ -588,6 +600,23 @@
 <script src="../loader/loader.js"></script>
 <div id="footer-container"></div>
 
+
+<script>
+/* Octo Buddy API session helper: attaches the signed login token to protected API calls. */
+(() => {
+  if (window.__octoFetchWrapped) return;
+  window.__octoFetchWrapped = true;
+  const originalFetch = window.fetch.bind(window);
+  window.fetch = (input, init = {}) => {
+    const url = typeof input === "string" ? input : (input && input.url) || "";
+    if (!url.includes("/api/")) return originalFetch(input, init);
+    const headers = new Headers(init.headers || (input instanceof Request ? input.headers : undefined));
+    const token = localStorage.getItem("auth_token");
+    if (token && !headers.has("Authorization")) headers.set("Authorization", `Bearer ${token}`);
+    return originalFetch(input, { ...init, headers });
+  };
+})();
+</script>
 </body>
 
 </html>

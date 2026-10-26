@@ -15,11 +15,25 @@
    - Handle logout and admin-page protection
 ========================================================= */
 
-const API_BASE_URL = "https://studybuddy-bl8d.onrender.com/api/";
+const API_BASE_URL = (window.OCTOBUDDY_API_BASE_URL || "https://studybuddy-bl8d.onrender.com/api/").replace(/\/?$/, "/");
+
+async function apiFetch(url, options = {}) {
+    const token = localStorage.getItem("auth_token") || "";
+    const headers = new Headers(options.headers || {});
+    if (token) headers.set("Authorization", `Bearer ${token}`);
+    if (options.body && !headers.has("Content-Type")) headers.set("Content-Type", "application/json");
+    const response = await fetch(url, { ...options, headers });
+    if (response.status === 401) {
+        clearLogin();
+        window.location.href = "../signin_login/project.html";
+    }
+    return response;
+}
 
 let allUsers = [];
 let allBuddies = [];
 let allSessions = [];
+let allAdminBookings = [];
 let currentWeekStart = startOfWeek(new Date());
 
 /* Run all page setup once the HTML has loaded. */
@@ -35,6 +49,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     setupQualificationButtons();
     setupAdminActions();
     setupMobileMenu();
+    setupAdminManagementControls();
 
     await refreshAdminData();
 });
@@ -49,17 +64,11 @@ function checkAdminLogin() {
 
     // If the admin page is opened directly without logging in,
     // send the visitor back to the normal login page.
-    if (!storedUser || storedRole !== "admin") {
-        console.warn("Admin page opened without an admin login.");
-        // Keep direct development access possible if the page is opened
-        // manually: only redirect when a user record exists with another role.
-        if (storedUser) {
-            alert("You do not have Campus Manager access.");
-            window.location.href = "../frontend/signin_login/project.html";
-            return false;
-        }
+    if (!storedUser || storedRole !== "admin" || !localStorage.getItem("auth_token")) {
+        alert(storedUser ? "You do not have Campus Manager access." : "Please log in to continue.");
+        window.location.href = "../signin_login/project.html";
+        return false;
     }
-
     return true;
 }
 
@@ -71,6 +80,7 @@ async function refreshAdminData() {
         loadStudents(),
         loadBuddies(),
         loadSchedule(),
+        loadAdminBookings(),
         loadLeaderboard(),
         loadReports()
     ]);
@@ -118,7 +128,7 @@ function setupNavigation() {
 
 async function loadAdminDashboard() {
     try {
-        const response = await fetch(`${API_BASE_URL}admin/dashboard`);
+        const response = await apiFetch(`${API_BASE_URL}admin/dashboard`);
         if (!response.ok) throw new Error("Dashboard request failed");
 
         const data = await response.json();
@@ -175,7 +185,7 @@ async function loadApplications() {
     if (!table) return;
 
     try {
-        const response = await fetch(`${API_BASE_URL}buddy-applications`);
+        const response = await apiFetch(`${API_BASE_URL}buddy-applications`);
         if (!response.ok) throw new Error("Could not load applications");
 
         const data = await response.json();
@@ -183,7 +193,7 @@ async function loadApplications() {
         table.innerHTML = "";
 
         if (!applications.length) {
-            table.innerHTML = `<tr><td colspan="7">No Buddy applications yet.</td></tr>`;
+            table.innerHTML = `<tr><td colspan="8">No Buddy applications yet.</td></tr>`;
             updatePendingCount();
             return;
         }
@@ -211,7 +221,8 @@ async function loadApplications() {
                 <td>${escapeHtml(application.student_number)}</td>
                 <td>${escapeHtml(application.qualification)}</td>
                 <td>${escapeHtml(application.academic_year)}</td>
-                <td>${modules}<br><small>${availability}</small></td>
+                <td>${modules}<br><small>Available: ${availability || "Not specified"}</small></td>
+                <td><button type="button" class="details-btn" data-details-id="${application.id}">Read application</button><div class="application-motivation" id="applicationDetails${application.id}" hidden>${escapeHtml(application.motivation || "No motivation supplied.")}<br><small>Daily limit: ${escapeHtml(String(application.daily_limit ?? "Not specified"))}</small></div></td>
                 <td><span class="status ${statusClass}">${escapeHtml(application.status)}</span></td>
                 <td>${actions}</td>
             `;
@@ -221,7 +232,7 @@ async function loadApplications() {
         updatePendingCount();
     } catch (error) {
         console.error("Application loading error:", error);
-        table.innerHTML = `<tr><td colspan="7">Could not load applications. Check that Flask is running.</td></tr>`;
+        table.innerHTML = `<tr><td colspan="8">Could not load applications. Check that Flask is running.</td></tr>`;
     }
 }
 
@@ -229,7 +240,18 @@ function updatePendingCount() {
     const table = document.getElementById("applicationsTable");
     const pendingCount = document.getElementById("pendingCount");
     if (!table || !pendingCount) return;
-    pendingCount.textContent = table.querySelectorAll(".status.pending").length;
+    const pending = table.querySelectorAll(".status.pending").length;
+    pendingCount.textContent = String(pending);
+    document.querySelectorAll('.notification').forEach(badge => {
+        badge.textContent = String(pending);
+        badge.hidden = pending === 0;
+    });
+    const topNotification = document.querySelector('.notification-btn span');
+    if (topNotification) {
+        topNotification.textContent = String(pending);
+        topNotification.parentElement.setAttribute('aria-label', `${pending} pending Buddy applications`);
+        topNotification.parentElement.hidden = pending === 0;
+    }
 }
 
 function setupApplicationActions() {
@@ -249,7 +271,7 @@ function setupApplicationActions() {
         if (!confirm(message)) return;
 
         try {
-            const response = await fetch(`${API_BASE_URL}/buddy-applications/${applicationId}/${action}`, { method: "PUT" });
+            const response = await apiFetch(`${API_BASE_URL}buddy-applications/${applicationId}/${action}`, { method: "PUT" });
             const data = await response.json();
             if (!response.ok) throw new Error(data.message || "Could not update application.");
 
@@ -271,15 +293,16 @@ async function loadStudents() {
     if (!table) return;
 
     try {
-        const response = await fetch(`${API_BASE_URL}/admin/users`);
+        const response = await apiFetch(`${API_BASE_URL}admin/users`);
         if (!response.ok) throw new Error("Could not load users");
 
         const data = await response.json();
         allUsers = data.users || [];
+        populateQualificationFilters();
         renderStudents(allUsers);
     } catch (error) {
         console.warn("Could not load students:", error);
-        table.innerHTML = `<tr><td colspan="6">Could not load students.</td></tr>`;
+        table.innerHTML = `<tr><td colspan="7">Could not load users.</td></tr>`;
     }
 }
 
@@ -291,7 +314,7 @@ function renderStudents(users) {
     table.innerHTML = "";
 
     if (!students.length) {
-        table.innerHTML = `<tr><td colspan="6">No students found.</td></tr>`;
+        table.innerHTML = `<tr><td colspan="7">No users found.</td></tr>`;
         return;
     }
 
@@ -307,7 +330,8 @@ function renderStudents(users) {
             <td>${escapeHtml(user.course || "General")}</td>
             <td>Year ${escapeHtml(user.academic_year || "—")}</td>
             <td>${escapeHtml(user.points || 0)}</td>
-            <td><span class="status active">${role === "buddy" ? "Octo Buddy" : "Active"}</span></td>
+            <td><span class="status ${user.is_suspended ? "rejected" : "active"}">${user.is_suspended ? "Suspended" : (role === "buddy" ? "Octo Buddy" : "Active")}</span></td>
+            <td><button type="button" class="outline-btn user-status-btn" data-user-id="${user.id}" data-suspended="${user.is_suspended ? "true" : "false"}">${user.is_suspended ? "Reactivate" : "Suspend"}</button></td>
         `;
         table.appendChild(row);
     });
@@ -319,7 +343,8 @@ function setupStudentSearch() {
 
     input.addEventListener("input", function () {
         const searchValue = this.value.toLowerCase();
-        renderStudents(allUsers.filter(user =>
+        if (document.getElementById("studentStatusFilter")) applyStudentFilters();
+        else renderStudents(allUsers.filter(user =>
             `${user.first_name} ${user.last_name} ${user.email} ${user.course}`
                 .toLowerCase().includes(searchValue)
         ));
@@ -355,7 +380,7 @@ function setupFilters() {
 
 async function loadBuddies() {
     try {
-        const response = await fetch(`${API_BASE_URL}/admin/buddies`);
+        const response = await apiFetch(`${API_BASE_URL}admin/buddies`);
         if (!response.ok) throw new Error("Could not load Buddies");
 
         const data = await response.json();
@@ -384,7 +409,7 @@ function renderBuddies() {
             <div class="buddy-card">
                 <div class="buddy-card-top">
                     <div class="large-avatar">${escapeHtml(initials(`${buddy.first_name} ${buddy.last_name}`))}</div>
-                    <span class="status active">Active</span>
+                    <span class="status ${buddy.is_suspended ? "rejected" : "active"}">${buddy.is_suspended ? "Suspended" : "Active"}</span>
                 </div>
                 <h3>${escapeHtml(`${buddy.first_name} ${buddy.last_name}`.trim())}</h3>
                 <p>${escapeHtml(buddy.course || "General")} · Year ${escapeHtml(buddy.academic_year || "—")}</p>
@@ -394,6 +419,7 @@ function renderBuddies() {
                     <div><strong>${buddySessions.length ? "100%" : "—"}</strong><span>Attendance</span></div>
                 </div>
                 <button class="outline-btn buddy-view-btn" data-user-id="${buddy.id}">View Profile</button>
+                <button class="outline-btn buddy-deactivate-btn" data-user-id="${buddy.id}">Deactivate Buddy</button>
             </div>`;
     }).join("");
 }
@@ -437,7 +463,7 @@ async function populateStudentSelect() {
 
     try {
         if (!allUsers.length) {
-            const response = await fetch(`${API_BASE_URL}/admin/users`);
+            const response = await apiFetch(`${API_BASE_URL}admin/users`);
             if (response.ok) allUsers = (await response.json()).users || [];
         }
 
@@ -481,7 +507,7 @@ async function saveScheduledSession() {
     }
 
     try {
-        const response = await fetch(`${API_BASE_URL}/admin/sessions`, {
+        const response = await apiFetch(`${API_BASE_URL}admin/sessions`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -518,15 +544,29 @@ async function loadSchedule() {
         endDate.setDate(endDate.getDate() + 4); // Monday-Friday
         const end = formatDate(endDate);
 
-        const response = await fetch(`${API_BASE_URL}/admin/sessions?start=${start}&end=${end}`);
+        const response = await apiFetch(`${API_BASE_URL}admin/sessions?start=${start}&end=${end}`);
         if (!response.ok) throw new Error("Could not load sessions");
 
         const data = await response.json();
         allSessions = data.sessions || [];
         renderCalendar();
+        renderAdminBookings();
         renderBuddies();
     } catch (error) {
         console.warn("Could not load schedule:", error);
+    }
+}
+
+async function loadAdminBookings() {
+    try {
+        const response = await apiFetch(`${API_BASE_URL}admin/sessions`);
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || "Could not load bookings.");
+        allAdminBookings = data.sessions || [];
+        renderAdminBookings();
+    } catch (error) {
+        const table = document.getElementById("adminBookingsTable");
+        if (table) table.innerHTML = `<tr><td colspan="8">${escapeHtml(error.message || "Could not load bookings.")}</td></tr>`;
     }
 }
 
@@ -597,50 +637,115 @@ function setupCalendarButtons() {
 /* =========================================================
    QUALIFICATIONS / MODULES
    ---------------------------------------------------------
-   The original page only displayed prompts and never saved anything.
-   Until dedicated qualification/module tables are added to the database,
-   these management lists are persisted in localStorage so the buttons
-   actually work and survive page refreshes.
+   Qualification and module changes are stored in the backend database,
+   so they are shared across administrators and survive redeployments.
 ========================================================= */
 
-function setupQualificationButtons() {
+let managedQualifications = [];
+let managedModules = [];
+
+async function setupQualificationButtons() {
     const addQualification = document.getElementById("addQualification");
     const addModule = document.getElementById("addModule");
 
     if (addQualification) {
-        addQualification.addEventListener("click", () => {
+        addQualification.addEventListener("click", async () => {
             const name = prompt("Enter the new qualification name:");
             if (!name?.trim()) return;
-            const qualifications = getStoredList("octo_qualifications", defaultQualifications());
-            if (!qualifications.includes(name.trim())) qualifications.push(name.trim());
-            localStorage.setItem("octo_qualifications", JSON.stringify(qualifications));
-            renderQualifications();
-            alert("Qualification added successfully.");
+            try {
+                const response = await apiFetch(`${API_BASE_URL}admin/qualifications`, {
+                    method: "POST", body: JSON.stringify({ name: name.trim() })
+                });
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.message || "Could not add qualification.");
+                await loadManagedCatalogue();
+                alert("Qualification added successfully.");
+            } catch (error) { alert(error.message || "Could not add qualification."); }
         });
     }
 
     if (addModule) {
-        addModule.addEventListener("click", () => {
-            const name = prompt("Enter the new module name:");
+        addModule.addEventListener("click", async () => {
+            if (!managedQualifications.length) await loadManagedCatalogue();
+            const selectedButton = document.querySelector("#modules .qualification-select.active");
+            const selectedName = selectedButton?.textContent.trim() || "";
+            const qualification = managedQualifications.find(item => item.name === selectedName) || managedQualifications[0];
+            if (!qualification) { alert("Add a qualification before adding modules."); return; }
+            const name = prompt("Enter the module name:");
             if (!name?.trim()) return;
-            const modules = getStoredList("octo_modules", defaultModules());
-            if (!modules.includes(name.trim())) modules.push(name.trim());
-            localStorage.setItem("octo_modules", JSON.stringify(modules));
-            renderModules();
-            alert("Module added successfully.");
+            const yearText = prompt("Enter the academic year for this module (1–6):", "1");
+            if (yearText === null) return;
+            const year = Number(yearText);
+            if (!Number.isInteger(year) || year < 1 || year > 6) { alert("Academic year must be a whole number from 1 to 6."); return; }
+            try {
+                const response = await apiFetch(`${API_BASE_URL}admin/modules`, {
+                    method: "POST",
+                    body: JSON.stringify({ name: name.trim(), qualification_id: qualification.id, academic_year: year })
+                });
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.message || "Could not add module.");
+                await loadManagedCatalogue();
+                alert("Module added successfully.");
+            } catch (error) { alert(error.message || "Could not add module."); }
         });
     }
 
-    document.querySelectorAll(".qualification-select").forEach(button => {
-        button.addEventListener("click", function () {
-            document.querySelectorAll(".qualification-select").forEach(btn => btn.classList.remove("active"));
-            this.classList.add("active");
-            renderModules(this.textContent.trim());
+    document.querySelectorAll("#qualifications .management-card button").forEach(button => {
+        button.addEventListener("click", async () => {
+            const card = button.closest(".management-card");
+            const currentName = card?.querySelector("h3")?.textContent?.trim();
+            const qualification = managedQualifications.find(item => item.name === currentName);
+            if (!qualification) { alert("Qualification catalogue is not available yet. Please try again."); return; }
+            const updatedName = prompt("Edit qualification name:", qualification.name);
+            if (!updatedName?.trim() || updatedName.trim() === qualification.name) return;
+            try {
+                const response = await apiFetch(`${API_BASE_URL}admin/qualifications/${qualification.id}`, {
+                    method: "PUT", body: JSON.stringify({ name: updatedName.trim() })
+                });
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.message || "Could not update qualification.");
+                await loadManagedCatalogue();
+                await loadAuditLogs();
+                alert("Qualification updated successfully.");
+            } catch (error) { alert(error.message || "Could not update qualification."); }
         });
     });
 
-    renderQualifications();
-    renderModules();
+    const moduleSidebar = document.querySelector("#modules .module-sidebar");
+    if (moduleSidebar && !moduleSidebar.dataset.selectionHandler) {
+        moduleSidebar.dataset.selectionHandler = "true";
+        moduleSidebar.addEventListener("click", event => {
+            const button = event.target.closest(".qualification-select");
+            if (!button) return;
+            document.querySelectorAll(".qualification-select").forEach(btn => btn.classList.remove("active"));
+            button.classList.add("active");
+            renderModules();
+        });
+    }
+
+    await loadManagedCatalogue();
+}
+
+async function loadManagedCatalogue() {
+    try {
+        const [qualificationResponse, moduleResponse] = await Promise.all([
+            apiFetch(`${API_BASE_URL}admin/qualifications`),
+            apiFetch(`${API_BASE_URL}admin/modules`)
+        ]);
+        const qualificationData = await qualificationResponse.json();
+        const moduleData = await moduleResponse.json();
+        if (!qualificationResponse.ok) throw new Error(qualificationData.message || "Could not load qualifications.");
+        if (!moduleResponse.ok) throw new Error(moduleData.message || "Could not load modules.");
+        managedQualifications = (qualificationData.qualifications || []).filter(item => item.active);
+        managedModules = (moduleData.modules || []).filter(item => item.active);
+        renderQualifications();
+        renderModules();
+    } catch (error) {
+        console.warn("Could not load managed qualification/module catalogue:", error);
+        // The page keeps its existing branding and static fallback if the API is unavailable.
+        renderQualifications();
+        renderModules();
+    }
 }
 
 function defaultQualifications() {
@@ -661,38 +766,90 @@ function getStoredList(key, fallback) {
 }
 
 function renderQualifications() {
-    const qualifications = getStoredList("octo_qualifications", defaultQualifications());
+    const names = managedQualifications.length ? managedQualifications.map(item => item.name) : defaultQualifications();
     const cards = document.querySelectorAll("#qualifications .management-card");
     cards.forEach((card, index) => {
         const heading = card.querySelector("h3");
-        if (heading && qualifications[index]) heading.textContent = qualifications[index];
+        if (heading && names[index]) heading.textContent = names[index];
     });
+
+    const sidebar = document.querySelector("#modules .module-sidebar");
+    if (sidebar) {
+        const existingButtons = [...sidebar.querySelectorAll(".qualification-select")];
+        names.forEach((name, index) => {
+            let button = existingButtons[index];
+            if (!button) {
+                button = document.createElement("button");
+                button.type = "button";
+                button.className = "qualification-select";
+                sidebar.appendChild(button);
+            }
+            button.textContent = name;
+            button.dataset.qualificationId = managedQualifications[index]?.id || "";
+            button.hidden = false;
+            if (index === 0 && !sidebar.querySelector(".qualification-select.active")) button.classList.add("active");
+        });
+        existingButtons.slice(names.length).forEach(button => button.hidden = true);
+    }
 }
 
-function renderModules() {
-    const modules = getStoredList("octo_modules", defaultModules());
+async function renderModules() {
     const list = document.querySelector("#modules .module-list");
     if (!list) return;
 
+    if (!managedModules.length) {
+        // Keep the original module list visible if the server catalogue could not load.
+        const fallback = getStoredList("octo_modules", defaultModules());
+        const header = list.querySelector(".module-list-header");
+        list.innerHTML = "";
+        if (header) list.appendChild(header);
+        fallback.forEach(module => {
+            const item = document.createElement("div");
+            item.className = "module-item";
+            item.innerHTML = `<div><strong>${escapeHtml(module)}</strong></div><span class="status">Catalogue unavailable</span>`;
+            list.appendChild(item);
+        });
+        return;
+    }
+
+    const selectedButton = document.querySelector("#modules .qualification-select.active");
+    const selectedId = Number(selectedButton?.dataset.qualificationId || managedQualifications[0]?.id);
+    const modules = managedModules.filter(module => module.qualification_id === selectedId);
     const header = list.querySelector(".module-list-header");
+    const headerTitle = header?.querySelector("h3");
+    const selectedQualification = managedQualifications.find(item => item.id === selectedId);
+    if (headerTitle && selectedQualification) headerTitle.textContent = selectedQualification.name;
     list.innerHTML = "";
     if (header) list.appendChild(header);
 
     modules.forEach(module => {
         const item = document.createElement("div");
         item.className = "module-item";
-        item.innerHTML = `<div><strong>${escapeHtml(module)}</strong></div><button type="button" class="outline-btn module-edit-btn">Edit</button>`;
+        item.innerHTML = `<div><strong>${escapeHtml(module.name)}</strong><small>${escapeHtml(module.qualification)} · Year ${escapeHtml(module.academic_year)}</small></div><button type="button" class="outline-btn module-edit-btn" data-module-id="${module.id}">Edit</button>`;
         list.appendChild(item);
     });
+    if (!modules.length) {
+        const empty = document.createElement("div");
+        empty.className = "module-item";
+        empty.textContent = "No modules for this qualification yet.";
+        list.appendChild(empty);
+    }
 
     list.querySelectorAll(".module-edit-btn").forEach(button => {
-        button.addEventListener("click", () => {
-            const current = button.parentElement.querySelector("strong")?.textContent || "";
-            const updated = prompt("Edit module name:", current);
-            if (!updated?.trim() || updated.trim() === current) return;
-            const values = getStoredList("octo_modules", defaultModules()).map(value => value === current ? updated.trim() : value);
-            localStorage.setItem("octo_modules", JSON.stringify(values));
-            renderModules();
+        button.addEventListener("click", async () => {
+            const module = managedModules.find(item => Number(item.id) === Number(button.dataset.moduleId));
+            if (!module) return;
+            const updated = prompt("Edit module name:", module.name);
+            if (!updated?.trim() || updated.trim() === module.name) return;
+            try {
+                const response = await apiFetch(`${API_BASE_URL}admin/modules/${module.id}`, {
+                    method: "PUT", body: JSON.stringify({ name: updated.trim() })
+                });
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.message || "Could not update module.");
+                await loadManagedCatalogue();
+                alert("Module updated successfully.");
+            } catch (error) { alert(error.message || "Could not update module."); }
         });
     });
 }
@@ -703,7 +860,7 @@ function renderModules() {
 
 async function loadReports() {
     try {
-        const response = await fetch(`${API_BASE_URL}/admin/leaderboard`);
+        const response = await apiFetch(`${API_BASE_URL}admin/leaderboard`);
         if (!response.ok) return;
         const data = await response.json();
         renderReportTable(data.buddies || []);
@@ -728,7 +885,7 @@ function renderReportTable(buddies) {
 
 async function loadLeaderboard() {
     try {
-        const response = await fetch(`${API_BASE_URL}/admin/leaderboard`);
+        const response = await apiFetch(`${API_BASE_URL}admin/leaderboard`);
         if (!response.ok) return;
         const data = await response.json();
         renderLeaderboard(data.buddies || []);
@@ -762,7 +919,7 @@ function setupAdminActions() {
     const saveSettings = document.getElementById("saveSettings");
     const logoutBtn = document.getElementById("logoutBtn");
 
-    if (exportReport) exportReport.addEventListener("click", exportReportData);
+    if (exportReport) exportReport.addEventListener("click", downloadFilteredReport);
 
     if (saveSettings) {
         saveSettings.addEventListener("click", () => {
@@ -793,8 +950,233 @@ function setupAdminActions() {
     });
 }
 
+
+function setupAdminManagementControls() {
+    // Add filters inside existing section headings to preserve the current visual design.
+    const studentHeading = document.querySelector("#students .section-heading");
+    if (studentHeading && !document.getElementById("studentStatusFilter")) {
+        const controls = document.createElement("div");
+        controls.className = "search-box admin-filter-controls";
+        controls.innerHTML = `<select id="studentStatusFilter" aria-label="Filter users by status"><option value="">All statuses</option><option value="active">Active</option><option value="suspended">Suspended</option></select>
+            <select id="studentQualificationFilter" aria-label="Filter users by qualification"><option value="">All qualifications</option></select>
+            <select id="studentYearFilter" aria-label="Filter users by academic year"><option value="">All years</option><option value="1">Year 1</option><option value="2">Year 2</option><option value="3">Year 3</option><option value="4">Year 4</option><option value="5">Year 5</option><option value="6">Year 6</option></select>`;
+        studentHeading.appendChild(controls);
+        controls.querySelectorAll("select").forEach(select => select.addEventListener("change", applyStudentFilters));
+    }
+
+    const reportsHeading = document.querySelector("#reports .section-heading");
+    if (reportsHeading && !document.getElementById("reportTypeFilter")) {
+        const controls = document.createElement("div");
+        controls.className = "search-box admin-filter-controls";
+        controls.innerHTML = `<select id="reportTypeFilter" aria-label="Report type"><option value="users">User accounts</option><option value="applications">Buddy applications</option><option value="bookings">Bookings</option></select>
+          <select id="reportStatusFilter" aria-label="Report status"><option value="">All statuses</option><option>Pending</option><option>Approved</option><option>Rejected</option><option>Confirmed</option><option>Completed</option><option>Cancelled</option><option value="active">Active</option><option value="suspended">Suspended</option></select>
+          <select id="reportQualificationFilter" aria-label="Filter report by qualification"><option value="">All qualifications</option></select>
+          <select id="reportYearFilter" aria-label="Filter report by academic year"><option value="">All years</option><option value="1">Year 1</option><option value="2">Year 2</option><option value="3">Year 3</option><option value="4">Year 4</option><option value="5">Year 5</option><option value="6">Year 6</option></select>
+          <input id="reportStartDate" type="date" aria-label="Report start date"><input id="reportEndDate" type="date" aria-label="Report end date">`;
+        reportsHeading.appendChild(controls);
+        controls.querySelectorAll("select,input").forEach(el => el.addEventListener("change", refreshReportFilters));
+    }
+
+
+    const scheduleSection = document.getElementById("schedule");
+    if (scheduleSection && !document.getElementById("adminBookingPanel")) {
+        const panel = document.createElement("div");
+        panel.id = "adminBookingPanel";
+        panel.className = "table-panel";
+        panel.style.marginTop = "24px";
+        panel.innerHTML = `<div class="section-heading"><div><h2>Booking management</h2><p>Filter bookings and update their status when resolving issues.</p></div>
+          <div class="search-box"><select id="bookingStatusFilter" aria-label="Filter bookings by status"><option value="">All statuses</option><option>Pending</option><option>Confirmed</option><option>Completed</option><option>Cancelled</option><option>Rejected</option></select>
+          <select id="bookingQualificationFilter" aria-label="Filter bookings by qualification"><option value="">All qualifications</option></select>
+          <select id="bookingYearFilter" aria-label="Filter bookings by academic year"><option value="">All years</option><option value="1">Year 1</option><option value="2">Year 2</option><option value="3">Year 3</option><option value="4">Year 4</option><option value="5">Year 5</option><option value="6">Year 6</option></select>
+          <input id="bookingStartDate" type="date" aria-label="Booking start date"><input id="bookingEndDate" type="date" aria-label="Booking end date"></div></div>
+          <div class="table-wrapper"><table><thead><tr><th>Student</th><th>Octo Buddy</th><th>Module</th><th>Date</th><th>Time</th><th>Qualification</th><th>Status</th><th>Update status</th></tr></thead><tbody id="adminBookingsTable"><tr><td colspan="8">Loading bookings…</td></tr></tbody></table></div>`;
+        scheduleSection.appendChild(panel);
+        panel.querySelectorAll("select,input").forEach(control => control.addEventListener("change", renderAdminBookings));
+    }
+
+    const settings = document.getElementById("settings");
+    if (settings && !document.getElementById("auditLogPanel")) {
+        const panel = document.createElement("div");
+        panel.id = "auditLogPanel";
+        panel.className = "table-panel";
+        panel.style.marginTop = "24px";
+        panel.innerHTML = `<div class="section-heading"><div><h2>Administrator audit log</h2><p>Recent sensitive changes recorded by the system.</p></div><button type="button" class="outline-btn" id="refreshAuditLogs">Refresh logs</button></div>
+          <div class="table-wrapper"><table><thead><tr><th>Time</th><th>Administrator</th><th>Action</th><th>Target</th><th>Details</th></tr></thead><tbody id="auditLogsTable"><tr><td colspan="5">Open Settings to load audit logs.</td></tr></tbody></table></div>`;
+        settings.appendChild(panel);
+        document.getElementById("refreshAuditLogs").addEventListener("click", loadAuditLogs);
+    }
+
+    // Append action header without changing the existing table's styling.
+    const studentHeader = document.querySelector("#students thead tr");
+    if (studentHeader && !studentHeader.querySelector(".user-actions-header")) {
+        const th = document.createElement("th");
+        th.className = "user-actions-header";
+        th.textContent = "Actions";
+        studentHeader.appendChild(th);
+    }
+
+    document.addEventListener("click", async event => {
+        const statusButton = event.target.closest(".user-status-btn");
+        if (statusButton) {
+            const userId = statusButton.dataset.userId;
+            const suspended = statusButton.dataset.suspended !== "true";
+            if (!confirm(suspended ? "Suspend this account? The user will no longer be able to sign in." : "Reactivate this account?")) return;
+            try {
+                const response = await apiFetch(`${API_BASE_URL}admin/users/${userId}/status`, {
+                    method: "PUT", body: JSON.stringify({ suspended })
+                });
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.message || "Could not update account.");
+                await Promise.all([loadStudents(), loadAdminDashboard(), loadAuditLogs()]);
+                alert(data.message);
+            } catch (error) { alert(error.message || "Could not update account."); }
+        }
+
+        const deactivateButton = event.target.closest(".buddy-deactivate-btn");
+        if (deactivateButton) {
+            const id = deactivateButton.dataset.userId;
+            if (!confirm("Deactivate this Buddy's tutoring role? Their account will remain a student account.")) return;
+            try {
+                const response = await apiFetch(`${API_BASE_URL}admin/buddies/${id}/deactivate`, { method: "PUT" });
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.message || "Could not deactivate Buddy.");
+                await Promise.all([loadBuddies(), loadStudents(), loadAuditLogs()]);
+                alert(data.message);
+            } catch (error) { alert(error.message || "Could not deactivate Buddy."); }
+        }
+    });
+
+    const settingsNav = document.querySelector('.nav-item[data-section="settings"]');
+    if (settingsNav) settingsNav.addEventListener("click", loadAuditLogs);
+}
+
+
+function renderAdminBookings() {
+    const table = document.getElementById("adminBookingsTable");
+    if (!table) return;
+    const statusFilter = document.getElementById("bookingStatusFilter")?.value || "";
+    const qualification = document.getElementById("bookingQualificationFilter")?.value || "";
+    const year = document.getElementById("bookingYearFilter")?.value || "";
+    const start = document.getElementById("bookingStartDate")?.value || "";
+    const end = document.getElementById("bookingEndDate")?.value || "";
+    const sessions = allAdminBookings.filter(item =>
+        (!statusFilter || item.status === statusFilter) &&
+        (!qualification || item.qualification === qualification) &&
+        (!year || String(item.academic_year) === year) &&
+        (!start || item.session_date >= start) &&
+        (!end || item.session_date <= end)
+    );
+    table.innerHTML = sessions.length ? sessions.map(session => `<tr>
+      <td>${escapeHtml(session.student_name || session.student || "Student")}</td>
+      <td>${escapeHtml(session.buddy_name || "Unassigned")}</td>
+      <td>${escapeHtml(session.module || "")}</td>
+      <td>${escapeHtml(session.session_date || "")}</td>
+      <td>${escapeHtml(session.session_time || "")}</td>
+      <td>${escapeHtml(session.qualification || "—")} · Year ${escapeHtml(session.academic_year || "—")}</td>
+      <td><span class="status ${escapeHtml((session.status || "").toLowerCase())}">${escapeHtml(session.status || "Pending")}</span></td>
+      <td><select class="booking-status-update" data-session-id="${session.id}" aria-label="Update booking ${session.id} status">
+        ${["Pending","Confirmed","Completed","Cancelled","Rejected"].map(status => `<option ${session.status === status ? "selected" : ""}>${status}</option>`).join("")}
+      </select></td></tr>`).join("") : `<tr><td colspan="8">No bookings match this filter.</td></tr>`;
+    table.querySelectorAll(".booking-status-update").forEach(select => select.addEventListener("change", async () => {
+        const id = select.dataset.sessionId;
+        const status = select.value;
+        if (!confirm(`Change booking #${id} to ${status}?`)) { renderAdminBookings(); return; }
+        try {
+            const response = await apiFetch(`${API_BASE_URL}admin/sessions/${id}/status`, {
+                method: "PUT", body: JSON.stringify({ status })
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.message || "Could not update booking.");
+            await Promise.all([loadSchedule(), loadAdminBookings(), loadAuditLogs()]);
+            alert("Booking status updated.");
+        } catch (error) {
+            alert(error.message || "Could not update booking.");
+            renderAdminBookings();
+        }
+    }));
+}
+
+function populateQualificationFilters() {
+    const names = [...new Set(allUsers.map(user => user.course).filter(Boolean))].sort();
+    ["studentQualificationFilter", "reportQualificationFilter", "bookingQualificationFilter"].forEach(id => {
+        const select = document.getElementById(id);
+        if (!select) return;
+        const previous = select.value;
+        select.innerHTML = `<option value="">All qualifications</option>` + names.map(name => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join("");
+        if (names.includes(previous)) select.value = previous;
+    });
+}
+
+function applyStudentFilters() {
+    const status = document.getElementById("studentStatusFilter")?.value || "";
+    const year = document.getElementById("studentYearFilter")?.value || "";
+    const qualification = document.getElementById("studentQualificationFilter")?.value || "";
+    const search = document.getElementById("studentSearch")?.value.toLowerCase() || "";
+    renderStudents(allUsers.filter(user => {
+        const matchesSearch = `${user.first_name} ${user.last_name} ${user.email} ${user.course}`.toLowerCase().includes(search);
+        const matchesStatus = !status || (status === "suspended" ? user.is_suspended : !user.is_suspended);
+        const matchesYear = !year || String(user.academic_year) === year;
+        const matchesQualification = !qualification || user.course === qualification;
+        return matchesSearch && matchesStatus && matchesYear && matchesQualification;
+    }));
+}
+
+async function downloadFilteredReport() {
+    const type = document.getElementById("reportTypeFilter")?.value || "users";
+    const status = document.getElementById("reportStatusFilter")?.value || "";
+    const start = document.getElementById("reportStartDate")?.value || "";
+    const end = document.getElementById("reportEndDate")?.value || "";
+    const qualification = document.getElementById("reportQualificationFilter")?.value || "";
+    const year = document.getElementById("reportYearFilter")?.value || "";
+    const params = new URLSearchParams({ type });
+    if (status) params.set("status", status);
+    if (qualification) params.set("qualification", qualification);
+    if (year) params.set("year", year);
+    if (start) params.set("start", start);
+    if (end) params.set("end", end);
+    try {
+        const response = await apiFetch(`${API_BASE_URL}admin/reports.csv?${params.toString()}`);
+        if (!response.ok) {
+            const data = await response.json().catch(() => ({}));
+            throw new Error(data.message || "Could not export report.");
+        }
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `octobuddy-${type}-report.csv`;
+        link.click();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (error) {
+        alert(error.message || "Could not export report.");
+    }
+}
+
+async function refreshReportFilters() {
+    const button = document.getElementById("exportReport");
+    if (button) button.title = "Export a CSV using the selected filters";
+}
+
+async function loadAuditLogs() {
+    const table = document.getElementById("auditLogsTable");
+    if (!table) return;
+    try {
+        const response = await apiFetch(`${API_BASE_URL}admin/audit-logs`);
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || "Could not load audit logs.");
+        const logs = data.logs || [];
+        table.innerHTML = logs.length ? logs.map(log => `<tr>
+          <td>${escapeHtml(new Date(log.created_at).toLocaleString())}</td>
+          <td>${escapeHtml(log.admin)}</td><td>${escapeHtml(log.action.replaceAll("_", " "))}</td>
+          <td>${escapeHtml(log.target_type)} #${escapeHtml(log.target_id || "")}</td>
+          <td>${escapeHtml(log.details || "")}</td></tr>`).join("") : `<tr><td colspan="5">No administrator actions have been recorded yet.</td></tr>`;
+    } catch (error) {
+        table.innerHTML = `<tr><td colspan="5">${escapeHtml(error.message || "Could not load audit logs.")}</td></tr>`;
+    }
+}
+
 function exportReportData() {
-    fetch(`${API_BASE_URL}/admin/users`)
+    apiFetch(`${API_BASE_URL}admin/users`)
         .then(response => response.json())
         .then(data => {
             const users = data.users || [];
@@ -820,7 +1202,7 @@ function exportReportData() {
 }
 
 function clearLogin() {
-    ["user_id", "user", "first_name", "last_name", "role", "active_buddy_room"].forEach(key => localStorage.removeItem(key));
+    ["auth_token", "user_id", "user", "first_name", "last_name", "role", "active_buddy_room"].forEach(key => localStorage.removeItem(key));
 }
 
 /* =========================================================
@@ -876,3 +1258,23 @@ function escapeHtml(value) {
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
 }
+
+document.addEventListener("click", function (event) {
+    const detailsButton = event.target.closest("[data-details-id]");
+    if (!detailsButton) return;
+    const details = document.getElementById(`applicationDetails${detailsButton.dataset.detailsId}`);
+    if (!details) return;
+    details.hidden = !details.hidden;
+    detailsButton.textContent = details.hidden ? "Read application" : "Hide details";
+});
+
+
+// The notification bell opens the live pending-application list.
+document.addEventListener("DOMContentLoaded", function () {
+    const bell = document.querySelector(".notification-btn");
+    if (bell) bell.addEventListener("click", function () {
+        const applicationsNav = document.querySelector('.nav-item[data-section="applications"]');
+        if (applicationsNav) applicationsNav.click();
+        if (typeof loadApplications === "function") loadApplications();
+    });
+});

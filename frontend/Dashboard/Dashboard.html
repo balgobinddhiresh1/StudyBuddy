@@ -6,6 +6,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Octo Buddy Dashboard | Octo Buddy</title>
 
+    <script>
+      // Prevent direct access to the Buddy dashboard without an authenticated session.
+      (function () {
+        const userId = localStorage.getItem('user_id');
+        const token = localStorage.getItem('auth_token');
+        if (!userId || !token) {
+          window.location.replace('../signin_login/login.html?next=' + encodeURIComponent('../Dashboard/Dashboard.html'));
+        }
+      })();
+    </script>
+
     <!-- Google Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -52,7 +63,7 @@
         <a href="#" onclick="openEditModal()">Edit Profile</a>
         <a href="../Dashboard/Dashboard.html">Dashboard</a>
         <a href="../sessions/sessions.html">Sessions</a>
-        <a href="../project.html">Logout</a>
+        <a href="../signin_login/project.html">Logout</a>
     </div>
 </div>
 
@@ -304,10 +315,10 @@
             <h3 style="margin-top: 0; color: #1e41bb;">Update Profile</h3>
             
             <label style="display: block; font-size: 0.85rem; color: #555; margin-top: 15px;">First Name</label>
-            <input type="text" id="editFirstName" style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box;">
+            <input type="text" id="editFirstName" maxlength="50" pattern="[A-Za-zÀ-ÖØ-öø-ÿ]+([ '-][A-Za-zÀ-ÖØ-öø-ÿ]+)*" title="Letters only; spaces, apostrophes and hyphens are allowed" style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box;">
 
             <label style="display: block; font-size: 0.85rem; color: #555; margin-top: 15px;">Last Name</label>
-            <input type="text" id="editLastName" style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box;">
+            <input type="text" id="editLastName" maxlength="50" pattern="[A-Za-zÀ-ÖØ-öø-ÿ]+([ '-][A-Za-zÀ-ÖØ-öø-ÿ]+)*" title="Letters only; spaces, apostrophes and hyphens are allowed" style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box;">
 
             </select>
 
@@ -390,6 +401,23 @@
 
     <div id="footer-container"></div>
     <script src="../footer/footer.js"></script>
+
+<script>
+/* Octo Buddy API session helper: attaches the signed login token to protected API calls. */
+(() => {
+  if (window.__octoFetchWrapped) return;
+  window.__octoFetchWrapped = true;
+  const originalFetch = window.fetch.bind(window);
+  window.fetch = (input, init = {}) => {
+    const url = typeof input === "string" ? input : (input && input.url) || "";
+    if (!url.includes("/api/")) return originalFetch(input, init);
+    const headers = new Headers(init.headers || (input instanceof Request ? input.headers : undefined));
+    const token = localStorage.getItem("auth_token");
+    if (token && !headers.has("Authorization")) headers.set("Authorization", `Bearer ${token}`);
+    return originalFetch(input, { ...init, headers });
+  };
+})();
+</script>
 </body>
 
 </html>

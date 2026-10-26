@@ -1264,3 +1264,7 @@ header.nav-hidden {
         font-size: 1.8rem;
     }
 }
+/* Validation feedback */
+input:invalid:not(:placeholder-shown), textarea:invalid:not(:placeholder-shown) { border-color: #c62828; }
+input:focus, textarea:focus, select:focus { outline: 2px solid rgba(30,161,122,.35); outline-offset: 1px; }
+.details-btn { border: 0; border-radius: 6px; padding: 7px 10px; cursor: pointer; background: #0c6478; color: #fff; }

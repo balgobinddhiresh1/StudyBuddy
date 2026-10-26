@@ -45,7 +45,7 @@
                 </li>
 
                 <li>
-                    <a href="../dashboard/dashboard.html">Dashboard</a>
+                    <a href="../Dashboard/Dashboard.html">Dashboard</a>
                 </li>
 
                 <li>
@@ -62,10 +62,10 @@
     </button>
 
     <div class="profile-dropdown" id="profileDropdown">
-        <a href="../student/profile.html">Edit Profile</a>
-        <a href="../dashboard/dashboard.html">Dashboard</a>
+        <a href="../Student/student.html">Edit Profile</a>
+        <a href="../Dashboard/Dashboard.html">Dashboard</a>
         <a href="sessions.html">Sessions</a>
-        <a href="../project.html">Logout</a>
+        <a href="../signin_login/project.html">Logout</a>
     </div>
 </div>
 
@@ -589,7 +589,7 @@
             JAVASCRIPT
     ========================= -->
 
-    <script src="../footer.js"></script>
+    <script src="../footer/footer.js"></script>
     <!-- =========================
         BOTTOM MOBILE NAV
 ========================= -->
@@ -618,7 +618,7 @@
             </span>
         </a>
 
-        <a href="../dashboard/dashboard.html" class="bottom-nav-item" data-label="Dashboard">
+        <a href="../Dashboard/Dashboard.html" class="bottom-nav-item" data-label="Dashboard">
             <span class="bottom-nav-icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                     <line x1="6" y1="20" x2="6" y2="12"/>
@@ -646,6 +646,23 @@
 
    
 <script src="../loader/loader.js"></script>
+
+<script>
+/* Octo Buddy API session helper: attaches the signed login token to protected API calls. */
+(() => {
+  if (window.__octoFetchWrapped) return;
+  window.__octoFetchWrapped = true;
+  const originalFetch = window.fetch.bind(window);
+  window.fetch = (input, init = {}) => {
+    const url = typeof input === "string" ? input : (input && input.url) || "";
+    if (!url.includes("/api/")) return originalFetch(input, init);
+    const headers = new Headers(init.headers || (input instanceof Request ? input.headers : undefined));
+    const token = localStorage.getItem("auth_token");
+    if (token && !headers.has("Authorization")) headers.set("Authorization", `Bearer ${token}`);
+    return originalFetch(input, { ...init, headers });
+  };
+})();
+</script>
 </body>
 
 </html>

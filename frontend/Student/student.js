@@ -8,6 +8,38 @@
 ========================================================= */
 
 const API_BASE_URL = "https://studybuddy-bl8d.onrender.com/api/";
+
+async function configureBookingModules(user) {
+    const select = document.getElementById("module");
+    if (!select) return;
+    const course = String(user?.course || "General").toLowerCase();
+    const fallbackCatalog = ["Programming", "Database Systems", "Networking", "Web Development"];
+    let modules = fallbackCatalog;
+    try {
+        const token = localStorage.getItem("auth_token") || "";
+        const response = await fetch(`${API_BASE_URL}modules`, {
+            headers: token ? { Authorization: `Bearer ${token}` } : {}
+        });
+        if (response.ok) {
+            const data = await response.json();
+            if (Array.isArray(data.modules)) modules = data.modules;
+        } else if (course.includes("computer science")) modules = ["Programming", "Database Systems", "Networking"];
+        else if (course.includes("business administration")) modules = [];
+    } catch (error) {
+        console.warn("Could not load the managed module catalogue; using fallback modules.", error);
+        if (course.includes("computer science")) modules = ["Programming", "Database Systems", "Networking"];
+        else if (course.includes("business administration")) modules = [];
+    }
+    const previous = select.value;
+    select.replaceChildren(new Option("Select a module", ""));
+    modules.forEach(name => select.add(new Option(name, name)));
+    if (modules.includes(previous)) select.value = previous;
+    if (!modules.length) {
+        select.add(new Option("No matching modules are configured for this qualification/year", ""));
+        select.disabled = true;
+    } else select.disabled = false;
+}
+
 let jitsiApi = null;
 
 
@@ -98,7 +130,7 @@ async function loadLoggedInUser() {
 
     try {
         const response =
-            await fetch(`${API_BASE_URL}/user/${userId}`);
+            await fetch(`${API_BASE_URL}user/${userId}`);
 
         if (!response.ok) {
             throw new Error("Could not load user profile.");
@@ -114,6 +146,7 @@ async function loadLoggedInUser() {
         localStorage.setItem("role", user.role || "student");
 
         updateDOMProfile(user);
+        configureBookingModules(user);
 
     } catch (error) {
         console.warn("Could not reach profile API:", error);
@@ -121,7 +154,7 @@ async function loadLoggedInUser() {
         const cached =
             JSON.parse(localStorage.getItem("user") || "{}");
 
-        updateDOMProfile({
+        const cachedProfile = {
             first_name:
                 cached.first_name ||
                 localStorage.getItem("first_name") ||
@@ -138,7 +171,9 @@ async function loadLoggedInUser() {
             course: cached.course || "General",
             academic_year: cached.academic_year || "",
             points: cached.points || 0
-        });
+        };
+        updateDOMProfile(cachedProfile);
+        configureBookingModules(cachedProfile);
     }
 }
 
@@ -275,6 +310,7 @@ function closeEditModal() {
  * Save the profile through the API and refresh the page data.
  */
 async function saveProfileChanges() {
+    const namePattern = /^[A-Za-zÀ-ÖØ-öø-ÿ]+(?:[ '\u2019-][A-Za-zÀ-ÖØ-öø-ÿ]+)*$/;
     const firstName =
         document.getElementById("editFirstName").value.trim();
 
@@ -291,8 +327,9 @@ async function saveProfileChanges() {
         localStorage.getItem("user_id") ||
         sessionStorage.getItem("user_id");
 
-    if (!firstName) {
-        alert("First name is required.");
+    if (!namePattern.test(firstName) || !namePattern.test(lastName)) {
+        alert("First and last names must contain letters only. Spaces, apostrophes and hyphens are allowed.");
+        document.getElementById(!namePattern.test(firstName) ? "editFirstName" : "editLastName").focus();
         return;
     }
 
@@ -303,7 +340,7 @@ async function saveProfileChanges() {
 
     try {
         const response = await fetch(
-            `${API_BASE_URL}/user/${userId}`,
+            `${API_BASE_URL}user/${userId}`,
             {
                 method: "PUT",
                 headers: {
@@ -358,7 +395,7 @@ async function loadUpcomingSessions() {
 
     try {
         const response =
-            await fetch(`${API_BASE_URL}/sessions/student/${userId}`);
+            await fetch(`${API_BASE_URL}sessions/student/${userId}`);
 
         if (!response.ok) {
             throw new Error("Could not load sessions.");
@@ -617,7 +654,7 @@ function setupBookingForm() {
 
         try {
             const response =
-                await fetch(`${API_BASE_URL}/bookings`, {
+                await fetch(`${API_BASE_URL}bookings`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json"

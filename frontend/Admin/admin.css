@@ -1924,3 +1924,57 @@ td {
     }
 
 }
+
+/* Admin management controls inherit the existing Octo Buddy palette and typography. */
+.admin-filter-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    max-width: 100%;
+}
+
+.admin-filter-controls select,
+.admin-filter-controls input,
+#adminBookingPanel select,
+#auditLogPanel select {
+    font: inherit;
+    font-size: 12px;
+    color: var(--text);
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 9px 10px;
+    max-width: 100%;
+}
+
+#adminBookingPanel .section-heading,
+#auditLogPanel .section-heading {
+    padding: 18px 20px;
+}
+
+#adminBookingPanel .status,
+#students .status {
+    white-space: nowrap;
+}
+
+#adminBookingPanel .booking-status-update {
+    min-width: 112px;
+}
+
+#modules .module-item small {
+    display: block;
+    margin-top: 4px;
+    color: var(--muted);
+    font-size: 11px;
+}
+
+@media (max-width: 900px) {
+    .admin-filter-controls {
+        width: 100%;
+    }
+    .admin-filter-controls select,
+    .admin-filter-controls input {
+        flex: 1 1 140px;
+    }
+}
