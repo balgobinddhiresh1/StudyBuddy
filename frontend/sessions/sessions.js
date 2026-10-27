@@ -23,8 +23,10 @@ let loadedSessions = [];
 document.addEventListener("DOMContentLoaded", () => {
     loadSessions();
     const buttons = document.querySelectorAll(".calendar-buttons button");
-    if (buttons[0]) buttons[0].addEventListener("click", () => { visibleMonth.setMonth(visibleMonth.getMonth() - 1); renderMonthCalendar(); });
-    if (buttons[1]) buttons[1].addEventListener("click", () => { visibleMonth.setMonth(visibleMonth.getMonth() + 1); renderMonthCalendar(); });
+    if (buttons[0]) buttons[0].addEventListener("click", () => { visibleMonth = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() - 1, 1); renderMonthCalendar(); });
+    if (buttons[1]) buttons[1].addEventListener("click", () => { visibleMonth = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() + 1, 1); renderMonthCalendar(); });
+    // Keep both the session cards and calendar in sync with bookings/status changes.
+    window.setInterval(loadSessions, 30000);
 });
 
 async function loadSessions() {
@@ -35,8 +37,8 @@ async function loadSessions() {
         return;
     }
 
-    // Remove the example sessions from the HTML.
-    container.querySelectorAll(".session").forEach(session => session.remove());
+    // Remove previous session cards/messages before loading fresh database data.
+    container.querySelectorAll(".session, .session-message").forEach(element => element.remove());
 
     const userId = localStorage.getItem("user_id");
 
@@ -111,7 +113,7 @@ function createSessionCard(session) {
     const card = document.createElement("div");
     card.className = "session";
 
-    const date = parseSessionDate(session.session_date);
+    const date = parseSessionDate(session.date || session.session_date || session.sessionDate);
     const dayName = date
         ? date.toLocaleDateString("en-ZA", { weekday: "short" }).toUpperCase()
         : "DATE";
@@ -146,7 +148,7 @@ function createSessionCard(session) {
     moduleName.textContent = session.module || "Tutoring Session";
 
     const time = document.createElement("p");
-    time.textContent = formatSessionTime(session.session_time);
+    time.textContent = formatSessionTime(session.time || session.session_time || session.start_time);
 
     const buddy = document.createElement("p");
     buddy.textContent = `Octo Buddy: ${buddyName}`;

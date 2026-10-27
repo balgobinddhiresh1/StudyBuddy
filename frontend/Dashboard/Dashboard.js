@@ -390,6 +390,30 @@ async function loadBuddySessions() {
             );
 
         if (firstUpcoming) {
+            // Populate the date badge from the actual saved session, not static HTML.
+            const dateValue = firstUpcoming.date || firstUpcoming.session_date || firstUpcoming.sessionDate || "";
+            const dateMatch = String(dateValue).match(/^(\\d{4})-(\\d{2})-(\\d{2})/);
+            const sessionDate = dateMatch
+                ? new Date(Number(dateMatch[1]), Number(dateMatch[2]) - 1, Number(dateMatch[3]))
+                : (dateValue ? new Date(dateValue) : null);
+            const dateBadge = document.querySelector(".upcoming-card .session-date");
+            if (dateBadge && sessionDate && !Number.isNaN(sessionDate.getTime())) {
+                const day = dateBadge.querySelector("strong");
+                const weekday = dateBadge.querySelector(".day");
+                const month = dateBadge.querySelector(".month");
+                if (weekday) weekday.textContent = sessionDate.toLocaleDateString("en-ZA", { weekday: "short" }).toUpperCase();
+                if (day) day.textContent = String(sessionDate.getDate());
+                if (month) month.textContent = sessionDate.toLocaleDateString("en-ZA", { month: "short" }).toUpperCase();
+            }
+            const sessionInfo = document.querySelector(".upcoming-card .session-info");
+            if (sessionInfo) {
+                const paragraphs = sessionInfo.querySelectorAll("p");
+                const timeValue = firstUpcoming.time || firstUpcoming.session_time || "";
+                if (paragraphs.length > 1) paragraphs[1].textContent = timeValue
+                    ? formatBuddyTime(timeValue)
+                    : "Time not specified";
+            }
+
             setText(
                 "assignedStudentName",
                 firstUpcoming.student || "Student"
@@ -655,3 +679,11 @@ window.addEventListener('scroll', function () {
 });
     });
     
+
+function formatBuddyTime(value) {
+    const match = String(value || "").match(/^(\\d{1,2}):(\\d{2})/);
+    if (!match) return value || "Time not specified";
+    const date = new Date();
+    date.setHours(Number(match[1]), Number(match[2]), 0, 0);
+    return date.toLocaleTimeString("en-ZA", { hour: "numeric", minute: "2-digit", hour12: true });
+}
