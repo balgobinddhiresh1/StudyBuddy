@@ -3,7 +3,7 @@
    Connects the existing Buddy dashboard to the Flask backend.
 ========================================================= */
 
-const API_BASE_URL = "https://studybuddy-bl8d.onrender.com/api/";
+const API_BASE_URL = "https://studybuddy-b18d.onrender.com/api/";
 let jitsiApi = null;
 
 

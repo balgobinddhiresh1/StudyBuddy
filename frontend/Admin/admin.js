@@ -15,7 +15,7 @@
    - Handle logout and admin-page protection
 ========================================================= */
 
-const API_BASE_URL = (window.OCTOBUDDY_API_BASE_URL || "https://studybuddy-bl8d.onrender.com/api/").replace(/\/?$/, "/");
+const API_BASE_URL = (window.OCTOBUDDY_API_BASE_URL || "https://studybuddy-b18d.onrender.com/api/").replace(/\/?$/, "/");
 
 async function apiFetch(url, options = {}) {
     const token = localStorage.getItem("auth_token") || "";
