@@ -1,5 +1,5 @@
 
-const API_URL = "https://studybuddy-b18d.onrender.com/api";
+const API_URL = "https://studybuddy-bl8d.onrender.com/api";
 
 document.addEventListener("DOMContentLoaded", function () {
     // This page is private: redirect to Login before exposing the application.

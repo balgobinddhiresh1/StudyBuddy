@@ -7,7 +7,7 @@
    behaves like a real web application.
 ========================================================= */
 
-const API_BASE_URL = "https://studybuddy-b18d.onrender.com/api/";
+const API_BASE_URL = "https://studybuddy-bl8d.onrender.com/api/";
 
 async function configureBookingModules(user) {
     const select = document.getElementById("module");
