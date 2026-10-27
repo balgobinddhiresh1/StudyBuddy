@@ -1132,3 +1132,8 @@ header.nav-hidden {
     }
 
 }
+
+/* Live month calendar populated from saved tutoring sessions. */
+.calendar-date { min-height: 84px; padding: 8px 6px; border-radius: 10px; border: 1px solid rgba(120,120,120,.18); display: flex; flex-direction: column; gap: 4px; overflow-wrap: anywhere; }
+.calendar-date.today { outline: 2px solid var(--primary-color, #8b5cf6); }
+.calendar-session { display: block; font-size: 10px; line-height: 1.25; padding: 3px 4px; border-radius: 4px; background: rgba(139,92,246,.14); }

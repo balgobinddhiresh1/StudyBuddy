@@ -550,6 +550,7 @@ async function loadSchedule() {
         const data = await response.json();
         allSessions = data.sessions || [];
         renderCalendar();
+        await loadAdminBookings();
         renderAdminBookings();
         renderBuddies();
     } catch (error) {
@@ -581,7 +582,7 @@ function renderCalendar() {
         title.textContent = `${currentWeekStart.toLocaleDateString(undefined, { month: "long", day: "numeric" })} - ${end.toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" })}`;
     }
 
-    const hours = ["09:00", "10:00", "11:00", "12:00"];
+    const hours = Array.from({ length: 10 }, (_, index) => `${String(index + 8).padStart(2, "0")}:00`);
     const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 
     calendar.innerHTML = days.map((dayName, index) => {
@@ -594,7 +595,7 @@ function renderCalendar() {
                 <div class="day-header">${dayName}<span>${day.getDate()}</span></div>
                 ${hours.map(hour => {
                     const session = allSessions.find(item =>
-                        item.session_date === dateString && item.session_time === hour
+                        (item.date || item.session_date) === dateString && String(item.time || item.session_time || "").slice(0, 5) === hour
                     );
                     return session
                         ? `<button class="time-slot booked" type="button" title="${escapeHtml(session.status)}">

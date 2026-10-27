@@ -639,6 +639,22 @@ function setupBookingForm() {
 
     if (!bookingForm) return;
 
+    const dateField = document.getElementById("date");
+    const timeField = document.getElementById("time");
+    const setMinimumBookingDate = () => {
+        if (dateField) {
+            const now = new Date();
+            dateField.min = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")}`;
+        }
+    };
+    setMinimumBookingDate();
+    dateField?.addEventListener("change", () => {
+        if (!dateField.value || !timeField) return;
+        const now = new Date();
+        const selected = new Date(`${dateField.value}T${timeField.value || "00:00"}`);
+        if (dateField.value === dateField.min && selected <= now) timeField.value = "";
+    });
+
     bookingForm.addEventListener("submit", async event => {
         event.preventDefault();
 
@@ -656,6 +672,13 @@ function setupBookingForm() {
 
         if (!module || !date || !time) {
             alert("Please complete all booking fields.");
+            return;
+        }
+
+        const now = new Date();
+        const selectedStart = new Date(`${date}T${time}:00`);
+        if (selectedStart <= now) {
+            alert("Please choose a time in the future. You cannot book a time that has already passed.");
             return;
         }
 
@@ -756,8 +779,13 @@ function setupMarksForm() {
         const result =
             document.getElementById("academicResult");
 
-        if (!subject || Number.isNaN(score)) {
-            alert("Please enter a subject and score.");
+        if (!subject || !/^[A-Za-zÀ-ÿ][A-Za-zÀ-ÿ &’'\-]*$/.test(subject)) {
+            alert("Please enter a module name using letters and spaces only. Numbers are not allowed.");
+            return;
+        }
+
+        if (!Number.isFinite(score) || document.getElementById("score").value.trim() === "") {
+            alert("Please enter a valid score.");
             return;
         }
 

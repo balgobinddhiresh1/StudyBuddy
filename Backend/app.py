@@ -25,6 +25,7 @@ import csv
 import io
 import json
 from datetime import datetime, date, timedelta
+from zoneinfo import ZoneInfo
 from email.message import EmailMessage
 
 from flask import Flask, request, jsonify, g, make_response
@@ -1341,11 +1342,12 @@ def create_booking():
                 "message": "Invalid session date."
             }), 400
 
-        if requested_date < date.today():
-            return jsonify({
-                "status": "error",
-                "message": "Please choose a future date."
-            }), 400
+        local_now = datetime.now(ZoneInfo("Africa/Johannesburg"))
+        if requested_date < local_now.date():
+            return jsonify({"status": "error", "message": "Past dates cannot be booked."}), 400
+        requested_start = datetime.combine(requested_date, datetime.strptime(time_text, "%H:%M").time(), tzinfo=ZoneInfo("Africa/Johannesburg"))
+        if requested_start <= local_now:
+            return jsonify({"status": "error", "message": "That time has already passed. Please choose a future time."}), 400
 
         # Prevent a student from accidentally booking the same slot twice.
         existing_student_booking = TutoringSession.query.filter_by(
@@ -1525,9 +1527,16 @@ def admin_create_session():
             return jsonify(status="error", message="Time must use 24-hour HH:MM format."), 400
         if (student.role or "").lower() != "student" or (buddy.role or "").lower() != "buddy":
             return jsonify(status="error", message="Select a valid student and approved Buddy."), 400
-        requested_date = date.fromisoformat(date_text)
-        if requested_date < date.today():
+        try:
+            requested_date = date.fromisoformat(date_text)
+            local_now = datetime.now(ZoneInfo("Africa/Johannesburg"))
+            requested_start = datetime.combine(requested_date, datetime.strptime(time_text, "%H:%M").time(), tzinfo=ZoneInfo("Africa/Johannesburg"))
+        except ValueError:
+            return jsonify(status="error", message="Enter a valid date and time."), 400
+        if requested_date < local_now.date():
             return jsonify(status="error", message="Past dates cannot be booked."), 400
+        if requested_start <= local_now:
+            return jsonify(status="error", message="That time has already passed. Please choose a future time."), 400
         buddy_application = BuddyApplication.query.filter_by(user_id=buddy.id, status="Approved").first()
         if not buddy_application or module not in json_list(buddy_application.modules):
             return jsonify(status="error", message="The selected Buddy is not approved to tutor this module."), 400

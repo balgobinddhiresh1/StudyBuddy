@@ -17,8 +17,15 @@
 
 
 const API_URL = "https://studybuddy-bl8d.onrender.com/api";
+let visibleMonth = new Date();
+let loadedSessions = [];
 
-document.addEventListener("DOMContentLoaded", loadSessions);
+document.addEventListener("DOMContentLoaded", () => {
+    loadSessions();
+    const buttons = document.querySelectorAll(".calendar-buttons button");
+    if (buttons[0]) buttons[0].addEventListener("click", () => { visibleMonth.setMonth(visibleMonth.getMonth() - 1); renderMonthCalendar(); });
+    if (buttons[1]) buttons[1].addEventListener("click", () => { visibleMonth.setMonth(visibleMonth.getMonth() + 1); renderMonthCalendar(); });
+});
 
 async function loadSessions() {
     const container = document.querySelector(".upcoming-card");
@@ -39,9 +46,11 @@ async function loadSessions() {
     }
 
     try {
-        const response = await fetch(
-            `${API_URL}/sessions/student/${encodeURIComponent(userId)}`
-        );
+        const role = (localStorage.getItem("user_role") || localStorage.getItem("role") || "student").toLowerCase();
+        const endpoint = role === "buddy" || role === "octo buddy"
+            ? `sessions/buddy/${encodeURIComponent(userId)}`
+            : `sessions/student/${encodeURIComponent(userId)}`;
+        const response = await fetch(`${API_URL}/${endpoint}`);
 
         if (!response.ok) {
             throw new Error(`Server returned ${response.status}`);
@@ -53,6 +62,8 @@ async function loadSessions() {
             throw new Error(data.message || "Could not load sessions.");
         }
 
+        loadedSessions = data.sessions || [];
+        renderMonthCalendar();
         if (!data.sessions || data.sessions.length === 0) {
             showMessage(container, "You have no tutoring sessions booked yet.");
             return;
@@ -69,6 +80,31 @@ async function loadSessions() {
             "Unable to load your sessions. Please try again later."
         );
     }
+}
+
+
+function renderMonthCalendar() {
+    const title = document.querySelector(".calendar-card .card-header h2");
+    const grid = document.querySelector(".calendar-days");
+    if (!grid) return;
+    if (title) title.textContent = visibleMonth.toLocaleDateString("en-ZA", { month: "long", year: "numeric" });
+    const year = visibleMonth.getFullYear();
+    const month = visibleMonth.getMonth();
+    const first = new Date(year, month, 1);
+    const mondayOffset = (first.getDay() + 6) % 7;
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const today = new Date(); today.setHours(0,0,0,0);
+    const cells = [];
+    for (let i = 0; i < mondayOffset; i++) cells.push('<div class="empty"></div>');
+    for (let day = 1; day <= daysInMonth; day++) {
+        const dateKey = `${year}-${String(month + 1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
+        const sessions = loadedSessions.filter(item => String(item.date || item.session_date || "").slice(0,10) === dateKey && !["cancelled"].includes(String(item.status || "").toLowerCase()));
+        const todayClass = new Date(year, month, day).getTime() === today.getTime() ? " today" : "";
+        const sessionMarkup = sessions.map(item => `<small class="calendar-session">${escapeHtml(String(item.time || item.session_time || "").slice(0,5))} ${escapeHtml(item.module || "Session")}</small>`).join("");
+        cells.push(`<div class="calendar-date${todayClass}" data-date="${dateKey}"><strong>${day}</strong>${sessionMarkup}</div>`);
+    }
+    while (cells.length % 7) cells.push('<div class="empty"></div>');
+    grid.innerHTML = cells.join("");
 }
 
 function createSessionCard(session) {

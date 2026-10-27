@@ -29,6 +29,7 @@ document.addEventListener("DOMContentLoaded", () => {
     loadBuddyProfile();
     loadBuddySessions();
     loadBuddyStudents();
+    window.setInterval(() => { loadBuddySessions(); loadBuddyStudents(); }, 30000);
 });
 
 
@@ -367,6 +368,7 @@ async function loadBuddySessions() {
 
         const data = await response.json();
         const sessions = data.sessions || [];
+        renderBuddySchedule(sessions);
 
         setText(
             "statUpcoming",
@@ -409,6 +411,26 @@ async function loadBuddySessions() {
     }
 }
 
+
+
+function renderBuddySchedule(sessions) {
+    const list = document.querySelector(".schedule-list");
+    if (!list) return;
+    const upcoming = (sessions || [])
+        .filter(session => !["Cancelled", "Completed"].includes(session.status))
+        .sort((a, b) => `${a.date || a.session_date} ${a.time || a.session_time}`.localeCompare(`${b.date || b.session_date} ${b.time || b.session_time}`));
+    if (!upcoming.length) {
+        list.innerHTML = '<p class="schedule-note">No tutoring sessions have been scheduled yet.</p>';
+        return;
+    }
+    list.innerHTML = upcoming.slice(0, 6).map(session => {
+        const dateText = session.date || session.session_date || "";
+        const timeText = String(session.time || session.session_time || "").slice(0, 5);
+        const date = dateText ? new Date(`${dateText}T12:00:00`) : null;
+        const dateLabel = date && !Number.isNaN(date.getTime()) ? date.toLocaleDateString("en-ZA", {weekday:"short", day:"numeric", month:"short"}) : dateText;
+        return `<div class="schedule-row"><div class="schedule-time"><strong>${escapeHtml(timeText)}</strong><span>${escapeHtml(dateLabel)}</span></div><div class="schedule-info"><strong>${escapeHtml(session.module || "Tutoring session")}</strong><p>${escapeHtml(session.student || session.student_name || "Student")} · ${escapeHtml(session.status || "Confirmed")}</p></div></div>`;
+    }).join("");
+}
 
 /* =========================================================
    MY STUDENTS
