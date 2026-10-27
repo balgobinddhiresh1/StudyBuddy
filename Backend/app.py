@@ -39,9 +39,28 @@ from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 load_dotenv()
 
 
+
 app = Flask(__name__)
-_allowed_origins = [origin.strip() for origin in os.environ.get("CORS_ORIGINS", "").split(",") if origin.strip()]
-CORS(app, resources={r"/api/*": {"origins": _allowed_origins or ["http://localhost:3000", "http://127.0.0.1:5500"]}}, supports_credentials=False)
+
+_allowed_origins = [
+    origin.strip()
+    for origin in os.environ.get("CORS_ORIGINS", "").split(",")
+    if origin.strip()
+]
+
+CORS(
+    app,
+    resources={
+        r"/api/*": {
+            "origins": _allowed_origins or [
+                "https://studybuddy-frontend-mocha.vercel.app",
+                "http://localhost:3000",
+                "http://127.0.0.1:5500"
+            ]
+        }
+    },
+    supports_credentials=False
+)
 
 _secret_key = os.environ.get("SECRET_KEY", "").strip()
 if not _secret_key and (os.environ.get("RENDER") or os.environ.get("VERCEL")):
