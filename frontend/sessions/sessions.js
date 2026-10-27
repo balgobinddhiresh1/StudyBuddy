@@ -24,8 +24,8 @@ document.addEventListener("DOMContentLoaded", () => {
     loadSessions();
     window.setInterval(loadSessions, 30000);
     const buttons = document.querySelectorAll(".calendar-buttons button");
-    if (buttons[0]) buttons[0].addEventListener("click", () => { visibleMonth.setMonth(visibleMonth.getMonth() - 1); renderMonthCalendar(); });
-    if (buttons[1]) buttons[1].addEventListener("click", () => { visibleMonth.setMonth(visibleMonth.getMonth() + 1); renderMonthCalendar(); });
+    if (buttons[0]) buttons[0].addEventListener("click", previousMonth);
+    if (buttons[1]) buttons[1].addEventListener("click", nextMonth);
 });
 
 async function loadSessions() {
@@ -99,10 +99,12 @@ function renderMonthCalendar() {
     for (let i = 0; i < mondayOffset; i++) cells.push('<div class="empty"></div>');
     for (let day = 1; day <= daysInMonth; day++) {
         const dateKey = `${year}-${String(month + 1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
-        const sessions = loadedSessions.filter(item => String(item.date || item.session_date || item.sessionDate || "").slice(0,10) === dateKey && !["cancelled"].includes(String(item.status || "").toLowerCase()));
+        const sessions = loadedSessions.filter(item => String(item.date || item.session_date || "").slice(0,10) === dateKey && !["cancelled"].includes(String(item.status || "").toLowerCase()));
         const todayClass = new Date(year, month, day).getTime() === today.getTime() ? " today" : "";
-        const sessionMarkup = sessions.map(item => `<small class="calendar-session">${escapeHtml(String(item.time || item.session_time || item.start_time || "").slice(0,5))} ${escapeHtml(item.module || "Session")}</small>`).join("");
-        cells.push(`<div class="calendar-date${todayClass}" data-date="${dateKey}"><strong>${day}</strong>${sessionMarkup}</div>`);
+        const sessionClass = sessions.length ? " session-day" : "";
+        const sessionMarkup = sessions.length ? `<span class="calendar-session-dot" title="${sessions.length} booked session${sessions.length === 1 ? "" : "s"}"></span>` : "";
+        const detailMarkup = sessions.map(item => `<small class="calendar-session">${escapeHtml(String(item.time || item.session_time || "").slice(0,5))} ${escapeHtml(item.module || "Session")}</small>`).join("");
+        cells.push(`<div class="calendar-date${todayClass}${sessionClass}" data-date="${dateKey}" title="${sessions.length ? sessions.map(item => `${item.module || "Session"} ${item.time || item.session_time || ""}`).join("; ") : ""}"><strong>${day}</strong>${sessionMarkup}${detailMarkup}</div>`);
     }
     while (cells.length % 7) cells.push('<div class="empty"></div>');
     grid.innerHTML = cells.join("");
@@ -112,7 +114,7 @@ function createSessionCard(session) {
     const card = document.createElement("div");
     card.className = "session";
 
-    const date = parseSessionDate(session.date || session.session_date || session.sessionDate);
+    const date = parseSessionDate(session.session_date);
     const dayName = date
         ? date.toLocaleDateString("en-ZA", { weekday: "short" }).toUpperCase()
         : "DATE";
@@ -147,7 +149,7 @@ function createSessionCard(session) {
     moduleName.textContent = session.module || "Tutoring Session";
 
     const time = document.createElement("p");
-    time.textContent = formatSessionTime(session.time || session.session_time || session.start_time);
+    time.textContent = formatSessionTime(session.session_time);
 
     const buddy = document.createElement("p");
     buddy.textContent = `Octo Buddy: ${buddyName}`;
@@ -253,4 +255,15 @@ function showMessage(container, message) {
     element.className = "session-message";
     element.textContent = message;
     container.appendChild(element);
+}
+
+
+function previousMonth() {
+    visibleMonth = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() - 1, 1);
+    renderMonthCalendar();
+}
+
+function nextMonth() {
+    visibleMonth = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() + 1, 1);
+    renderMonthCalendar();
 }

@@ -384,21 +384,19 @@ async function loadBuddySessions() {
             ).length
         );
 
-        const upcomingSessions = sessions
+        const now = new Date();
+        const futureSessions = sessions
             .filter(session => !["cancelled", "completed"].includes(String(session.status || "").toLowerCase()))
-            .sort((a, b) => {
-                const aDate = `${a.date || a.session_date || "9999-12-31"} ${a.time || a.session_time || "23:59"}`;
-                const bDate = `${b.date || b.session_date || "9999-12-31"} ${b.time || b.session_time || "23:59"}`;
-                return aDate.localeCompare(bDate);
-            });
-        const firstUpcoming = upcomingSessions[0];
-        renderNextBuddySession(firstUpcoming || null);
+            .filter(session => {
+                const dateValue = session.date || session.session_date;
+                const timeValue = String(session.time || session.session_time || "00:00").slice(0, 5);
+                if (!dateValue) return false;
+                const start = new Date(`${dateValue.slice(0, 10)}T${timeValue}:00`);
+                return !Number.isNaN(start.getTime()) && start >= now;
+            })
+            .sort((a, b) => `${a.date || a.session_date} ${a.time || a.session_time}`.localeCompare(`${b.date || b.session_date} ${b.time || b.session_time}`));
 
-        if (firstUpcoming && firstUpcoming.room_code) {
-            localStorage.setItem("active_buddy_room", firstUpcoming.room_code);
-        } else {
-            localStorage.removeItem("active_buddy_room");
-        }
+        renderNextBuddySession(futureSessions[0]);
 
     } catch (error) {
         console.warn("Could not load Buddy sessions:", error);
@@ -407,61 +405,60 @@ async function loadBuddySessions() {
 
 
 
+function buddyEscape(value) {
+    return String(value ?? "").replace(/[&<>"']/g, char => ({"&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;"}[char]));
+}
+
+function sessionStart(session) {
+    const dateValue = String(session.date || session.session_date || "").slice(0, 10);
+    const timeValue = String(session.time || session.session_time || "00:00").slice(0, 5);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dateValue)) return null;
+    const result = new Date(`${dateValue}T${timeValue}:00`);
+    return Number.isNaN(result.getTime()) ? null : result;
+}
 
 function renderNextBuddySession(session) {
     const card = document.querySelector(".upcoming-card");
     if (!card) return;
-    const details = card.querySelector(".session-details");
-    const actions = card.querySelector(".session-actions");
+    const dateBox = card.querySelector(".session-date");
+    const info = card.querySelector(".session-info");
     const badge = card.querySelector(".status-badge");
-    if (!details) return;
-
+    const actions = card.querySelector(".session-actions");
     if (!session) {
-        details.innerHTML = '<p class="schedule-note">No upcoming tutoring sessions booked.</p>';
+        if (dateBox) dateBox.innerHTML = '<span class="day">NEXT</span><strong>—</strong><span class="month">SESSION</span>';
+        if (info) info.innerHTML = '<h3>No upcoming session</h3><p>Your next booked session will appear here.</p>';
         if (badge) badge.textContent = "No upcoming session";
         if (actions) actions.style.display = "none";
-        setText("assignedStudentName", "—");
-        setText("assignedRoomCode", "—");
+        localStorage.removeItem("active_buddy_room");
         return;
     }
-
-    const dateValue = session.date || session.session_date || session.sessionDate || "";
-    const dateMatch = String(dateValue).match(/^(\d{4})-(\d{2})-(\d{2})/);
-    const parsedDate = dateMatch ? new Date(Number(dateMatch[1]), Number(dateMatch[2])-1, Number(dateMatch[3])) : new Date(dateValue);
-    const validDate = dateValue && !Number.isNaN(parsedDate.getTime());
-    const dayName = validDate ? parsedDate.toLocaleDateString("en-ZA", { weekday: "short" }).toUpperCase() : "DATE";
-    const dayNumber = validDate ? parsedDate.getDate() : "—";
-    const monthName = validDate ? parsedDate.toLocaleDateString("en-ZA", { month: "short" }).toUpperCase() : "";
-    const rawTime = String(session.time || session.session_time || "");
-    const timeMatch = rawTime.match(/^(\d{1,2}):(\d{2})/);
-    let timeLabel = "Time not specified";
-    if (timeMatch) {
-        const d = new Date(); d.setHours(Number(timeMatch[1]), Number(timeMatch[2]), 0, 0);
-        timeLabel = d.toLocaleTimeString("en-ZA", { hour: "numeric", minute: "2-digit" });
-    }
-    details.innerHTML = `<div class="session-date"><span class="day">${escapeHtml(dayName)}</span><strong>${escapeHtml(String(dayNumber))}</strong><span class="month">${escapeHtml(monthName)}</span></div><div class="session-info"><h3>${escapeHtml(session.module || "Tutoring session")}</h3><p>Student: <strong id="assignedStudentName">${escapeHtml(session.student || "Student")}</strong></p><p>${escapeHtml(timeLabel)}</p><p>Room: <strong id="assignedRoomCode">${escapeHtml(session.room_code || "Not assigned")}</strong></p></div>`;
-    if (badge) { badge.textContent = session.status || "Confirmed"; badge.className = `status-badge ${String(session.status || "confirmed").toLowerCase()}`; }
-    if (actions) actions.style.display = session.room_code ? "" : "none";
-    setText("assignedStudentName", session.student || "Student");
-    setText("assignedRoomCode", session.room_code || "Not assigned");
+    const start = sessionStart(session);
+    if (dateBox) dateBox.innerHTML = `<span class="day">${start ? buddyEscape(start.toLocaleDateString("en-ZA", {weekday:"short"}).toUpperCase()) : "DATE"}</span><strong>${start ? start.getDate() : "—"}</strong><span class="month">${start ? buddyEscape(start.toLocaleDateString("en-ZA", {month:"short"}).toUpperCase()) : ""}</span>`;
+    if (info) info.innerHTML = `<h3>${buddyEscape(session.module || "Tutoring session")}</h3><p>Student: <strong>${buddyEscape(session.student || "Student")}</strong></p><p>${buddyEscape(String(session.time || session.session_time || "Time not specified").slice(0,5))}</p><p>Room: <strong>${buddyEscape(session.room_code || "Not assigned")}</strong></p>`;
+    if (badge) badge.textContent = session.status || "Confirmed";
+    if (actions) actions.style.display = "flex";
+    if (session.room_code) localStorage.setItem("active_buddy_room", session.room_code);
+    else localStorage.removeItem("active_buddy_room");
 }
 
 function renderBuddySchedule(sessions) {
     const list = document.querySelector(".schedule-list");
     if (!list) return;
     const upcoming = (sessions || [])
-        .filter(session => !["Cancelled", "Completed"].includes(session.status))
+        .filter(session => !["cancelled", "completed"].includes(String(session.status || "").toLowerCase()))
         .sort((a, b) => `${a.date || a.session_date} ${a.time || a.session_time}`.localeCompare(`${b.date || b.session_date} ${b.time || b.session_time}`));
+    const note = document.querySelector(".schedule-card .schedule-note");
     if (!upcoming.length) {
         list.innerHTML = '<p class="schedule-note">No tutoring sessions have been scheduled yet.</p>';
+        if (note) note.remove();
         return;
     }
+    if (note) note.remove();
     list.innerHTML = upcoming.slice(0, 6).map(session => {
-        const dateText = session.date || session.session_date || "";
-        const timeText = String(session.time || session.session_time || "").slice(0, 5);
-        const date = dateText ? new Date(`${dateText}T12:00:00`) : null;
-        const dateLabel = date && !Number.isNaN(date.getTime()) ? date.toLocaleDateString("en-ZA", {weekday:"short", day:"numeric", month:"short"}) : dateText;
-        return `<div class="schedule-row"><div class="schedule-time"><strong>${escapeHtml(timeText)}</strong><span>${escapeHtml(dateLabel)}</span></div><div class="schedule-info"><strong>${escapeHtml(session.module || "Tutoring session")}</strong><p>${escapeHtml(session.student || session.student_name || "Student")} · ${escapeHtml(session.status || "Confirmed")}</p></div></div>`;
+        const start = sessionStart(session);
+        const dateLabel = start ? start.toLocaleDateString("en-ZA", {weekday:"short", day:"numeric", month:"short"}) : (session.date || session.session_date || "Date not set");
+        const timeText = String(session.time || session.session_time || "Time not set").slice(0,5);
+        return `<div class="schedule-row"><div class="schedule-time"><strong>${buddyEscape(timeText)}</strong><span>${buddyEscape(dateLabel)}</span></div><div class="schedule-info"><strong>${buddyEscape(session.module || "Tutoring session")}</strong><p>${buddyEscape(session.student || "Student")} · ${buddyEscape(session.status || "Confirmed")}</p></div><span class="status-badge">${buddyEscape(session.status || "Confirmed")}</span></div>`;
     }).join("");
 }
 
