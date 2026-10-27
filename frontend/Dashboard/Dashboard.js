@@ -388,7 +388,7 @@ async function loadBuddySessions() {
         const futureSessions = sessions
             .filter(session => !["cancelled", "completed"].includes(String(session.status || "").toLowerCase()))
             .filter(session => {
-                const dateValue = session.date || session.session_date;
+                const dateValue = String(session.date || session.session_date || session.sessionDate || "").slice(0, 10);
                 const timeValue = String(session.time || session.session_time || "00:00").slice(0, 5);
                 if (!dateValue) return false;
                 const start = new Date(`${dateValue.slice(0, 10)}T${timeValue}:00`);
@@ -410,7 +410,7 @@ function buddyEscape(value) {
 }
 
 function sessionStart(session) {
-    const dateValue = String(session.date || session.session_date || "").slice(0, 10);
+    const dateValue = String(session.date || session.session_date || session.sessionDate || "").slice(0, 10);
     const timeValue = String(session.time || session.session_time || "00:00").slice(0, 5);
     if (!/^\d{4}-\d{2}-\d{2}$/.test(dateValue)) return null;
     const result = new Date(`${dateValue}T${timeValue}:00`);

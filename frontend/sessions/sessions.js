@@ -99,7 +99,10 @@ function renderMonthCalendar() {
     for (let i = 0; i < mondayOffset; i++) cells.push('<div class="empty"></div>');
     for (let day = 1; day <= daysInMonth; day++) {
         const dateKey = `${year}-${String(month + 1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
-        const sessions = loadedSessions.filter(item => String(item.date || item.session_date || "").slice(0,10) === dateKey && !["cancelled"].includes(String(item.status || "").toLowerCase()));
+        const sessions = loadedSessions.filter(item => {
+            const bookedDate = String(item.date || item.session_date || item.sessionDate || "").slice(0, 10);
+            return bookedDate === dateKey && String(item.status || "").toLowerCase() !== "cancelled";
+        });
         const todayClass = new Date(year, month, day).getTime() === today.getTime() ? " today" : "";
         const sessionClass = sessions.length ? " session-day" : "";
         const sessionMarkup = sessions.length ? `<span class="calendar-session-dot" title="${sessions.length} booked session${sessions.length === 1 ? "" : "s"}"></span>` : "";
@@ -114,7 +117,7 @@ function createSessionCard(session) {
     const card = document.createElement("div");
     card.className = "session";
 
-    const date = parseSessionDate(session.session_date);
+    const date = parseSessionDate(session.date || session.session_date);
     const dayName = date
         ? date.toLocaleDateString("en-ZA", { weekday: "short" }).toUpperCase()
         : "DATE";
@@ -124,7 +127,7 @@ function createSessionCard(session) {
         : "--";
 
     const buddyName = getPersonName(session.buddy) ||
-        session.buddy_name ||
+        session.buddy_name || session.buddy ||
         "Your Octo Buddy";
 
     const status = String(session.status || "pending").toLowerCase();
@@ -149,7 +152,7 @@ function createSessionCard(session) {
     moduleName.textContent = session.module || "Tutoring Session";
 
     const time = document.createElement("p");
-    time.textContent = formatSessionTime(session.session_time);
+    time.textContent = formatSessionTime(session.time || session.session_time);
 
     const buddy = document.createElement("p");
     buddy.textContent = `Octo Buddy: ${buddyName}`;
