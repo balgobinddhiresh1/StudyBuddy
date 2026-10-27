@@ -1,3 +1,20 @@
+/* Shared API auth helper: attach the stored bearer token to protected API requests. */
+(() => {
+    if (window.__octoApiFetchAuthInstalled) return;
+    window.__octoApiFetchAuthInstalled = true;
+    const originalFetch = window.fetch.bind(window);
+    window.fetch = (input, init = {}) => {
+        const url = typeof input === "string" ? input : (input && input.url) || "";
+        if (!url.includes("/api/")) return originalFetch(input, init);
+        const headers = new Headers(init.headers || (input instanceof Request ? input.headers : undefined));
+        const token = localStorage.getItem("auth_token");
+        if (token && !headers.has("Authorization")) {
+            headers.set("Authorization", `Bearer ${token}`);
+        }
+        return originalFetch(input, { ...init, headers });
+    };
+})();
+
 /* =========================================================
    OCTO BUDDY - STUDENT DASHBOARD
    All student-side interactions live in this file.
@@ -343,9 +360,12 @@ async function saveProfileChanges() {
             `${API_BASE_URL}user/${userId}`,
             {
                 method: "PUT",
-                headers: {
-                    "Content-Type": "application/json"
-                },
+                
+headers: {
+    "Content-Type": "application/json",
+    "Authorization": `Bearer ${localStorage.getItem("auth_token") || ""}`
+},
+
                 body: JSON.stringify({
                     first_name: firstName,
                     last_name: lastName,

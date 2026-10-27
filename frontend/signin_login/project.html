@@ -335,8 +335,8 @@ button {
                 <h2>CREATE AN ACCOUNT</h2>
 
                 <div class="name-group">
-                    <input type="text" id="firstName" placeholder="First Name" maxlength="30" autocomplete="given-name" required pattern="[A-Za-zÀ-ÖØ-öø-ÿ]+([ '-][A-Za-zÀ-ÖØ-öø-ÿ]+)*" title="Use letters only; spaces, apostrophes and hyphens are allowed">
-                    <input type="text" id="lastName" placeholder="Last Name" maxlength="30" autocomplete="family-name" required pattern="[A-Za-zÀ-ÖØ-öø-ÿ]+([ '-][A-Za-zÀ-ÖØ-öø-ÿ]+)*" title="Use letters only; spaces, apostrophes and hyphens are allowed">
+                    <input type="text" id="firstName" placeholder="First Name" maxlength="30" autocomplete="given-name" required pattern="[A-Za-zÀ-ÖØ-öø-ÿ]+([ '\\-][A-Za-zÀ-ÖØ-öø-ÿ]+)*" title="Use letters only; spaces, apostrophes and hyphens are allowed">
+                    <input type="text" id="lastName" placeholder="Last Name" maxlength="30" autocomplete="family-name" required pattern="[A-Za-zÀ-ÖØ-öø-ÿ]+([ '\\-][A-Za-zÀ-ÖØ-öø-ÿ]+)*" title="Use letters only; spaces, apostrophes and hyphens are allowed">
                 </div>
 
                 <input type="email" id="registerEmail" placeholder="Email Address" autocomplete="email" required><div class="email-help" id="emailHelp">Email format: <strong>name@example.com</strong><ul><li id="emailAt">Include @</li><li id="emailDomain">Include a valid domain, e.g. example.com</li><li id="emailSpaces">No spaces</li></ul></div>

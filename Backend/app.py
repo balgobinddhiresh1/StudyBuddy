@@ -613,13 +613,21 @@ PUBLIC_API_ENDPOINTS = {
     "home", "health"
 }
 
+
 @app.before_request
 def authenticate_api_requests():
     """Require a signed, time-limited bearer token for protected API routes."""
+
+    # Allow browser CORS preflight requests without authentication.
+    if request.method == "OPTIONS":
+        return "", 204
+
     if not request.path.startswith("/api/"):
         return None
+
     if request.endpoint in PUBLIC_API_ENDPOINTS:
         return None
+
 
     header = request.headers.get("Authorization", "")
     if not header.startswith("Bearer "):
