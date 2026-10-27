@@ -22,11 +22,10 @@ let loadedSessions = [];
 
 document.addEventListener("DOMContentLoaded", () => {
     loadSessions();
-    const buttons = document.querySelectorAll(".calendar-buttons button");
-    if (buttons[0]) buttons[0].addEventListener("click", () => { visibleMonth = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() - 1, 1); renderMonthCalendar(); });
-    if (buttons[1]) buttons[1].addEventListener("click", () => { visibleMonth = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() + 1, 1); renderMonthCalendar(); });
-    // Keep both the session cards and calendar in sync with bookings/status changes.
     window.setInterval(loadSessions, 30000);
+    const buttons = document.querySelectorAll(".calendar-buttons button");
+    if (buttons[0]) buttons[0].addEventListener("click", () => { visibleMonth.setMonth(visibleMonth.getMonth() - 1); renderMonthCalendar(); });
+    if (buttons[1]) buttons[1].addEventListener("click", () => { visibleMonth.setMonth(visibleMonth.getMonth() + 1); renderMonthCalendar(); });
 });
 
 async function loadSessions() {
@@ -37,8 +36,8 @@ async function loadSessions() {
         return;
     }
 
-    // Remove previous session cards/messages before loading fresh database data.
-    container.querySelectorAll(".session, .session-message").forEach(element => element.remove());
+    // Remove the example sessions from the HTML.
+    container.querySelectorAll(".session").forEach(session => session.remove());
 
     const userId = localStorage.getItem("user_id");
 
@@ -100,9 +99,9 @@ function renderMonthCalendar() {
     for (let i = 0; i < mondayOffset; i++) cells.push('<div class="empty"></div>');
     for (let day = 1; day <= daysInMonth; day++) {
         const dateKey = `${year}-${String(month + 1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
-        const sessions = loadedSessions.filter(item => String(item.date || item.session_date || "").slice(0,10) === dateKey && !["cancelled"].includes(String(item.status || "").toLowerCase()));
+        const sessions = loadedSessions.filter(item => String(item.date || item.session_date || item.sessionDate || "").slice(0,10) === dateKey && !["cancelled"].includes(String(item.status || "").toLowerCase()));
         const todayClass = new Date(year, month, day).getTime() === today.getTime() ? " today" : "";
-        const sessionMarkup = sessions.map(item => `<small class="calendar-session">${escapeHtml(String(item.time || item.session_time || "").slice(0,5))} ${escapeHtml(item.module || "Session")}</small>`).join("");
+        const sessionMarkup = sessions.map(item => `<small class="calendar-session">${escapeHtml(String(item.time || item.session_time || item.start_time || "").slice(0,5))} ${escapeHtml(item.module || "Session")}</small>`).join("");
         cells.push(`<div class="calendar-date${todayClass}" data-date="${dateKey}"><strong>${day}</strong>${sessionMarkup}</div>`);
     }
     while (cells.length % 7) cells.push('<div class="empty"></div>');

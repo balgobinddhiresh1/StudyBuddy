@@ -384,50 +384,20 @@ async function loadBuddySessions() {
             ).length
         );
 
-        const firstUpcoming =
-            sessions.find(
-                session => session.status === "Confirmed"
-            );
+        const upcomingSessions = sessions
+            .filter(session => !["cancelled", "completed"].includes(String(session.status || "").toLowerCase()))
+            .sort((a, b) => {
+                const aDate = `${a.date || a.session_date || "9999-12-31"} ${a.time || a.session_time || "23:59"}`;
+                const bDate = `${b.date || b.session_date || "9999-12-31"} ${b.time || b.session_time || "23:59"}`;
+                return aDate.localeCompare(bDate);
+            });
+        const firstUpcoming = upcomingSessions[0];
+        renderNextBuddySession(firstUpcoming || null);
 
-        if (firstUpcoming) {
-            // Populate the date badge from the actual saved session, not static HTML.
-            const dateValue = firstUpcoming.date || firstUpcoming.session_date || firstUpcoming.sessionDate || "";
-            const dateMatch = String(dateValue).match(/^(\\d{4})-(\\d{2})-(\\d{2})/);
-            const sessionDate = dateMatch
-                ? new Date(Number(dateMatch[1]), Number(dateMatch[2]) - 1, Number(dateMatch[3]))
-                : (dateValue ? new Date(dateValue) : null);
-            const dateBadge = document.querySelector(".upcoming-card .session-date");
-            if (dateBadge && sessionDate && !Number.isNaN(sessionDate.getTime())) {
-                const day = dateBadge.querySelector("strong");
-                const weekday = dateBadge.querySelector(".day");
-                const month = dateBadge.querySelector(".month");
-                if (weekday) weekday.textContent = sessionDate.toLocaleDateString("en-ZA", { weekday: "short" }).toUpperCase();
-                if (day) day.textContent = String(sessionDate.getDate());
-                if (month) month.textContent = sessionDate.toLocaleDateString("en-ZA", { month: "short" }).toUpperCase();
-            }
-            const sessionInfo = document.querySelector(".upcoming-card .session-info");
-            if (sessionInfo) {
-                const paragraphs = sessionInfo.querySelectorAll("p");
-                const timeValue = firstUpcoming.time || firstUpcoming.session_time || "";
-                if (paragraphs.length > 1) paragraphs[1].textContent = timeValue
-                    ? formatBuddyTime(timeValue)
-                    : "Time not specified";
-            }
-
-            setText(
-                "assignedStudentName",
-                firstUpcoming.student || "Student"
-            );
-
-            setText(
-                "assignedRoomCode",
-                firstUpcoming.room_code
-            );
-
-            localStorage.setItem(
-                "active_buddy_room",
-                firstUpcoming.room_code
-            );
+        if (firstUpcoming && firstUpcoming.room_code) {
+            localStorage.setItem("active_buddy_room", firstUpcoming.room_code);
+        } else {
+            localStorage.removeItem("active_buddy_room");
         }
 
     } catch (error) {
@@ -436,6 +406,45 @@ async function loadBuddySessions() {
 }
 
 
+
+
+function renderNextBuddySession(session) {
+    const card = document.querySelector(".upcoming-card");
+    if (!card) return;
+    const details = card.querySelector(".session-details");
+    const actions = card.querySelector(".session-actions");
+    const badge = card.querySelector(".status-badge");
+    if (!details) return;
+
+    if (!session) {
+        details.innerHTML = '<p class="schedule-note">No upcoming tutoring sessions booked.</p>';
+        if (badge) badge.textContent = "No upcoming session";
+        if (actions) actions.style.display = "none";
+        setText("assignedStudentName", "—");
+        setText("assignedRoomCode", "—");
+        return;
+    }
+
+    const dateValue = session.date || session.session_date || session.sessionDate || "";
+    const dateMatch = String(dateValue).match(/^(\d{4})-(\d{2})-(\d{2})/);
+    const parsedDate = dateMatch ? new Date(Number(dateMatch[1]), Number(dateMatch[2])-1, Number(dateMatch[3])) : new Date(dateValue);
+    const validDate = dateValue && !Number.isNaN(parsedDate.getTime());
+    const dayName = validDate ? parsedDate.toLocaleDateString("en-ZA", { weekday: "short" }).toUpperCase() : "DATE";
+    const dayNumber = validDate ? parsedDate.getDate() : "—";
+    const monthName = validDate ? parsedDate.toLocaleDateString("en-ZA", { month: "short" }).toUpperCase() : "";
+    const rawTime = String(session.time || session.session_time || "");
+    const timeMatch = rawTime.match(/^(\d{1,2}):(\d{2})/);
+    let timeLabel = "Time not specified";
+    if (timeMatch) {
+        const d = new Date(); d.setHours(Number(timeMatch[1]), Number(timeMatch[2]), 0, 0);
+        timeLabel = d.toLocaleTimeString("en-ZA", { hour: "numeric", minute: "2-digit" });
+    }
+    details.innerHTML = `<div class="session-date"><span class="day">${escapeHtml(dayName)}</span><strong>${escapeHtml(String(dayNumber))}</strong><span class="month">${escapeHtml(monthName)}</span></div><div class="session-info"><h3>${escapeHtml(session.module || "Tutoring session")}</h3><p>Student: <strong id="assignedStudentName">${escapeHtml(session.student || "Student")}</strong></p><p>${escapeHtml(timeLabel)}</p><p>Room: <strong id="assignedRoomCode">${escapeHtml(session.room_code || "Not assigned")}</strong></p></div>`;
+    if (badge) { badge.textContent = session.status || "Confirmed"; badge.className = `status-badge ${String(session.status || "confirmed").toLowerCase()}`; }
+    if (actions) actions.style.display = session.room_code ? "" : "none";
+    setText("assignedStudentName", session.student || "Student");
+    setText("assignedRoomCode", session.room_code || "Not assigned");
+}
 
 function renderBuddySchedule(sessions) {
     const list = document.querySelector(".schedule-list");
@@ -679,11 +688,3 @@ window.addEventListener('scroll', function () {
 });
     });
     
-
-function formatBuddyTime(value) {
-    const match = String(value || "").match(/^(\\d{1,2}):(\\d{2})/);
-    if (!match) return value || "Time not specified";
-    const date = new Date();
-    date.setHours(Number(match[1]), Number(match[2]), 0, 0);
-    return date.toLocaleTimeString("en-ZA", { hour: "numeric", minute: "2-digit", hour12: true });
-}
