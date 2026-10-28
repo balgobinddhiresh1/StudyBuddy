@@ -68,6 +68,7 @@
         }
 
         .logo span {
+            font-family: 'Poppins', sans-serif;
             color: #000000;
         }
 
@@ -86,29 +87,6 @@
             color: var(--green);
         }
 
-        /* PAGE INTRODUCTION */
-        .hero {
-            text-align: center;
-            padding: 65px 20px 55px;
-            background: linear-gradient(135deg, #213A57, #0B6477);
-            border-bottom: 3px solid var(--green);
-        }
-
-        .hero h1 {
-            font-size: clamp(35px, 5vw, 52px);
-            margin-bottom: 12px;
-        }
-
-        .hero h1 span {
-            color: var(--green);
-        }
-
-        .hero p {
-            max-width: 650px;
-            margin: auto;
-            color: var(--muted);
-            font-size: 16px;
-        }
 
         /* MAIN CONTENT */
         .container {
@@ -289,13 +267,7 @@
         }
 
         /* FOOTER */
-        .footer {
-            background: #213A57;
-            border-top: 3px solid transparent;
-            border-image: linear-gradient(90deg, #45DFB1, #0B6477) 1;
-            padding: 50px 7% 20px;
-        }
-
+        
         .footer-grid {
             display: grid;
             grid-template-columns: 2fr 1fr 1fr 1fr;
@@ -402,23 +374,11 @@
         </a>
 
         <div class="nav-links">
-            <a href="index.html">Home</a>
-            <a href="index.html#about">About</a>
-            <a href="dashboard.html">Dashboard</a>
-            <a href="#help-centre">Support</a>
+            <a href="index.html">Let's go back to Home</a>
         </div>
     </nav>
 
-    <!-- HERO -->
-    <header class="hero">
-        <h1>How Can We <span>Help You?</span></h1>
-        <p>
-            Welcome to the OctoBuddy Support Centre.
-            Find answers, contact our team and learn more about
-            how we keep our student community safe.
-        </p>
-    </header>
-
+  
     <main class="container">
 
         <!-- SUPPORT OPTIONS -->
