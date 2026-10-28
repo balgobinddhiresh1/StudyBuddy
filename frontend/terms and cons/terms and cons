@@ -27,7 +27,7 @@
 
         body {
             font-family: 'Poppins', sans-serif;
-            background: #213A57;
+            background:#213A57;
             color: #80ed99;
             line-height: 1.7;
         }
@@ -253,73 +253,32 @@
             display: block;
         }
 
-        /* CONTACT FORM */
-        .contact-form {
-            display: grid;
-            gap: 18px;
-            margin-top: 20px;
-        }
 
-        .form-group {
-            display: grid;
-            gap: 8px;
-        }
+/* WHATSAPP CONTACT BUTTON */
+.whatsapp-container {
+    margin-top: 25px;
+    text-align: left;
+}
 
-        .form-group label {
-            font-weight: 500;
-        }
+.whatsapp-button:hover {
+    background: transparent;
+    color: #45DFB1;
+    border-color: #45DFB1;
+    transform: translateY(-3px);
+}
 
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
-            width: 100%;
-            padding: 13px 15px;
-            border: 1px solid #526b80;
-            border-radius: 7px;
-            background: var(--navy);
-            color: var(--white);
-            font-family: inherit;
-            font-size: 14px;
-        }
+.whatsapp-icon {
+    font-size: 25px;
+    font-weight: bold;
+    margin-right: 10px;
+}
 
-        .form-group input:focus,
-        .form-group select:focus,
-        .form-group textarea:focus {
-            outline: 2px solid var(--green);
-            border-color: transparent;
-        }
+.whatsapp-note {
+    margin-top: 15px;
+    color: #d5e1ec;
+    font-size: 14px;
+}
 
-        .form-group textarea {
-            min-height: 140px;
-            resize: vertical;
-        }
-
-        .form-group select option {
-            background: var(--dark-navy);
-        }
-
-        .submit-button {
-            padding: 13px 25px;
-            background: var(--green);
-            color: var(--dark-navy);
-            border: 2px solid var(--green);
-            border-radius: 7px;
-            font-family: inherit;
-            font-size: 15px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-
-        .submit-button:hover {
-            background: transparent;
-            color: var(--green);
-        }
-
-        .form-notice {
-            color: var(--mint);
-            margin-top: 12px;
-        }
 
         /* BACK TO TOP */
         .back-to-top {
@@ -596,77 +555,42 @@
             </div>
         </section>
 
-        <!-- CONTACT US -->
-        <section class="content-section" id="contact-us">
-            <h2> Contact Us</h2>
-            <p>
-                We welcome your questions, feedback and suggestions.
-                Complete the form below to prepare a support request.
-            </p>
+       
+<!-- CONTACT US -->
+<section class="content-section" id="contact-us">
+    <h2> Contact Us</h2>
 
-            <form class="contact-form" id="contactForm">
+    <p>
+        Need help with OctoBuddy?
+        Our support team is here to assist you with account questions, 
+        Tutoring sessions and technical issues. 
+        Click the button below to contact us directly on WhatsApp.
+    </p>
 
-                <div class="form-group">
-                    <label for="name">Full Name</label>
-                    <input
-                        type="text"
-                        id="name"
-                        name="name"
-                        placeholder="Enter your full name"
-                        autocomplete="name"
-                        required
-                    >
-                </div>
+    <div class="whatsapp-container">
+        <a
+            href="https://wa.me/27XXXXXXXXX?text=Hi%20OctoBuddy%20Support%2C%20I%20need%20assistance."
+            class="whatsapp-button"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Contact OctoBuddy Support on WhatsApp"
+        >
+        <img
+        src="https://cdn.jsdelivr.net/gh/glincker/thesvg@main/public/icons/whatsapp/default.svg"
+        alt="WhatsApp"
+        width="24"
+        height="24"
+        />
+            Chat with Us on WhatsApp
+        </a>
 
-                <div class="form-group">
-                    <label for="email">Email Address</label>
-                    <input
-                        type="email"
-                        id="email"
-                        name="email"
-                        placeholder="Enter your email address"
-                        autocomplete="email"
-                        required
-                    >
-                </div>
+        <p class="whatsapp-note">
+            Click the button to open WhatsApp and start a conversation
+            with OctoBuddy Support.
+        </p>
+    </div>
+</section>
 
-                <div class="form-group">
-                    <label for="category">Support Category</label>
-                    <select id="category" name="category" required>
-                        <option value="">Select a category</option>
-                        <option value="account">Account Support</option>
-                        <option value="booking">Tutoring & Bookings</option>
-                        <option value="technical">Technical Issue</option>
-                        <option value="privacy">Privacy Concern</option>
-                        <option value="feedback">Feedback or Suggestion</option>
-                        <option value="other">Other</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="message">Your Message</label>
-                    <textarea
-                        id="message"
-                        name="message"
-                        placeholder="Describe how we can help you..."
-                        required
-                    ></textarea>
-                </div>
-
-                <button type="submit" class="submit-button">
-                    Submit Support Request →
-                </button>
-
-                <p class="form-notice" id="formNotice" role="status"
-                   aria-live="polite"></p>
-
-            </form>
-
-            <p style="margin-top: 25px;">
-                For urgent academic matters, please use the official
-                Richfield communication channels where appropriate.
-            </p>
-        </section>
 
         <!-- PRIVACY POLICY -->
         <section class="content-section" id="privacy-policy">
@@ -734,7 +658,7 @@
 
         <!-- TERMS AND CONDITIONS -->
         <section class="content-section" id="terms">
-            <h2>📄 Terms & Conditions</h2>
+            <h2>Terms & Conditions</h2>
 
             <p>
                 By using OctoBuddy, users are expected to act
@@ -814,55 +738,6 @@
 
     <!-- FOOTER -->
     <footer class="footer">
-        <div class="footer-grid">
-
-            <div>
-                <a href="index.html" class="logo">
-                    OCTO<span>BUDDY</span>
-                </a>
-
-                <p style="margin-top: 25px;">
-                    OctoBuddy connects Richfield students with fellow
-                    students who can provide academic support,
-                    guidance and peer-to-peer learning.
-                </p>
-
-                <p style="color: var(--mint);">
-                    A platform by <strong>Alpha Tech Corp.</strong>
-                </p>
-            </div>
-
-            <div>
-                <h3>Octo Buddy</h3>
-                <ul>
-                    <li><a href="index.html">Home</a></li>
-                    <li><a href="index.html#about">About Us</a></li>
-                    <li><a href="dashboard.html">Student Dashboard</a></li>
-                    <li><a href="become-buddy.html">Become an Octo Buddy</a></li>
-                </ul>
-            </div>
-
-            <div>
-                <h3>Platform</h3>
-                <ul>
-                    <li><a href="dashboard.html">Student Dashboard</a></li>
-                    <li><a href="booking.html">Book a Session</a></li>
-                    <li><a href="become-buddy.html">Become an Octo Buddy</a></li>
-                    <li><a href="#help-centre">Academic Support</a></li>
-                </ul>
-            </div>
-
-            <div>
-                <h3>Support</h3>
-                <ul>
-                    <li><a href="#help-centre">Help Centre</a></li>
-                    <li><a href="#contact-us">Contact Us</a></li>
-                    <li><a href="#privacy-policy">Privacy Policy</a></li>
-                    <li><a href="#terms">Terms & Conditions</a></li>
-                </ul>
-            </div>
-
-        </div>
 
         <div class="copyright">
             <p>© 2026 Alpha Tech Corp. All rights reserved.</p>
