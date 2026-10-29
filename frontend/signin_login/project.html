@@ -340,17 +340,17 @@ button {
                 </div>
 
                 <input type="email" id="registerEmail" placeholder="Email Address" autocomplete="email" required><div class="email-help" id="emailHelp">Email format: <strong>name@example.com</strong><ul><li id="emailAt">Include @</li><li id="emailDomain">Include a valid domain, e.g. example.com</li><li id="emailSpaces">No spaces</li></ul></div>
-                <input type="password" id="registerPassword" placeholder="Password" maxlength="10" minlength="8" required autocomplete="new-password">
+                <input type="password" id="registerPassword" placeholder="Password" maxlength="64" minlength="12" required autocomplete="new-password">
 
                 <div id="passwordRules">
-                    <p id="lengthRule">❌ 8–10 characters</p>
+                    <p id="lengthRule">❌ 12–64 characters</p>
                     <p id="numberRule">❌ At least 1 number</p>
-                    <p id="letterRule">❌ At least 1 letter</p>
+                    <p id="letterRule">❌ Uppercase and lowercase letters</p>
                 </div>
 
                 <div id="passwordStrength">Password strength: -</div>
 
-                <input type="password" id="confirmPassword" placeholder="Confirm Password" maxlength="10" minlength="8" required autocomplete="new-password">
+                <input type="password" id="confirmPassword" placeholder="Confirm Password" maxlength="64" minlength="12" required autocomplete="new-password">
 
                 <button class="register-btn" id="registerButton" onclick="handleRegister()">
                     GET STARTED
@@ -473,20 +473,20 @@ if (regPasswordInput) {
         const numberRule = document.getElementById('numberRule');
         const strength = document.getElementById('passwordStrength');
 
-        if (val.length >= 8 && val.length <= 10) {
-            lengthRule.innerHTML = "✅ 8–10 characters";
+        if (val.length >= 12 && val.length <= 64) {
+            lengthRule.innerHTML = "✅ 12–64 characters";
             lengthRule.className = "valid";
         } else {
-            lengthRule.innerHTML = "❌ 8–10 characters";
+            lengthRule.innerHTML = "❌ 12–64 characters";
             lengthRule.className = "invalid";
         }
 
         const letterRule = document.getElementById('letterRule');
-        if (/[A-Za-z]/.test(val)) {
-            letterRule.innerHTML = "✅ At least 1 letter";
+        if (/[a-z]/.test(val) && /[A-Z]/.test(val)) {
+            letterRule.innerHTML = "✅ Uppercase and lowercase letters";
             letterRule.className = "valid";
         } else {
-            letterRule.innerHTML = "❌ At least 1 letter";
+            letterRule.innerHTML = "❌ Uppercase and lowercase letters";
             letterRule.className = "invalid";
         }
 
@@ -498,7 +498,7 @@ if (regPasswordInput) {
             numberRule.className = "invalid";
         }
 
-        if (val.length >= 8 && val.length <= 10 && /\d/.test(val) && /[A-Za-z]/.test(val)) {
+        if (val.length >= 12 && val.length <= 64 && /[a-z]/.test(val) && /[A-Z]/.test(val) && /\d/.test(val) && /[^A-Za-z0-9]/.test(val)) {
             strength.innerText = "Password strength: Strong";
             strength.style.color = "#82EE99";
         } else {
@@ -560,9 +560,9 @@ async function handleRegister() {
         return;
     }
 
-    const nameValid = /^[A-Za-zÀ-ÖØ-öø-ÿ]+(?:[ '\u2019-][A-Za-zÀ-ÖØ-öø-ÿ]+)*$/;
+    const nameValid = value => /^[A-Za-zÀ-ÖØ-öø-ÿ]+(?:[ '\u2019-][A-Za-zÀ-ÖØ-öø-ÿ]+)*$/.test(value) && !/^(one|two|three|test|testing|user|admin|example|abc|asdf|unknown|none|firstname|lastname)$/i.test(value.trim());
     const missing = [];
-    [['firstName', firstName, nameValid.test(firstName)], ['lastName', lastName, nameValid.test(lastName)], ['registerEmail', email, emailPattern.test(email)], ['registerPassword', password, password.length >= 8 && password.length <= 10 && /[A-Za-z]/.test(password) && /\d/.test(password)], ['confirmPassword', confirmPassword, Boolean(confirmPassword)]] .forEach(([id, value, valid]) => {
+    [['firstName', firstName, nameValid(firstName)], ['lastName', lastName, nameValid(lastName)], ['registerEmail', email, emailPattern.test(email)], ['registerPassword', password, password.length >= 12 && password.length <= 64 && /[a-z]/.test(password) && /[A-Z]/.test(password) && /\d/.test(password) && /[^A-Za-z0-9]/.test(password)], ['confirmPassword', confirmPassword, Boolean(confirmPassword)]] .forEach(([id, value, valid]) => {
         const el = document.getElementById(id);
         checkField(el, Boolean(value) && valid, 'Please correct this field.');
         if (!value || !valid) missing.push(id);
@@ -570,7 +570,7 @@ async function handleRegister() {
     if (missing.length) {
         hideLoading();
         document.getElementById(missing[0]).focus();
-        Swal.fire({...popupOptions, icon:'warning', title:'Check the highlighted fields', text:'Names need letters only, email must be valid, and password must contain letters and numbers (8–10 characters).'});
+        Swal.fire({...popupOptions, icon:'warning', title:'Check the highlighted fields', text:'Names must be realistic, email must be valid, and password must be 12–64 characters with uppercase, lowercase, a number and a special character.'});
         return;
     }
 
@@ -673,8 +673,36 @@ async function handleLogin() {
             body: JSON.stringify({ email, password })
         });
 
-        const data = await response.json();
+        let data = await response.json();
         hideLoading();
+
+        if (response.ok && data.status === 'pending_otp') {
+            const otpPrompt = await Swal.fire({
+                ...popupOptions,
+                icon: 'info',
+                title: 'Verify your login',
+                text: 'Enter the five-digit code sent to your email to complete login.',
+                input: 'text',
+                inputLabel: 'Email verification code',
+                inputPlaceholder: '12345',
+                inputAttributes: { maxlength: 5, inputmode: 'numeric', autocomplete: 'one-time-code' },
+                inputValidator: value => /^\d{5}$/.test((value || '').trim()) ? undefined : 'Enter the five-digit code.',
+                showCancelButton: true,
+                confirmButtonText: 'Verify and log in'
+            });
+            if (!otpPrompt.isConfirmed) return;
+            showLoading();
+            const verifyResponse = await fetch('https://studybuddy-bl8d.onrender.com/api/verify-login-otp', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, otp: otpPrompt.value.trim() })
+            });
+            data = await verifyResponse.json();
+            hideLoading();
+            if (!verifyResponse.ok || data.status !== 'success') {
+                Swal.fire({ ...popupOptions, icon: 'error', title: 'Verification failed', text: data.message || 'The code is invalid or expired.' });
+                return;
+            }
+        }
 
         if (!response.ok || data.status !== 'success') {
             Swal.fire({
@@ -697,6 +725,39 @@ async function handleLogin() {
         localStorage.setItem('role', user.role || 'student');
 
         const role = (user.role || 'student').toLowerCase();
+        if (role === 'student' && (!user.course || user.course === 'General')) {
+            const qualificationPrompt = await Swal.fire({
+                ...popupOptions, title: 'Set up your student profile',
+                text: 'Choose your qualification before booking tutoring sessions.',
+                input: 'select', inputOptions: {
+                    'Diploma in Information Technology': 'Diploma in Information Technology',
+                    'Bachelor of Science in IT': 'Bachelor of Science in IT',
+                    'Bachelor of Business Administration': 'Bachelor of Business Administration',
+                    'Higher Certificate in IT': 'Higher Certificate in IT'
+                }, inputPlaceholder: 'Select your qualification',
+                inputValidator: value => value ? undefined : 'Please select your qualification.',
+                showCancelButton: false, allowOutsideClick: false, confirmButtonText: 'Continue'
+            });
+            const yearPrompt = await Swal.fire({
+                ...popupOptions, title: 'Which year are you in?',
+                input: 'select', inputOptions: { '1': 'Year 1', '2': 'Year 2', '3': 'Year 3' },
+                inputPlaceholder: 'Select academic year',
+                inputValidator: value => value ? undefined : 'Please select your academic year.',
+                showCancelButton: false, allowOutsideClick: false, confirmButtonText: 'Save profile'
+            });
+            const profileResponse = await fetch(`https://studybuddy-bl8d.onrender.com/api/user/${user.id}`, {
+                method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${data.token}` },
+                body: JSON.stringify({ course: qualificationPrompt.value, academic_year: Number(yearPrompt.value) })
+            });
+            const profileData = await profileResponse.json();
+            if (!profileResponse.ok) {
+                Swal.fire({ ...popupOptions, icon: 'error', title: 'Profile setup failed', text: profileData.message || 'Please try again.' });
+                return;
+            }
+            user.course = qualificationPrompt.value;
+            user.academic_year = Number(yearPrompt.value);
+            localStorage.setItem('user', JSON.stringify(user));
+        }
         let dashboardPage;
 
         if (role === 'admin') {

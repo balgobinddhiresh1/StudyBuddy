@@ -222,7 +222,7 @@ async function loadApplications() {
                 <td>${escapeHtml(application.qualification)}</td>
                 <td>${escapeHtml(application.academic_year)}</td>
                 <td>${modules}<br><small>Available: ${availability || "Not specified"}</small></td>
-                <td><button type="button" class="details-btn" data-details-id="${application.id}">Read application</button><div class="application-motivation" id="applicationDetails${application.id}" hidden>${escapeHtml(application.motivation || "No motivation supplied.")}<br><small>Daily limit: ${escapeHtml(String(application.daily_limit ?? "Not specified"))}</small></div></td>
+                <td><a class="details-btn" href="application-detail.html?id=${application.id}">View full application</a></td>
                 <td><span class="status ${statusClass}">${escapeHtml(application.status)}</span></td>
                 <td>${actions}</td>
             `;
@@ -650,18 +650,8 @@ async function setupQualificationButtons() {
     const addModule = document.getElementById("addModule");
 
     if (addQualification) {
-        addQualification.addEventListener("click", async () => {
-            const name = prompt("Enter the new qualification name:");
-            if (!name?.trim()) return;
-            try {
-                const response = await apiFetch(`${API_BASE_URL}admin/qualifications`, {
-                    method: "POST", body: JSON.stringify({ name: name.trim() })
-                });
-                const data = await response.json();
-                if (!response.ok) throw new Error(data.message || "Could not add qualification.");
-                await loadManagedCatalogue();
-                alert("Qualification added successfully.");
-            } catch (error) { alert(error.message || "Could not add qualification."); }
+        addQualification.addEventListener("click", () => {
+            window.location.href = "qualification-create.html";
         });
     }
 
@@ -692,23 +682,12 @@ async function setupQualificationButtons() {
     }
 
     document.querySelectorAll("#qualifications .management-card button").forEach(button => {
-        button.addEventListener("click", async () => {
+        button.addEventListener("click", () => {
             const card = button.closest(".management-card");
             const currentName = card?.querySelector("h3")?.textContent?.trim();
             const qualification = managedQualifications.find(item => item.name === currentName);
             if (!qualification) { alert("Qualification catalogue is not available yet. Please try again."); return; }
-            const updatedName = prompt("Edit qualification name:", qualification.name);
-            if (!updatedName?.trim() || updatedName.trim() === qualification.name) return;
-            try {
-                const response = await apiFetch(`${API_BASE_URL}admin/qualifications/${qualification.id}`, {
-                    method: "PUT", body: JSON.stringify({ name: updatedName.trim() })
-                });
-                const data = await response.json();
-                if (!response.ok) throw new Error(data.message || "Could not update qualification.");
-                await loadManagedCatalogue();
-                await loadAuditLogs();
-                alert("Qualification updated successfully.");
-            } catch (error) { alert(error.message || "Could not update qualification."); }
+            window.location.href = `qualification-detail.html?id=${qualification.id}`;
         });
     });
 
@@ -865,6 +844,8 @@ async function loadReports() {
         if (!response.ok) return;
         const data = await response.json();
         renderReportTable(data.buddies || []);
+        drawBuddySessionsChart(data.buddies || []);
+        drawSessionStatusChart();
     } catch (error) {
         console.warn("Could not load reports:", error);
     }
@@ -882,6 +863,51 @@ function renderReportTable(buddies) {
             <td>${buddy.points}</td>
             <td><span class="performance ${buddy.completed_sessions >= 10 ? "excellent" : "good"}">${buddy.completed_sessions >= 10 ? "Excellent" : "Good"}</span></td>
         </tr>`).join("") : `<tr><td colspan="5">No Buddy performance data yet.</td></tr>`;
+}
+
+function drawBuddySessionsChart(buddies) {
+    const canvas = document.getElementById("buddySessionsChart");
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    const width = canvas.clientWidth || 320;
+    canvas.width = width * (window.devicePixelRatio || 1);
+    canvas.height = 230 * (window.devicePixelRatio || 1);
+    ctx.scale(window.devicePixelRatio || 1, window.devicePixelRatio || 1);
+    ctx.clearRect(0, 0, width, 230);
+    const items = buddies.slice(0, 6);
+    if (!items.length) { ctx.fillStyle = "#64748b"; ctx.fillText("No completed-session data yet", 12, 28); return; }
+    const max = Math.max(1, ...items.map(x => Number(x.completed_sessions) || 0));
+    const left = 12, right = 12, top = 18, bottom = 58;
+    const plotW = width-left-right, plotH = 230-top-bottom, slot = plotW/items.length;
+    items.forEach((item, i) => {
+      const val = Number(item.completed_sessions) || 0;
+      const h = (val/max)*(plotH-12), x = left+i*slot+slot*.2, y = top+plotH-h;
+      ctx.fillStyle = "#1596a3"; ctx.beginPath(); ctx.roundRect(x,y,slot*.6,h,5); ctx.fill();
+      ctx.fillStyle = "#23415c"; ctx.font = "11px Poppins, Arial"; ctx.textAlign = "center"; ctx.fillText(String(val), x+slot*.3, y-5);
+      const name = String(item.name || "Buddy").split(" ")[0].slice(0,10); ctx.fillStyle="#64748b"; ctx.fillText(name, x+slot*.3, top+plotH+18);
+    });
+}
+
+async function drawSessionStatusChart() {
+    const canvas = document.getElementById("sessionStatusChart");
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    const width = canvas.clientWidth || 320;
+    canvas.width = width * (window.devicePixelRatio || 1); canvas.height=230*(window.devicePixelRatio||1);
+    ctx.scale(window.devicePixelRatio||1,window.devicePixelRatio||1); ctx.clearRect(0,0,width,230);
+    try {
+      const response = await apiFetch(`${API_BASE_URL}admin/sessions`);
+      if (!response.ok) throw new Error("Could not load session data");
+      const data = await response.json(); const sessions=data.sessions||[];
+      const counts={Confirmed:0,Completed:0,Cancelled:0,Pending:0};
+      sessions.forEach(x=>{const key=String(x.status||'Pending');counts[key]=(counts[key]||0)+1;});
+      const values=Object.entries(counts).filter(([,v])=>v>0); const total=values.reduce((a,[,v])=>a+v,0);
+      if (!total) {ctx.fillStyle="#64748b";ctx.font="13px Poppins,Arial";ctx.fillText("No session data yet",12,28);return;}
+      const colors=["#1596a3","#39cfa7","#e9a23b","#e46b76"]; let angle=-Math.PI/2;
+      const cx=width*.32,cy=112,r=72;
+      values.forEach(([name,value],i)=>{const next=angle+(value/total)*Math.PI*2;ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,r,angle,next);ctx.closePath();ctx.fillStyle=colors[i%colors.length];ctx.fill();angle=next;});
+      values.forEach(([name,value],i)=>{const y=58+i*30;ctx.fillStyle=colors[i%colors.length];ctx.fillRect(width*.58,y-10,11,11);ctx.fillStyle="#23415c";ctx.font="12px Poppins,Arial";ctx.textAlign="left";ctx.fillText(`${name}: ${value}`,width*.58+18,y);});
+    } catch(e) {ctx.fillStyle="#64748b";ctx.font="12px Poppins,Arial";ctx.fillText("Session statistics unavailable",12,28);}
 }
 
 async function loadLeaderboard() {
@@ -916,11 +942,9 @@ function renderLeaderboard(buddies) {
 }
 
 function setupAdminActions() {
-    const exportReport = document.getElementById("exportReport");
     const saveSettings = document.getElementById("saveSettings");
     const logoutBtn = document.getElementById("logoutBtn");
 
-    if (exportReport) exportReport.addEventListener("click", downloadFilteredReport);
 
     if (saveSettings) {
         saveSettings.addEventListener("click", () => {
@@ -990,7 +1014,7 @@ function setupAdminManagementControls() {
           <select id="bookingQualificationFilter" aria-label="Filter bookings by qualification"><option value="">All qualifications</option></select>
           <select id="bookingYearFilter" aria-label="Filter bookings by academic year"><option value="">All years</option><option value="1">Year 1</option><option value="2">Year 2</option><option value="3">Year 3</option><option value="4">Year 4</option><option value="5">Year 5</option><option value="6">Year 6</option></select>
           <input id="bookingStartDate" type="date" aria-label="Booking start date"><input id="bookingEndDate" type="date" aria-label="Booking end date"></div></div>
-          <div class="table-wrapper"><table><thead><tr><th>Student</th><th>Octo Buddy</th><th>Module</th><th>Date</th><th>Time</th><th>Qualification</th><th>Status</th><th>Update status</th></tr></thead><tbody id="adminBookingsTable"><tr><td colspan="8">Loading bookings…</td></tr></tbody></table></div>`;
+          <div class="table-wrapper"><table><thead><tr><th>Student</th><th>Octo Buddy</th><th>Module</th><th>Date</th><th>Time</th><th>Qualification</th><th>Status</th><th>Update status</th><th>Actions</th></tr></thead><tbody id="adminBookingsTable"><tr><td colspan="8">Loading bookings…</td></tr></tbody></table></div>`;
         scheduleSection.appendChild(panel);
         panel.querySelectorAll("select,input").forEach(control => control.addEventListener("change", renderAdminBookings));
     }
@@ -1077,7 +1101,17 @@ function renderAdminBookings() {
       <td><span class="status ${escapeHtml((session.status || "").toLowerCase())}">${escapeHtml(session.status || "Pending")}</span></td>
       <td><select class="booking-status-update" data-session-id="${session.id}" aria-label="Update booking ${session.id} status">
         ${["Pending","Confirmed","Completed","Cancelled","Rejected"].map(status => `<option ${session.status === status ? "selected" : ""}>${status}</option>`).join("")}
-      </select></td></tr>`).join("") : `<tr><td colspan="8">No bookings match this filter.</td></tr>`;
+      </select></td><td><button type="button" class="delete-session-btn" data-session-id="${session.id}">Delete</button></td></tr>`).join("") : `<tr><td colspan="9">No bookings match this filter.</td></tr>`;
+    table.querySelectorAll(".delete-session-btn").forEach(button => button.addEventListener("click", async () => {
+        const id = button.dataset.sessionId;
+        if (!confirm(`Permanently delete session #${id}? This cannot be undone.`)) return;
+        try {
+            const response = await apiFetch(`${API_BASE_URL}admin/sessions/${id}`, { method: "DELETE" });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.message || "Could not delete session.");
+            await Promise.all([loadSchedule(), loadAdminBookings(), loadAuditLogs()]);
+        } catch (error) { alert(error.message || "Could not delete session."); }
+    }));
     table.querySelectorAll(".booking-status-update").forEach(select => select.addEventListener("change", async () => {
         const id = select.dataset.sessionId;
         const status = select.value;

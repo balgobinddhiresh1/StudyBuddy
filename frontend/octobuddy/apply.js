@@ -1,3 +1,16 @@
+async function readTranscriptImage(file) {
+    if (!file) return { data: "", filename: "" };
+    if (!/^image\/(png|jpeg|webp)$/.test(file.type) || file.size > 5 * 1024 * 1024) {
+        throw new Error("Choose a PNG, JPG or WebP image smaller than 5 MB.");
+    }
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve({ data: String(reader.result), filename: file.name });
+        reader.onerror = () => reject(new Error("The transcript image could not be read."));
+        reader.readAsDataURL(file);
+    });
+}
+
 /* Shared API auth helper: attach the stored bearer token to protected API requests. */
 (() => {
     if (window.__octoApiFetchAuthInstalled) return;
@@ -160,6 +173,14 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         // Prepare the information expected by the Flask backend.
+        const transcriptFile = document.getElementById("transcriptImage")?.files?.[0];
+        let transcript;
+        try {
+            transcript = await readTranscriptImage(transcriptFile);
+        } catch (error) {
+            showMessage({ icon: "warning", title: "Transcript upload required", text: error.message || "Please upload a valid transcript image." });
+            return;
+        }
         const applicationData = {
             user_id: userId,
             full_name: document.getElementById("fullName").value.trim(),
@@ -169,12 +190,14 @@ document.addEventListener("DOMContentLoaded", function () {
             modules: modules,
             availability: availability,
             daily_limit: Number(dailyLimit.value),
-            motivation: document.getElementById("motivation").value.trim()
+            motivation: document.getElementById("motivation").value.trim(),
+            transcript_data: transcript.data,
+            transcript_filename: transcript.filename
         };
 
         const motivationWords = applicationData.motivation.split(/\s+/).filter(Boolean);
-        if (!/^[0-9]{9}$/.test(applicationData.student_number)) {
-            showMessage({ icon: "warning", title: "Check student number", text: "Student number must contain exactly 9 digits and numbers only." });
+        if (!/^(402[0-9]{6})$/.test(applicationData.student_number)) {
+            showMessage({ icon: "warning", title: "Check student number", text: "Student number must be exactly 9 digits and start with 402." });
             studentNumberInput?.focus();
             return;
         }

@@ -36,7 +36,7 @@
             </div>
 
             <div>
-                <strong>Campus Manager</strong>
+                <strong>Admin</strong>
                 <span>Administrator</span>
             </div>
 
@@ -69,11 +69,6 @@
             <button class="nav-item" data-section="qualifications">
                 <link rel="admin.css" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=dashboard" />
                 <span><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="m387-412 35-114-92-74h114l36-112 36 112h114l-93 74 35 114-92-71-93 71ZM240-40v-309q-38-42-59-96t-21-115q0-134 93-227t227-93q134 0 227 93t93 227q0 61-21 115t-59 96v309l-240-80-240 80Zm410-350q70-70 70-170t-70-170q-70-70-170-70t-170 70q-70 70-70 170t70 170q70 70 170 70t170-70ZM320-159l160-41 160 41v-124q-35 20-75.5 31.5T480-240q-44 0-84.5-11.5T320-283v124Zm160-62Z"/></svg></span>Qualifications
-            </button>
-
-            <button class="nav-item" data-section="modules">
-                <link rel="admin.css" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=dashboard" />
-                <span><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M240-320h320v-80H240v80Zm0-160h480v-80H240v80Zm-80 320q-33 0-56.5-23.5T80-240v-480q0-33 23.5-56.5T160-800h240l80 80h320q33 0 56.5 23.5T880-640v400q0 33-23.5 56.5T800-160H160Zm0-80h640v-400H447l-80-80H160v480Zm0 0v-480 480Z"/></svg></span> Modules
             </button>
 
             <button class="nav-item" data-section="schedule">
@@ -123,7 +118,7 @@
                     ☰
                 </button>
 
-                <p class="page-label">Campus Manager</p>
+                <p class="page-label">Admin</p>
 
                 <h1 id="pageTitle">
                     Dashboard
@@ -146,7 +141,7 @@
                     </div>
 
                     <div>
-                        <strong>Campus Manager</strong>
+                        <strong>Admin</strong>
                         <small>Administrator</small>
                     </div>
 
@@ -170,7 +165,7 @@
                     <p>Welcome back <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAACXBIWXMAAAsTAAALEwEAmpwYAAACUElEQVR4nKXTT2jTUBwH8CKCfy4TUW/eBp7Ew0zYxb1OZv8k7yUw1q4i6BTcVARv6kGpN4WxeRh21CRNtuE6lYlTnFubNqBrRelkyJh/5ia0ZRPFTbc2rmXuyQs23Ubbiz/4kZfA9/PyXl4slk0V9jdUaTK/i4wpgCAN4GcKwGvVDsc2S6XS/HBPyG/nVInNqAE2G5IYN3lO17OHKCt6SAE0Xmuz7S4ZHhFs1arMLkVkqE88a80vf+nCUYUzEeNtrKidtsKnJYGQ387FBzzL2ZQPjwXdeCZ2GW9GAABbKYBahiXH3uei/cBGQGS5kODAbx6dXFuZ8+PYQHNJZFRk6lSJ1SMy0iMKd9sEogqaSiau48RQC343cg4XkNlXV00kLDibtR5+KP32BtZT3VgNwF8moMqoPf7Ak8nNC3j8yWkTWZzuxHihr4gEmCU92Y0XP3ViTeE/GGGv17slIsNkLOjRXw+ewLk5AU8MnzVCJFxocj/W714l49n4lT8RGXYZQLzDtSMsOnN6yoffRy8Zy1gfXN/5r5JxTTw+9TMk2BuLSxCYNq2HzxAkk7xTFiC99qOPrP/3qO/YPiNc0+CqIh0OMBe0Xj5LNqgSQPYlKqO0OTtdz52hARw0jrHEnq+E5OdF/LK/iZzUiyYAANhOWeE0DdDxf0irgSQ3IjkSDjZlIiIsfv9C1dbxBymA0uSnqYFwpyrANk3hM9+nbuHVbwG88LEDv7jXSGa+WfZnOnyE308DeJ+yol7j1N11Ho3K3GRYYlaiCpoJiayrbPh/6i/TitexqpFAQQAAAABJRU5ErkJggg==" alt="so-so"> </p>
 
                     <h2>
-                        Campus Manager Dashboard
+                        Admin Dashboard
                     </h2>
 
                     <span>
@@ -1398,14 +1393,10 @@
                     </h2>
 
                     <p>
-                        Schedule tutoring sessions and manage availability.
+                        View scheduled tutoring sessions, filter the schedule, and delete sessions when necessary.
                     </p>
 
                 </div>
-
-                <button class="primary-btn" id="newSessionBtn">
-                    + Schedule Session
-                </button>
 
             </div>
 
@@ -1607,12 +1598,15 @@
 
                 </div>
 
-                <button class="primary-btn" id="exportReport">
-                    Export Report
-                </button>
+
 
             </div>
 
+
+            <div class="report-chart-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px;margin:22px 0;">
+                <div class="panel" style="padding:20px"><h3>Completed sessions by Buddy</h3><canvas id="buddySessionsChart" height="230" aria-label="Bar chart of completed sessions by Buddy"></canvas></div>
+                <div class="panel" style="padding:20px"><h3>Session status breakdown</h3><canvas id="sessionStatusChart" height="230" aria-label="Pie chart of session statuses"></canvas></div>
+            </div>
 
             <div class="report-grid">
 

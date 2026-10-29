@@ -193,6 +193,18 @@ class PendingRegistration(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 
+class LoginOTP(db.Model):
+    """Short-lived email verification code for a login attempt."""
+    __tablename__ = "login_otps"
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("Users.User_id"), nullable=False, index=True)
+    otp_hash = db.Column(db.String(64), nullable=False)
+    expires_at = db.Column(db.DateTime, nullable=False)
+    attempts = db.Column(db.Integer, nullable=False, default=0)
+    used = db.Column(db.Boolean, nullable=False, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
 class PasswordResetCode(db.Model):
     """Temporary, one-time password reset codes."""
 
@@ -229,6 +241,8 @@ class BuddyApplication(db.Model):
     availability = db.Column(db.Text, nullable=False)  # Stored as JSON text
     daily_limit = db.Column(db.Integer, default=3)
     motivation = db.Column(db.Text, nullable=False)
+    transcript_filename = db.Column(db.String(255), nullable=True)
+    transcript_data = db.Column(db.Text, nullable=True)
     status = db.Column(db.String(20), default="Pending")
     submitted_at = db.Column(db.DateTime, default=datetime.utcnow)
 
@@ -261,6 +275,29 @@ class TutoringSession(db.Model):
         backref="buddy_sessions"
     )
 
+
+
+class SessionLifecycle(db.Model):
+    """Tracks the Buddy-led start/end of a video session."""
+    __tablename__ = "session_lifecycle"
+    id = db.Column(db.Integer, primary_key=True)
+    session_id = db.Column(db.Integer, db.ForeignKey("tutoring_sessions.id"), nullable=False, unique=True, index=True)
+    started_at = db.Column(db.DateTime, nullable=True)
+    ended_at = db.Column(db.DateTime, nullable=True)
+    session = db.relationship("TutoringSession")
+
+
+class UserNotification(db.Model):
+    """In-app notifications for booking, cancellation and reminders."""
+    __tablename__ = "user_notifications"
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("Users.User_id"), nullable=False, index=True)
+    session_id = db.Column(db.Integer, db.ForeignKey("tutoring_sessions.id"), nullable=True, index=True)
+    kind = db.Column(db.String(40), nullable=False)
+    title = db.Column(db.String(160), nullable=False)
+    message = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow, index=True)
+    read_at = db.Column(db.DateTime, nullable=True)
 
 
 class AdminAuditLog(db.Model):
@@ -324,6 +361,13 @@ with app.app_context():
                 connection.exec_driver_sql(
                     "ALTER TABLE pending_registrations ADD COLUMN attempts INTEGER NOT NULL DEFAULT 0"
                 )
+    if "buddy_applications" in inspector.get_table_names():
+        app_columns = {column["name"] for column in inspector.get_columns("buddy_applications")}
+        with db.engine.begin() as connection:
+            if "transcript_filename" not in app_columns:
+                connection.exec_driver_sql("ALTER TABLE buddy_applications ADD COLUMN transcript_filename VARCHAR(255)")
+            if "transcript_data" not in app_columns:
+                connection.exec_driver_sql("ALTER TABLE buddy_applications ADD COLUMN transcript_data TEXT")
     if "Users" in inspector.get_table_names():
         user_columns = {column["name"] for column in inspector.get_columns("Users")}
         if "Is_Suspended" not in user_columns:
@@ -356,6 +400,76 @@ with app.app_context():
                     academic_year=year, active=True
                 ))
         db.session.commit()
+
+    # Keep the module catalogue aligned with the qualification prospectuses.
+    # Existing administrator-added modules are preserved; missing rows are added only once.
+    qualification_catalog = {
+      "Diploma in Information Technology": {
+        1: ["Software Development 500", "Information Systems 511", "Programming 511", "Web Technology 511", "Networks 511", "Business Communication 500", "Information Systems 512", "Programming 512", "Web Technology 512", "Networks 512"],
+        2: ["M-Commerce 621", "Information Systems 621", "Programming 621", "Database Systems 621", "Internet Programming 621", "Networks 621", "Business Management 621", "M-Commerce 622", "Information Systems 622", "Programming 622", "Database Systems 622", "Internet Programming 622", "Networks 622", "Business Management 622"],
+        3: ["Quantitative Techniques 600", "IT Project Management 600", "Software Engineering 600", "Human Computer Interaction 600", "Programming 631", "Networks 631", "Business Analysis 631", "Operating Systems 600", "Management Information Systems 600", "Work Integrated Learning 600", "Programming 632", "Networks 632", "Business Analysis 632"]
+      },
+      "Bachelor of Science in IT": {
+        1: ["Information Systems 511", "Programming 511", "Web Technology 511", "Networks 511", "Mathematics 511", "Information Systems 512", "Programming 512", "Web Technology 512", "Networks 512", "Mathematics 512", "Data Science 500"],
+        2: ["Information Systems 621", "Programming 621", "Database Systems 600", "Cloud Computing 600", "Internet Programming 621", "Data Manipulation & Visualisation 600", "Business Analysis 621", "Computer Architecture 600", "Information Systems 622", "Programming 622", "Big Data & IOT 600", "Machine Learning 600", "Internet Programming 622", "Statistics for Data Science 600", "Business Analysis 622", "Server Technology 600"],
+        3: ["Software Engineering 700", "Programming 731", "Cyber Security 700", "Artificial Intelligence 700", "Human Computer Interaction 700", "Programming 741", "Machine Learning 700", "IT Strategic Management 731", "Networks 731", "IT Project 700", "Programming 732", "Mobile App Development 700", "Work Integrated Learning 700", "Operating Systems 700", "Programming 742", "Autonomous Systems & Robotics 700", "IT Strategic Management 732", "Networks 732"]
+      },
+      "Bachelor of Business Administration": {
+        1: ["Business Ethics 500", "Economics 511", "Accounting 511", "Statistics 511", "Information Systems 511", "Human Resource Management 511", "Marketing Management 511", "Entrepreneurship 500", "Economics 512", "Accounting 512", "Statistics 512", "Information Systems 512", "Human Resource Management 512", "Marketing Management 512"],
+        2: ["Economics 621", "Stakeholder Relations 621", "Commercial Law 621", "Accounting 621", "Marketing Management 621", "Human Resource Management 621", "Economics 622", "Stakeholder Relations 622", "Commercial Law 622", "Accounting 622", "Marketing Management 622", "Human Resource Management 622"],
+        3: ["Strategic Management 731", "Market Research 700", "Entrepreneurship & Small Business Management 700", "Contemporary Issues in Industrial Relations 700", "Accounting 731", "Marketing Management 731", "Human Resource Management 731", "Strategic Management 732", "Training & Development 700", "Total Quality Management 700", "Work Integrated Learning 700", "Accounting 732", "Marketing Management 732", "Human Resource Management 732"]
+      },
+      "Higher Certificate in IT": {
+        1: ["Digital Literacy", "Introduction to Information Technology", "Programming Fundamentals", "Computer Systems", "Communication Skills"]
+      }
+    }
+    for qualification_name, year_map in qualification_catalog.items():
+        qualification = ManagedQualification.query.filter(db.func.lower(ManagedQualification.name) == qualification_name.lower()).first()
+        if not qualification:
+            qualification = ManagedQualification(name=qualification_name, active=True)
+            db.session.add(qualification)
+            db.session.flush()
+        for year, names in year_map.items():
+            for module_name in names:
+                exists = ManagedModule.query.filter_by(qualification_id=qualification.id, academic_year=year, name=module_name).first()
+                if not exists:
+                    db.session.add(ManagedModule(name=module_name, qualification_id=qualification.id, academic_year=year, active=True))
+    # Remove generic placeholder module rows from the initial starter catalogue.
+    # Real prospectus modules (with their module codes) remain intact.
+    ManagedModule.query.filter(ManagedModule.name.in_(["Programming", "Database Systems", "Networks", "Machine Learning", "Data Manipulation & Visualisation"])).delete(synchronize_session=False)
+    db.session.commit()
+
+
+def add_notification(user_id, title, message, kind, session_id=None):
+    if not user_id:
+        return
+    db.session.add(UserNotification(user_id=user_id, title=title, message=message,
+                                    kind=kind, session_id=session_id))
+
+
+def send_event_email(recipient_email, subject, message, event_type):
+    """Send a non-OTP message through the configured Apps Script relay.
+
+    The relay must accept `subject`, `message`, and `type` fields in addition
+    to `secret` and `email`; see NOTIFICATIONS_SETUP.md.
+    """
+    import json
+    from urllib.request import Request, urlopen
+    from urllib.error import URLError, HTTPError
+    script_url = os.environ.get("EMAIL_SCRIPT_URL", "").strip()
+    shared_secret = os.environ.get("OCTO_BUDDY_SECRET", "")
+    if not script_url or not shared_secret:
+        raise RuntimeError("Email relay is not configured.")
+    payload = json.dumps({"secret": shared_secret, "email": recipient_email,
+                          "subject": subject, "message": message, "type": event_type}).encode("utf-8")
+    req = Request(script_url, data=payload, headers={"Content-Type":"application/json"}, method="POST")
+    try:
+        with urlopen(req, timeout=25) as response:
+            result = json.loads(response.read().decode("utf-8", errors="replace"))
+    except (HTTPError, URLError, TimeoutError, ValueError) as exc:
+        raise RuntimeError("The email relay request failed.") from exc
+    if not isinstance(result, dict) or result.get("success") is not True:
+        raise RuntimeError("The email relay did not confirm delivery.")
 
 
 # ============================================================
@@ -414,14 +528,21 @@ def valid_email(email):
 
 
 def valid_name(value):
-    """Allow letters, spaces, apostrophes and hyphens in names."""
-    return bool(re.fullmatch(r"[A-Za-zÀ-ÖØ-öø-ÿ]+(?:[ '\u2019-][A-Za-zÀ-ÖØ-öø-ÿ]+)*", value or ""))
+    """Allow realistic human-name characters and reject common placeholders."""
+    value = (value or "").strip()
+    if not re.fullmatch(r"[A-Za-zÀ-ÖØ-öø-ÿ]+(?:[ '\u2019-][A-Za-zÀ-ÖØ-öø-ÿ]+)*", value):
+        return False
+    parts = [part for part in re.split(r"[ '\u2019-]+", value.lower()) if part]
+    placeholders = {"one", "two", "three", "test", "testing", "user", "admin", "example", "abc", "asdf", "unknown", "none", "firstname", "lastname"}
+    return len(value) >= 2 and not (len(parts) == 1 and parts[0] in placeholders)
 
 
 def valid_password(password):
-    """Require 8-10 characters, at least one letter and at least one digit."""
-    password = password or ""
-    return 8 <= len(password) <= 10 and bool(re.search(r"[A-Za-z]", password)) and bool(re.search(r"\d", password))
+    """Require 12+ chars with upper/lowercase, digit and special character."""
+    if not isinstance(password, str) or not 12 <= len(password) <= 64:
+        return False
+    return all((re.search(r"[a-z]", password), re.search(r"[A-Z]", password),
+                re.search(r"\d", password), re.search(r"[^A-Za-z0-9]", password)))
 
 
 def resolve_managed_qualification(course):
@@ -537,6 +658,8 @@ def application_to_dict(application):
         "availability": json_list(application.availability),
         "daily_limit": application.daily_limit,
         "motivation": application.motivation,
+        "transcript_filename": application.transcript_filename,
+        "transcript_data": application.transcript_data,
         "status": application.status,
         "submitted_at": application.submitted_at.isoformat()
         if application.submitted_at else None,
@@ -610,7 +733,7 @@ def current_user(user_id):
 # ============================================================
 
 PUBLIC_API_ENDPOINTS = {
-    "register", "verify_otp", "login", "forgot_password", "reset_password",
+    "register", "verify_otp", "login", "verify_login_otp", "forgot_password", "reset_password",
     "home", "health"
 }
 
@@ -706,7 +829,7 @@ def register():
         if not valid_email(email):
             return jsonify(status="error", message="Enter a valid email address, for example name@example.com."), 400
         if not valid_password(password):
-            return jsonify(status="error", message="Password must be 8-10 characters and include at least one letter and one number."), 400
+            return jsonify(status="error", message="Password must be at least 12 characters and include uppercase, lowercase, a number and a special character."), 400
         if User.query.filter_by(email=email).first():
             return jsonify(status="error", message="Email already exists."), 409
 
@@ -811,11 +934,30 @@ def login():
                 "message": "This account has been suspended. Please contact the administrator."
             }), 403
 
+        # A password alone does not complete login. Send a short-lived email OTP.
+        LoginOTP.query.filter_by(user_id=user.id, used=False).delete(synchronize_session=False)
+        otp = str(secrets.randbelow(90000) + 10000)
+        pending = LoginOTP(
+            user_id=user.id,
+            otp_hash=hashlib.sha256(otp.encode("utf-8")).hexdigest(),
+            expires_at=datetime.utcnow() + timedelta(minutes=10),
+            attempts=0,
+            used=False,
+        )
+        db.session.add(pending)
+        db.session.commit()
+        try:
+            send_otp_email(user.email, otp)
+        except Exception:
+            db.session.delete(pending)
+            db.session.commit()
+            app.logger.exception("Login verification email delivery failed.")
+            return jsonify(status="error", message="We could not send your login verification code. Please try again later."), 503
+
         return jsonify({
-            "status": "success",
-            "message": "Login successful.",
-            "user": user.to_dict(),
-            "token": token_serializer.dumps({"uid": user.id, "role": (user.role or "student").lower()})
+            "status": "pending_otp",
+            "message": "A verification code has been sent to your email. Verify it to finish logging in.",
+            "email": user.email
         }), 200
 
     except Exception as exc:
@@ -823,6 +965,36 @@ def login():
         return jsonify({"status": "error", "message": "The request could not be completed. Please try again."}), 500
 
     
+@app.route("/api/verify-login-otp", methods=["POST"])
+def verify_login_otp():
+    """Complete login only after a valid emailed OTP is confirmed."""
+    data = request.get_json(silent=True) or {}
+    email = str(data.get("email", "")).strip().lower()
+    otp = str(data.get("otp", "")).strip()
+    if not valid_email(email) or not re.fullmatch(r"\d{5}", otp):
+        return jsonify(status="error", message="Enter the email address and five-digit code."), 400
+    user = User.query.filter_by(email=email).first()
+    if not user or not user.is_verified or user.is_suspended:
+        return jsonify(status="error", message="Invalid or expired verification code."), 400
+    pending = LoginOTP.query.filter_by(user_id=user.id, used=False).order_by(LoginOTP.created_at.desc()).first()
+    if not pending or pending.expires_at < datetime.utcnow() or pending.attempts >= 5:
+        if pending:
+            pending.used = True
+            db.session.commit()
+        return jsonify(status="error", message="Your code expired or attempts were exhausted. Please log in again."), 400
+    expected = hashlib.sha256(otp.encode("utf-8")).hexdigest()
+    if not hmac.compare_digest(pending.otp_hash, expected):
+        pending.attempts += 1
+        if pending.attempts >= 5:
+            pending.used = True
+        db.session.commit()
+        return jsonify(status="error", message="Incorrect verification code."), 400
+    pending.used = True
+    db.session.commit()
+    return jsonify(status="success", message="Login verified successfully.", user=user.to_dict(),
+                   token=token_serializer.dumps({"uid": user.id, "role": (user.role or "student").lower()})), 200
+
+
 # ============================================================
 # PASSWORD RESET
 # ============================================================
@@ -933,7 +1105,7 @@ def reset_password():
         return jsonify({
             "status": "error",
             "message": (
-                "Password must be 8–10 characters and contain at least one letter and one number."
+                "Password must be at least 12 characters and include uppercase, lowercase, a number and a special character."
             )
         }), 400
 
@@ -1087,12 +1259,16 @@ def update_user(user_id):
         academic_year = data.get("academic_year")
 
         if first_name is not None:
+            if (getattr(g, "current_user", None).role or "").lower() != "admin":
+                return jsonify({"status": "error", "message": "Your registered name cannot be edited from the profile page."}), 403
             first_name = str(first_name).strip()
             if not valid_name(first_name) or len(first_name) > 50:
                 return jsonify({"status": "error", "message": "Enter a valid first name of no more than 50 characters."}), 400
             user.first_name = first_name
 
         if last_name is not None:
+            if (getattr(g, "current_user", None).role or "").lower() != "admin":
+                return jsonify({"status": "error", "message": "Your registered surname cannot be edited from the profile page."}), 403
             last_name = str(last_name).strip()
             if not valid_name(last_name) or len(last_name) > 50:
                 return jsonify({"status": "error", "message": "Enter a valid last name of no more than 50 characters."}), 400
@@ -1183,10 +1359,15 @@ def create_buddy_application():
         full_name = str(data.get("full_name", f"{user.first_name} {user.last_name}")).strip()
         student_number = str(data.get("student_number", "")).strip()
         motivation = str(data.get("motivation", "")).strip()
+        transcript_data = str(data.get("transcript_data", "")).strip()
+        transcript_filename = str(data.get("transcript_filename", "")).strip()
+        if transcript_data:
+            if not transcript_data.startswith("data:image/") or len(transcript_data) > 7_000_000:
+                return jsonify(status="error", message="Upload a valid image transcript smaller than 5 MB."), 400
         if not valid_name(full_name):
             return jsonify(status="error", message="Full name must contain letters only (spaces, apostrophes and hyphens are allowed)."), 400
-        if not re.fullmatch(r"[0-9]{9}", student_number):
-            return jsonify(status="error", message="Student number must contain exactly 9 digits and numbers only."), 400
+        if not re.fullmatch(r"402[0-9]{6}", student_number):
+            return jsonify(status="error", message="Student number must be exactly 9 digits and start with 402."), 400
         motivation_words = motivation.split()
         if not motivation or len(motivation_words) > 30:
             return jsonify(status="error", message="Motivation is required and must be no more than 30 words."), 400
@@ -1206,6 +1387,8 @@ def create_buddy_application():
             availability=as_json_text(availability),
             daily_limit=daily_limit,
             motivation=motivation,
+            transcript_filename=transcript_filename or None,
+            transcript_data=transcript_data or None,
             status="Pending"
         )
 
@@ -1235,7 +1418,10 @@ def create_buddy_application():
 
 @app.route("/api/buddy-applications", methods=["GET"])
 def list_buddy_applications():
-    """Return applications for the admin dashboard."""
+    """Return applications for administrators only."""
+    denied = _admin_required()
+    if denied:
+        return denied
     applications = BuddyApplication.query.order_by(
         BuddyApplication.submitted_at.desc()
     ).all()
@@ -1301,9 +1487,173 @@ def review_buddy_application(application_id, action):
         return jsonify({"status": "error", "message": "The request could not be completed. Please try again."}), 500
 
 
+@app.route("/api/sessions/room/<path:room_code>/join", methods=["POST"])
+def session_room_join(room_code):
+    """Buddy starts the room; student may enter only after the Buddy starts it."""
+    actor = getattr(g, "current_user", None)
+    if not actor:
+        return jsonify(status="error", message="Please log in."), 401
+    session = TutoringSession.query.filter_by(room_code=room_code).first()
+    if not session:
+        return jsonify(status="error", message="No booked session matches this room code."), 404
+    if actor.id not in (session.student_id, session.buddy_id) and (actor.role or "").lower() != "admin":
+        return jsonify(status="error", message="You are not assigned to this session."), 403
+    if session.status != "Confirmed":
+        return jsonify(status="error", message=f"This session is {session.status.lower()} and cannot be joined."), 409
+    local_now = datetime.now(ZoneInfo("Africa/Johannesburg"))
+    if session.session_date != local_now.date():
+        return jsonify(status="error", message="This video session can only be entered on its scheduled date."), 403
+    lifecycle = SessionLifecycle.query.filter_by(session_id=session.id).first()
+    if not lifecycle:
+        lifecycle = SessionLifecycle(session_id=session.id)
+        db.session.add(lifecycle)
+        db.session.flush()
+    role = (actor.role or "student").lower()
+    if role == "buddy":
+        if actor.id != session.buddy_id:
+            return jsonify(status="error", message="Only the assigned Octo Buddy can start this session."), 403
+        if not lifecycle.started_at:
+            lifecycle.started_at = datetime.utcnow()
+            add_notification(session.student_id, "Your Octo Buddy has started the session", f"Your {session.module} session is ready to join.", "session_started", session.id)
+            db.session.commit()
+    elif role == "student":
+        if actor.id != session.student_id:
+            return jsonify(status="error", message="Only the booked student can join this session."), 403
+        if not lifecycle.started_at or lifecycle.ended_at:
+            return jsonify(status="error", message="Your Octo Buddy has not started this session yet."), 409
+    return jsonify(status="success", message="Session may be joined.", session_id=session.id,
+                   started=bool(lifecycle.started_at), ended=bool(lifecycle.ended_at)), 200
+
+
+@app.route("/api/sessions/room/<path:room_code>/end", methods=["POST"])
+def session_room_end(room_code):
+    """Only the assigned Buddy can end and complete a session."""
+    actor = getattr(g, "current_user", None)
+    session = TutoringSession.query.filter_by(room_code=room_code).first()
+    if not actor or not session:
+        return jsonify(status="error", message="Session or account not found."), 404
+    if actor.id != session.buddy_id or (actor.role or "").lower() != "buddy":
+        return jsonify(status="error", message="Only the assigned Octo Buddy can end this session."), 403
+    lifecycle = SessionLifecycle.query.filter_by(session_id=session.id).first()
+    if not lifecycle or not lifecycle.started_at:
+        return jsonify(status="error", message="The session has not been started by the Buddy."), 409
+    if not lifecycle.ended_at:
+        lifecycle.ended_at = datetime.utcnow()
+        if session.status == "Confirmed":
+            session.status = "Completed"
+            actor.points = (actor.points or 0) + 25
+            add_notification(session.student_id, "Tutoring session completed", f"Your {session.module} session has ended.", "session_completed", session.id)
+            add_notification(actor.id, "Tutoring session completed", f"You completed the {session.module} session.", "session_completed", session.id)
+        db.session.commit()
+    return jsonify(status="success", message="Session ended and recorded.", session=session_to_dict(session)), 200
+
+
+@app.route("/api/notifications", methods=["GET"])
+def list_user_notifications():
+    actor = getattr(g, "current_user", None)
+    if not actor:
+        return jsonify(status="error", message="Please log in."), 401
+    items = UserNotification.query.filter_by(user_id=actor.id).order_by(UserNotification.created_at.desc()).limit(50).all()
+    return jsonify(status="success", notifications=[{
+        "id": n.id, "title": n.title, "message": n.message, "kind": n.kind,
+        "session_id": n.session_id, "created_at": n.created_at.isoformat() + "Z",
+        "read": bool(n.read_at)
+    } for n in items]), 200
+
+
+@app.route("/api/notifications/<int:notification_id>/read", methods=["PUT"])
+def mark_notification_read(notification_id):
+    actor = getattr(g, "current_user", None)
+    item = UserNotification.query.filter_by(id=notification_id, user_id=actor.id if actor else -1).first()
+    if not item:
+        return jsonify(status="error", message="Notification not found."), 404
+    item.read_at = datetime.utcnow()
+    db.session.commit()
+    return jsonify(status="success"), 200
+
+
+@app.route("/api/cron/session-reminders", methods=["POST"])
+def send_session_reminders():
+    """Cron endpoint: invoke every 5 minutes using X-Cron-Secret."""
+    expected = os.environ.get("CRON_SECRET", "").strip()
+    if not expected or not hmac.compare_digest(request.headers.get("X-Cron-Secret", ""), expected):
+        return jsonify(status="error", message="Not authorized."), 401
+    now = datetime.now(ZoneInfo("Africa/Johannesburg"))
+    window_start = now + timedelta(minutes=55)
+    window_end = now + timedelta(minutes=65)
+    sessions = TutoringSession.query.filter(TutoringSession.status == "Confirmed").all()
+    sent = 0
+    for session in sessions:
+        try:
+            t = datetime.strptime(session.session_time, "%H:%M").time()
+            start = datetime.combine(session.session_date, t, tzinfo=ZoneInfo("Africa/Johannesburg"))
+        except ValueError:
+            continue
+        if not (window_start <= start <= window_end):
+            continue
+        already = UserNotification.query.filter_by(session_id=session.id, kind="reminder_1h").first()
+        if already:
+            continue
+        detail = f"{session.module} on {session.session_date.isoformat()} at {session.session_time}."
+        recipients = [u for u in (session.student, session.buddy) if u and u.email]
+        try:
+            for user in recipients:
+                add_notification(user.id, "Tutoring session in one hour", f"Your {detail}", "reminder_1h", session.id)
+                send_event_email(user.email, "Octo Buddy session reminder", f"Reminder: your tutoring session for {detail}", "session_reminder")
+            db.session.commit()
+            sent += 1
+        except Exception:
+            db.session.rollback()
+            app.logger.exception("Session reminder delivery failed for session %s", session.id)
+    return jsonify(status="success", reminders_processed=sent), 200
+
+
 # ============================================================
 # TUTORING BOOKINGS / SESSIONS
 # ============================================================
+
+@app.route("/api/available-tutors", methods=["GET"])
+def available_tutors():
+    """List approved tutors and free future hourly slots for a module/date."""
+    module = request.args.get("module", "").strip()
+    date_text = request.args.get("date", "").strip()
+    if not module or not date_text:
+        return jsonify(status="error", message="Choose a module and date."), 400
+    try:
+        requested_date = date.fromisoformat(date_text)
+    except ValueError:
+        return jsonify(status="error", message="Invalid date."), 400
+    local_tz = ZoneInfo("Africa/Johannesburg")
+    now = datetime.now(local_tz)
+    if requested_date < now.date():
+        return jsonify(status="error", message="Past dates cannot be selected."), 400
+    student = getattr(g, "current_user", None)
+    if not student or (student.role or "").lower() != "student":
+        return jsonify(status="error", message="A student account is required."), 403
+    if module not in modules_for_qualification(student.course, student.academic_year):
+        return jsonify(status="error", message="That module is not part of your qualification/year."), 400
+    weekday = requested_date.strftime("%A")
+    results = []
+    applications = BuddyApplication.query.filter_by(status="Approved").all()
+    for application in applications:
+        tutor = application.user
+        if not tutor or (tutor.role or "").lower() != "buddy":
+            continue
+        if module not in json_list(application.modules) or weekday not in json_list(application.availability):
+            continue
+        slots = []
+        for hour in range(8, 19):
+            slot = f"{hour:02d}:00"
+            start = datetime.combine(requested_date, datetime.strptime(slot, "%H:%M").time(), tzinfo=local_tz)
+            if start <= now:
+                continue
+            conflict = TutoringSession.query.filter_by(buddy_id=tutor.id, session_date=requested_date, session_time=slot).filter(TutoringSession.status.in_(["Pending", "Confirmed"])).first()
+            if not conflict:
+                slots.append(slot)
+        if slots:
+            results.append({"id": tutor.id, "first_name": tutor.first_name, "last_name": tutor.last_name, "qualification": tutor.course, "modules": json_list(application.modules), "available_times": slots})
+    return jsonify(status="success", tutors=results), 200
+
 
 @app.route("/api/bookings", methods=["POST"])
 def create_booking():
@@ -1364,7 +1714,19 @@ def create_booking():
                 "message": "You already have a session at that time."
             }), 409
 
-        buddy = find_available_buddy(module, requested_date)
+        requested_buddy_id = data.get("buddy_id")
+        if requested_buddy_id not in (None, ""):
+            try:
+                buddy = db.session.get(User, int(requested_buddy_id))
+            except (TypeError, ValueError):
+                buddy = None
+            application = BuddyApplication.query.filter_by(user_id=buddy.id, status="Approved").first() if buddy else None
+            allowed_days = json_list(application.availability) if application else []
+            allowed_modules = json_list(application.modules) if application else []
+            if not buddy or (buddy.role or "").lower() != "buddy" or not application or module not in allowed_modules or requested_date.strftime("%A") not in allowed_days:
+                return jsonify(status="error", message="Choose an approved tutor who teaches this module and is available on that day."), 400
+        else:
+            buddy = find_available_buddy(module, requested_date)
 
         if not buddy:
             return jsonify({
@@ -1394,7 +1756,18 @@ def create_booking():
         )
 
         db.session.add(session)
+        db.session.flush()
+        detail = f"{module} on {requested_date.isoformat()} at {time_text}."
+        add_notification(student.id, "Session booked", f"Your session is booked: {detail}", "booked", session.id)
+        if buddy:
+            add_notification(buddy.id, "New tutoring booking", f"A student booked {detail}", "booked", session.id)
         db.session.commit()
+        for user in (student, buddy):
+            try:
+                if user and user.email:
+                    send_event_email(user.email, "Octo Buddy session booked", f"A tutoring session has been booked: {detail}", "session_booked")
+            except Exception:
+                app.logger.exception("Booking email delivery failed.")
 
         return jsonify({
             "status": "success",
@@ -1446,6 +1819,39 @@ def buddy_sessions(user_id):
     }), 200
 
 
+@app.route("/api/buddy/students/<int:buddy_id>", methods=["GET"])
+def buddy_students(buddy_id):
+    """Return only students with sessions assigned to the authenticated Buddy."""
+    actor = getattr(g, "current_user", None)
+    if not actor or (actor.id != buddy_id and (actor.role or "").lower() != "admin"):
+        return jsonify(status="error", message="You are not allowed to view these students."), 403
+    buddy = db.session.get(User, buddy_id)
+    if not buddy or (buddy.role or "").lower() != "buddy":
+        return jsonify(status="error", message="Octo Buddy not found."), 404
+
+    sessions = TutoringSession.query.filter_by(buddy_id=buddy_id).order_by(
+        TutoringSession.session_date.asc(), TutoringSession.session_time.asc()
+    ).all()
+    students = {}
+    for session in sessions:
+        student = session.student
+        if not student:
+            continue
+        entry = students.setdefault(student.id, {
+            "id": student.id,
+            "first_name": student.first_name,
+            "last_name": student.last_name,
+            "qualification": student.course or "Not set",
+            "modules": [],
+            "session_count": 0,
+        })
+        if session.module and session.module not in entry["modules"]:
+            entry["modules"].append(session.module)
+        entry["session_count"] += 1
+
+    return jsonify(status="success", students=list(students.values())), 200
+
+
 @app.route("/api/sessions/<int:session_id>/status", methods=["PUT"])
 def update_session_status(session_id):
     """Update a session status, e.g. Completed or Cancelled."""
@@ -1471,6 +1877,20 @@ def update_session_status(session_id):
 
         allowed = {"Confirmed", "Completed", "Cancelled"}
 
+        if new_status == "Completed":
+            if actor_role != "buddy" or actor.id != session.buddy_id:
+                return jsonify(status="error", message="Only the assigned Octo Buddy can complete this session."), 403
+            lifecycle = SessionLifecycle.query.filter_by(session_id=session.id).first()
+            if not lifecycle or not lifecycle.ended_at:
+                return jsonify(status="error", message="End the video session before marking it completed."), 409
+            try:
+                start_time = datetime.strptime(session.session_time, "%H:%M").time()
+            except ValueError:
+                return jsonify(status="error", message="The stored session time is invalid."), 400
+            scheduled_start = datetime.combine(session.session_date, start_time, tzinfo=ZoneInfo("Africa/Johannesburg"))
+            if datetime.now(ZoneInfo("Africa/Johannesburg")) < scheduled_start:
+                return jsonify(status="error", message="The session cannot be completed before its scheduled start time."), 400
+
         if new_status not in allowed:
             return jsonify({
                 "status": "error",
@@ -1479,6 +1899,11 @@ def update_session_status(session_id):
 
         previous_status = session.status
         session.status = new_status
+        if new_status == "Cancelled" and previous_status != "Cancelled":
+            detail = f"{session.module} on {session.session_date.isoformat()} at {session.session_time}."
+            for recipient in (session.student, session.buddy):
+                if recipient:
+                    add_notification(recipient.id, "Session cancelled", f"The session was cancelled: {detail}", "cancelled", session.id)
 
         # Reward points only on the first transition into Completed.
         if new_status == "Completed" and previous_status != "Completed" and session.buddy:
@@ -1500,9 +1925,11 @@ def update_session_status(session_id):
 
 @app.route("/api/admin/sessions", methods=["POST"])
 def admin_create_session():
-    """
-    Allow the admin to manually schedule a session from the admin modal.
-    """
+    """Session Schedule is read/manage-only; booking happens from Student booking flow."""
+    denied = _admin_required()
+    if denied:
+        return denied
+    return jsonify(status="error", message="Creating bookings from Session Schedule is disabled. Use the student booking workflow."), 405
     try:
         data = request.get_json() or {}
         if (getattr(g, "current_user", None).role or "").lower() != "admin":
@@ -1638,6 +2065,27 @@ def admin_buddies():
         "status": "success",
         "buddies": [user.to_dict() for user in buddies]
     }), 200
+
+
+@app.route("/api/admin/sessions/<int:session_id>", methods=["DELETE"])
+def admin_delete_session(session_id):
+    """Delete a scheduled session. Restricted to administrators."""
+    denied = _admin_required()
+    if denied:
+        return denied
+    session = db.session.get(TutoringSession, session_id)
+    if not session:
+        return jsonify(status="error", message="Session not found."), 404
+    write_audit("session_deleted", "session", session.id, {
+        "student_id": session.student_id,
+        "buddy_id": session.buddy_id,
+        "module": session.module,
+        "date": session.session_date.isoformat(),
+        "time": session.session_time,
+    })
+    db.session.delete(session)
+    db.session.commit()
+    return jsonify(status="success", message="Session deleted."), 200
 
 
 @app.route("/api/admin/sessions", methods=["GET"])

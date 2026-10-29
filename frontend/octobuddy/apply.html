@@ -121,9 +121,7 @@
                         </p>
                     </div>
 
-                    <div class="status-badge">
-                        PENDING
-                    </div>
+
 
                 </div>
 
@@ -168,14 +166,14 @@
                                     name="studentNumber"
                                     placeholder="Enter your 9-digit student number"
                                     inputmode="numeric"
-                                    pattern="[0-9]{9}"
+                                    pattern="402[0-9]{6}"
                                     minlength="9"
                                     maxlength="9"
                                     autocomplete="off"
                                     aria-describedby="studentNumberHelp"
-                                    title="Enter exactly 9 digits (numbers only)."
+                                    title="Enter exactly 9 digits starting with 402."
                                     required>
-                                <small id="studentNumberHelp" class="field-help">Enter exactly 9 digits. Numbers only.</small>
+                                <small id="studentNumberHelp" class="field-help">Enter exactly 9 digits starting with 402.</small>
 
                             </div>
 
@@ -500,6 +498,15 @@
                             BUTTONS
                     =========================== -->
 
+                                    <div class="form-section">
+                        <h3>Academic Transcript</h3>
+                        <div class="form-group">
+                            <label for="transcriptImage">Upload transcript image (PNG, JPG or WebP)</label>
+                            <input type="file" id="transcriptImage" name="transcriptImage" accept="image/png,image/jpeg,image/webp" required>
+                            <small class="field-help">Maximum 5 MB. Upload a clear image of your academic transcript.</small>
+                        </div>
+                    </div>
+
                     <div class="form-actions">
 
                         <a
@@ -519,7 +526,7 @@
                     </div>
 
 
-                </form>
+</form>
 
             </div>
 

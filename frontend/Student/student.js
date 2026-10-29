@@ -1,3 +1,53 @@
+
+async function loadAvailableTutors() {
+    const moduleField = document.getElementById("module");
+    const dateField = document.getElementById("date");
+    const buddyField = document.getElementById("buddyId");
+    const timeField = document.getElementById("time");
+    if (!moduleField || !dateField || !buddyField) return;
+    const module = moduleField.value;
+    const dateValue = dateField.value;
+    buddyField.replaceChildren(new Option("Loading available tutors…", ""));
+    buddyField.disabled = true;
+    if (timeField) { timeField.replaceChildren(new Option("Choose a tutor first", "")); timeField.disabled = true; }
+    if (!module || !dateValue) {
+        buddyField.replaceChildren(new Option("Choose a module and date first", ""));
+        return;
+    }
+    try {
+        const response = await fetch(`${API_BASE_URL}available-tutors?module=${encodeURIComponent(module)}&date=${encodeURIComponent(dateValue)}`);
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || "Could not load tutors.");
+        buddyField.replaceChildren(new Option(data.tutors.length ? "Select an available tutor" : "No tutors available for this date", ""));
+        (data.tutors || []).forEach(tutor => {
+            const option = new Option(`${tutor.first_name} ${tutor.last_name}`, String(tutor.id));
+            option.dataset.times = JSON.stringify(tutor.available_times || []);
+            buddyField.add(option);
+        });
+        buddyField.disabled = !data.tutors?.length;
+    } catch (error) {
+        buddyField.replaceChildren(new Option(error.message || "Could not load tutors", ""));
+        buddyField.disabled = true;
+    }
+}
+
+function updateAvailableTimes() {
+    const buddyField = document.getElementById("buddyId");
+    const timeField = document.getElementById("time");
+    if (!buddyField || !timeField) return;
+    const option = buddyField.selectedOptions[0];
+    const times = option?.dataset?.times ? JSON.parse(option.dataset.times) : [];
+    timeField.replaceChildren(new Option(times.length ? "Select an available time" : "No times available", ""));
+    times.forEach(time => timeField.add(new Option(time, time)));
+    timeField.disabled = !times.length;
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("module")?.addEventListener("change", loadAvailableTutors);
+    document.getElementById("date")?.addEventListener("change", loadAvailableTutors);
+    document.getElementById("buddyId")?.addEventListener("change", updateAvailableTimes);
+});
+
 /* Shared API auth helper: attach the stored bearer token to protected API requests. */
 (() => {
     if (window.__octoApiFetchAuthInstalled) return;
@@ -512,13 +562,15 @@ function renderUpcomingSessions(sessions) {
 /**
  * Join a Jitsi room assigned by the backend.
  */
-function joinTutorRoom(roomName) {
-    if (!roomName) {
-        alert("This session does not have a video room yet.");
-        return;
-    }
-
-    launchJitsiCall(roomName);
+async function joinTutorRoom(roomName) {
+    if (!roomName) { alert("This session does not have a video room yet."); return; }
+    try {
+        const token = localStorage.getItem("auth_token") || "";
+        const response = await fetch(`${API_BASE_URL}sessions/room/${encodeURIComponent(roomName)}/join`, { method: "POST", headers: { Authorization: `Bearer ${token}` } });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || "Your Octo Buddy has not started the session yet.");
+        launchJitsiCall(roomName);
+    } catch (error) { alert(error.message || "Could not join the session."); }
 }
 
 
@@ -706,7 +758,8 @@ function setupBookingForm() {
                         user_id: Number(userId),
                         module,
                         date,
-                        time
+                        time,
+                        buddy_id: Number(document.getElementById("buddyId")?.value || 0) || null
                     })
                 });
 

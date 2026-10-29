@@ -494,26 +494,8 @@ async function loadBuddyStudents() {
 
 
 function viewMyStudents() {
-    const students =
-        window.myBuddyStudents || [];
-
-    if (students.length === 0) {
-        alert(
-            "My Students\n\n" +
-            "You currently have no assigned students."
-        );
-        return;
-    }
-
-    alert(
-        "My Students\n\n" +
-        students.map(
-            (student, index) =>
-                `${index + 1}. ${student}`
-        ).join("\n")
-    );
+    window.location.href = "my-students.html";
 }
-
 
 /* =========================================================
    MY SCHEDULE
@@ -541,6 +523,18 @@ function joinBuddyRoom() {
     launchJitsiCall(room);
 }
 
+
+async function joinTutorRoom(roomName) {
+    if (!roomName) { alert("This session does not have a video room yet."); return; }
+    try {
+        const token = localStorage.getItem("auth_token") || "";
+        const response = await fetch(`${API_BASE_URL}sessions/room/${encodeURIComponent(roomName)}/join`, { method: "POST", headers: { Authorization: `Bearer ${token}` } });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || "Could not start this session.");
+        localStorage.setItem("octo_active_buddy_room", roomName);
+        launchJitsiCall(roomName);
+    } catch (error) { alert(error.message || "Could not join the session."); }
+}
 
 function joinCustomRoomPrompt() {
     const room =
@@ -620,7 +614,18 @@ function launchJitsiCall(roomName) {
         );
 
     jitsiApi.addEventListeners({
-        videoConferenceLeft: closeJitsiSession
+        videoConferenceLeft: async () => {
+            const room = localStorage.getItem("octo_active_buddy_room");
+            if (room) {
+                try {
+                    const token = localStorage.getItem("auth_token") || "";
+                    await fetch(`${API_BASE_URL}sessions/room/${encodeURIComponent(room)}/end`, { method: "POST", headers: { Authorization: `Bearer ${token}` } });
+                } catch (error) { console.warn("Could not record session end."); }
+                localStorage.removeItem("octo_active_buddy_room");
+            }
+            closeJitsiSession();
+            loadBuddySessions();
+        }
     });
 }
 
