@@ -1,0 +1,682 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Support | OctoBuddy</title>
+
+    <!-- Poppins Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* GENERAL STYLING */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            scroll-padding-top: 100px;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #14919b;
+            color: #80ed99;
+            line-height: 1.7;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        :root {
+            --navy: #213A57;
+            --dark-navy: #142C43;
+            --teal: #0B6477;
+            --green: #45DFB1;
+            --mint: #80ED99;
+            --white: #ffffff;
+            --muted: #d5e1ec;
+        }
+
+        /* NAVIGATION BAR */
+        .navbar {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 7%;
+            background: linear-gradient(100deg, #14919B, #213A57);
+            box-shadow: 0 3px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .logo {
+            color: var(--green);
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: 2px;
+        }
+
+        .logo span {
+            font-family: 'Poppins', sans-serif;
+            color: #000000;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .nav-links a {
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--green);
+        }
+
+        /* MAIN CONTENT */
+        .container {
+            max-width: 1100px;
+            margin: auto;
+            padding: 50px 25px 70px;
+        }
+
+        .section-heading {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        .section-heading h2 {
+            font-size: 30px;
+            color: var(--green);
+            margin-bottom: 8px;
+        }
+
+        .section-heading p {
+            color: var(--muted);
+        }
+
+        /* SUPPORT CARDS */
+        .support-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 25px;
+            margin-bottom: 70px;
+        }
+
+        .support-card {
+            background: var(--dark-navy);
+            padding: 30px;
+            border-radius: 14px;
+            border: 1px solid rgba(69, 223, 177, 0.25);
+            transition: transform 0.3s, border-color 0.3s;
+        }
+
+        .support-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--green);
+        }
+
+        .card-icon {
+            font-size: 35px;
+            margin-bottom: 12px;
+        }
+
+        .support-card h3 {
+            color: var(--green);
+            font-size: 22px;
+            margin-bottom: 10px;
+        }
+
+        .support-card p {
+            color: var(--muted);
+            margin-bottom: 20px;
+        }
+
+        .support-button {
+            display: inline-block;
+            background: var(--green);
+            color: var(--dark-navy);
+            padding: 10px 20px;
+            border-radius: 7px;
+            font-weight: 600;
+            border: 2px solid var(--green);
+            transition: 0.3s;
+        }
+
+        .support-button:hover {
+            background: transparent;
+            color: var(--green);
+        }
+
+        /* CONTENT SECTIONS */
+        .content-section {
+            background: var(--dark-navy);
+            padding: 35px;
+            margin-bottom: 30px;
+            border-radius: 14px;
+            border-left: 4px solid var(--green);
+        }
+
+        .content-section h2 {
+            color: var(--green);
+            margin-bottom: 15px;
+            font-size: 27px;
+        }
+
+        .content-section h3 {
+            color: var(--green);
+            margin-top: 22px;
+            margin-bottom: 8px;
+            font-size: 18px;
+        }
+
+        .content-section p,
+        .content-section li {
+            color: var(--muted);
+        }
+
+        .content-section ul {
+            padding-left: 25px;
+            margin-top: 10px;
+        }
+
+        /* FAQ */
+        .faq-item {
+            border-bottom: 1px solid #40566d;
+            padding: 18px 0;
+        }
+
+        .faq-question {
+            width: 100%;
+            background: none;
+            border: none;
+            color: var(--white);
+            font-family: inherit;
+            font-size: 16px;
+            font-weight: 600;
+            text-align: left;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+        }
+
+        .faq-question span {
+            color: var(--green);
+            font-size: 22px;
+        }
+
+        .faq-answer {
+            display: none;
+            color: var(--muted);
+            padding-top: 12px;
+        }
+
+        .faq-item.active .faq-answer {
+            display: block;
+        }
+
+        /* WHATSAPP CONTACT BUTTON */
+        .whatsapp-container {
+            margin-top: 25px;
+            text-align: left;
+        }
+
+        .whatsapp-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--green);
+            color: var(--dark-navy);
+            border: 2px solid var(--green);
+            border-radius: 7px;
+            padding: 10px 20px;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+        .whatsapp-button:hover {
+            background: transparent;
+            color: #45DFB1;
+            border-color: #45DFB1;
+            transform: translateY(-3px);
+        }
+
+        .whatsapp-icon {
+            font-size: 25px;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .whatsapp-note {
+            margin-top: 15px;
+            color: #d5e1ec;
+            font-size: 14px;
+        }
+
+        /* BACK TO TOP */
+        .back-to-top {
+            display: inline-block;
+            margin-top: 20px;
+            color: var(--green);
+            font-weight: 600;
+        }
+
+        /* MOBILE RESPONSIVENESS */
+        @media (max-width: 800px) {
+            .navbar {
+                padding: 15px 5%;
+                flex-wrap: wrap;
+                gap: 12px;
+            }
+
+            .nav-links {
+                gap: 15px;
+                flex-wrap: wrap;
+            }
+
+            .nav-links a {
+                font-size: 13px;
+            }
+        }
+
+        @media (max-width: 550px) {
+            .support-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .navbar {
+                flex-direction: column;
+            }
+
+            .nav-links {
+                justify-content: center;
+            }
+
+            .content-section {
+                padding: 22px;
+            }
+        }
+        .nav-links a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    margin: 0 10px;
+    font-size: 30px;
+    line-height: 1;
+    text-decoration: none;
+    border-radius: 50%;
+    transition: background-color 0.3s ease;
+}
+
+.nav-links a:hover {
+    background-color: rgba(255, 255, 255, 0.12);
+}
+    </style>
+</head>
+
+<body>
+
+  
+
+        <div class="nav-links">
+    <a href="../homepage/homepage.html" aria-label="Back home" title="Back home">
+        &#8592;
+    </a>
+</div>
+</nav>
+    <main class="container">
+
+        <!-- SUPPORT OPTIONS -->
+        <div class="section-heading">
+            <h2>How Can We Support You?</h2>
+            <p>Choose an option below to find the help you need.</p>
+        </div>
+
+        <div class="support-grid">
+
+            <article class="support-card">
+                <div class="card-icon"></div>
+                <h3>Help Centre</h3>
+                <p>
+                    Find answers to frequently asked questions about
+                    tutoring, bookings, student accounts and OctoBuddy.
+                </p>
+                <a href="#help-centre" class="support-button">
+                    Get Help →
+                </a>
+            </article>
+
+            <article class="support-card">
+                <div class="card-icon"></div>
+                <h3>Contact Us</h3>
+                <p>
+                    Have a question or experiencing a problem?
+                    Send our support team a message.
+                </p>
+                <a href="#contact-us" class="support-button">
+                    Contact Support →
+                </a>
+            </article>
+
+            <article class="support-card">
+                <div class="card-icon"></div>
+                <h3>Privacy Policy</h3>
+                <p>
+                    Learn how OctoBuddy intends to collect, use,
+                    protect and manage your personal information.
+                </p>
+                <a href="#privacy-policy" class="support-button">
+                    View Privacy Policy →
+                </a>
+            </article>
+
+            <article class="support-card">
+                <div class="card-icon"></div>
+                <h3>Terms &amp; Conditions</h3>
+                <p>
+                    Understand the rules and responsibilities
+                    involved in using the OctoBuddy platform.
+                </p>
+                <a href="#terms" class="support-button">
+                    Read Terms →
+                </a>
+            </article>
+
+        </div>
+
+        <!-- HELP CENTRE -->
+        <section class="content-section" id="help-centre">
+            <h2>Help Centre</h2>
+
+            <p>
+                Need assistance using OctoBuddy? Explore the questions
+                below to learn more about the platform.
+            </p>
+
+            <div class="faq-item">
+                <button class="faq-question" aria-expanded="false">
+                    What is OctoBuddy?
+                    <span>+</span>
+                </button>
+                <div class="faq-answer">
+                    OctoBuddy is a student support platform designed to
+                    connect Richfield students with fellow students who
+                    can provide academic guidance, tutoring and
+                    peer-to-peer learning opportunities.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question" aria-expanded="false">
+                    How do I book a tutoring session?
+                    <span>+</span>
+                </button>
+                <div class="faq-answer">
+                    Visit the student dashboard, find the available
+                    tutoring options and follow the booking process.
+                    Select your preferred subject and available session
+                    details. The exact options depend on the features
+                    enabled on your OctoBuddy account.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question" aria-expanded="false">
+                    Who can become an OctoBuddy?
+                    <span>+</span>
+                </button>
+                <div class="faq-answer">
+                    Students who meet the platform's eligibility
+                    requirements may apply to become an OctoBuddy and
+                    assist fellow students with their academic work.
+                    Applications should follow the platform's
+                    registration and approval process.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question" aria-expanded="false">
+                    What should I do if I experience a technical problem?
+                    <span>+</span>
+                </button>
+                <div class="faq-answer">
+                    Check your internet connection and ensure you are
+                    using an up-to-date browser. If the problem
+                    continues, use the Contact Us section below to
+                    contact the support team.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question" aria-expanded="false">
+                    Can former students use OctoBuddy?
+                    <span>+</span>
+                </button>
+                <div class="faq-answer">
+                    Former students may be able to contribute as
+                    academic mentors or supporters, subject to the
+                    platform's eligibility, verification and
+                    participation requirements.
+                </div>
+            </div>
+        </section>
+
+        <!-- CONTACT US -->
+        <section class="content-section" id="contact-us">
+            <h2>Contact Us</h2>
+
+            <p>
+                Need help with OctoBuddy?
+                Our support team is here to assist you with account
+                questions, tutoring sessions and technical issues.
+                Click the button below to contact us directly on WhatsApp.
+            </p>
+
+            <div class="whatsapp-container">
+                <a
+                    href="https://wa.me/27XXXXXXXXX?text=Hi%20OctoBuddy%20Support%2C%20I%20need%20assistance."
+                    class="whatsapp-button"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Contact OctoBuddy Support on WhatsApp"
+                >
+                    <img
+                        src="https://cdn.jsdelivr.net/gh/glincker/thesvg@main/public/icons/whatsapp/default.svg"
+                        alt="WhatsApp"
+                        width="24"
+                        height="24"
+                    >
+                    Chat with Us on WhatsApp
+                </a>
+
+                <p class="whatsapp-note">
+                    Click the button to open WhatsApp and start a conversation
+                    with OctoBuddy Support.
+                </p>
+            </div>
+        </section>
+
+        <!-- PRIVACY POLICY -->
+        <section class="content-section" id="privacy-policy">
+            <h2>Privacy Policy</h2>
+
+            <p>
+                OctoBuddy values the privacy of its users. This section
+                describes the intended approach to handling personal
+                information when students use the platform.
+            </p>
+
+            <h3>1. Information We May Collect</h3>
+            <p>
+                Depending on the features provided, the platform may
+                collect account details, contact information, tutoring
+                bookings, academic support requests and relevant
+                platform activity.
+            </p>
+
+            <h3>2. How Information May Be Used</h3>
+            <p>
+                Information may be used to manage student accounts,
+                coordinate tutoring sessions, provide support,
+                improve platform functionality and maintain platform
+                security.
+            </p>
+
+            <h3>3. Sharing of Information</h3>
+            <p>
+                Personal information should only be shared where
+                necessary for legitimate platform operations, with
+                appropriate safeguards and a lawful basis. Information
+                should not be sold or disclosed without proper
+                authorisation or another valid legal basis.
+            </p>
+
+            <h3>4. Security</h3>
+            <p>
+                Appropriate technical and organisational safeguards
+                should be implemented to protect personal information
+                against unauthorised access, loss, misuse or disclosure.
+            </p>
+
+            <h3>5. Your Rights</h3>
+            <p>
+                Subject to applicable law, users may have rights to
+                access, correct or request deletion of their personal
+                information and to raise concerns about how it is used.
+            </p>
+
+            <h3>6. Contact About Privacy</h3>
+            <p>
+                For privacy-related questions or requests, contact
+                the designated OctoBuddy support or privacy contact
+                through the official channels provided by the platform.
+            </p>
+
+            <p style="margin-top: 20px;">
+                <strong>Important:</strong> This is a draft policy
+                template. It must be checked against OctoBuddy's actual
+                data practices and applicable South African privacy
+                requirements, including POPIA, before publication.
+            </p>
+        </section>
+
+        <!-- TERMS AND CONDITIONS -->
+        <section class="content-section" id="terms">
+            <h2>Terms &amp; Conditions</h2>
+
+            <p>
+                By using OctoBuddy, users are expected to act
+                responsibly, respect other students and comply with
+                the platform's applicable rules.
+            </p>
+
+            <h3>1. Acceptable Use</h3>
+            <p>
+                Users must use OctoBuddy for legitimate academic
+                support, learning and collaboration. The platform
+                must not be used for harassment, fraud, harmful
+                activities or unlawful purposes.
+            </p>
+
+            <h3>2. Student Responsibilities</h3>
+            <p>
+                Students should provide accurate account information,
+                attend booked sessions where possible and communicate
+                respectfully with other users.
+            </p>
+
+            <h3>3. OctoBuddy Responsibilities</h3>
+            <p>
+                Users offering tutoring or academic assistance should
+                provide honest, respectful support and avoid
+                misrepresenting their qualifications or abilities.
+            </p>
+
+            <h3>4. Academic Integrity</h3>
+            <p>
+                OctoBuddy should support learning and understanding.
+                Users must not use the platform to facilitate
+                plagiarism, cheating, impersonation or other forms
+                of academic misconduct.
+            </p>
+
+            <h3>5. Accounts and Security</h3>
+            <p>
+                Users are responsible for protecting their login
+                details and should report suspected unauthorised
+                access through the appropriate support channels.
+            </p>
+
+            <h3>6. Platform Availability</h3>
+            <p>
+                Features may occasionally be unavailable because of
+                maintenance, technical issues or updates. Continuous
+                availability cannot be guaranteed.
+            </p>
+
+            <h3>7. Changes to These Terms</h3>
+            <p>
+                The platform's terms may be updated when its features,
+                policies or legal requirements change. Users should
+                review the current terms periodically.
+            </p>
+
+            <h3>8. Questions About These Terms</h3>
+            <p>
+                Contact the OctoBuddy support team through the
+                official support channels if you need clarification
+                about these terms.
+            </p>
+
+            <p style="margin-top: 20px;">
+                <strong>Important:</strong> These terms are a starting
+                template, not a final legal agreement. Review them
+                against the platform's actual functionality and
+                applicable laws before publishing.
+            </p>
+        </section>
+
+        <a href="#" class="back-to-top">↑ Back to Top</a>
+
+    </main>
+
+    <!-- SHARED FOOTER -->
+    <div id="footer-container"></div>
+
+    <!-- footer.js is in the sibling footer folder -->
+    <script src="../footer/footer.js"></script>
+
+    <!-- JAVASCRIPT -->
+    <script>
+        // OPEN AND CLOSE FAQ QUESTIONS
+        document.querySelectorAll(".faq-question").forEach(button => {
+            button.addEventListener("click", () => {
+                const item = button.closest(".faq-item");
+                const isOpen = item.classList.toggle("active");
+
+                button.setAttribute("aria-expanded", isOpen);
+                button.querySelector("span").textContent =
+                    isOpen ? "−" : "+";
+            });
+        });
+    </script>
+
+</body>
+</html>
