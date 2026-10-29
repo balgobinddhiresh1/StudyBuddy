@@ -340,17 +340,17 @@ button {
                 </div>
 
                 <input type="email" id="registerEmail" placeholder="Email Address" autocomplete="email" required><div class="email-help" id="emailHelp">Email format: <strong>name@example.com</strong><ul><li id="emailAt">Include @</li><li id="emailDomain">Include a valid domain, e.g. example.com</li><li id="emailSpaces">No spaces</li></ul></div>
-                <input type="password" id="registerPassword" placeholder="Password" maxlength="64" minlength="12" required autocomplete="new-password">
+                <input type="password" id="registerPassword" placeholder="Password (8–10 characters)" maxlength="10" minlength="8" required autocomplete="new-password">
 
                 <div id="passwordRules">
-                    <p id="lengthRule">❌ 12–64 characters</p>
-                    <p id="numberRule">❌ At least 1 number</p>
+                    <p id="lengthRule">❌ 8–10 characters</p>
+                    <p id="numberRule">❌ At least 1 number</p>\n                    <p id="specialRule">❌ At least 1 special character</p>
                     <p id="letterRule">❌ Uppercase and lowercase letters</p>
                 </div>
 
                 <div id="passwordStrength">Password strength: -</div>
 
-                <input type="password" id="confirmPassword" placeholder="Confirm Password" maxlength="64" minlength="12" required autocomplete="new-password">
+                <input type="password" id="confirmPassword" placeholder="Confirm Password" maxlength="10" minlength="8" required autocomplete="new-password">
 
                 <button class="register-btn" id="registerButton" onclick="handleRegister()">
                     GET STARTED
@@ -472,12 +472,13 @@ if (regPasswordInput) {
         const lengthRule = document.getElementById('lengthRule');
         const numberRule = document.getElementById('numberRule');
         const strength = document.getElementById('passwordStrength');
+        const specialRule = document.getElementById('specialRule');
 
-        if (val.length >= 12 && val.length <= 64) {
-            lengthRule.innerHTML = "✅ 12–64 characters";
+        if (val.length >= 8 && val.length <= 10) {
+            lengthRule.innerHTML = "✅ 8–10 characters";
             lengthRule.className = "valid";
         } else {
-            lengthRule.innerHTML = "❌ 12–64 characters";
+            lengthRule.innerHTML = "❌ 8–10 characters";
             lengthRule.className = "invalid";
         }
 
@@ -498,7 +499,13 @@ if (regPasswordInput) {
             numberRule.className = "invalid";
         }
 
-        if (val.length >= 12 && val.length <= 64 && /[a-z]/.test(val) && /[A-Z]/.test(val) && /\d/.test(val) && /[^A-Za-z0-9]/.test(val)) {
+        if (specialRule) {
+            const hasSpecial = /[^A-Za-z0-9]/.test(val);
+            specialRule.innerHTML = `${hasSpecial ? "✅" : "❌"} At least 1 special character`;
+            specialRule.className = hasSpecial ? "valid" : "invalid";
+        }
+
+        if (val.length >= 8 && val.length <= 10 && /[a-z]/.test(val) && /[A-Z]/.test(val) && /\d/.test(val) && /[^A-Za-z0-9]/.test(val)) {
             strength.innerText = "Password strength: Strong";
             strength.style.color = "#82EE99";
         } else {
@@ -562,7 +569,7 @@ async function handleRegister() {
 
     const nameValid = value => /^[A-Za-zÀ-ÖØ-öø-ÿ]+(?:[ '\u2019-][A-Za-zÀ-ÖØ-öø-ÿ]+)*$/.test(value) && !/^(one|two|three|test|testing|user|admin|example|abc|asdf|unknown|none|firstname|lastname)$/i.test(value.trim());
     const missing = [];
-    [['firstName', firstName, nameValid(firstName)], ['lastName', lastName, nameValid(lastName)], ['registerEmail', email, emailPattern.test(email)], ['registerPassword', password, password.length >= 12 && password.length <= 64 && /[a-z]/.test(password) && /[A-Z]/.test(password) && /\d/.test(password) && /[^A-Za-z0-9]/.test(password)], ['confirmPassword', confirmPassword, Boolean(confirmPassword)]] .forEach(([id, value, valid]) => {
+    [['firstName', firstName, nameValid(firstName)], ['lastName', lastName, nameValid(lastName)], ['registerEmail', email, emailPattern.test(email)], ['registerPassword', password, password.length >= 8 && password.length <= 10 && /[a-z]/.test(password) && /[A-Z]/.test(password) && /\d/.test(password) && /[^A-Za-z0-9]/.test(password)], ['confirmPassword', confirmPassword, Boolean(confirmPassword)]] .forEach(([id, value, valid]) => {
         const el = document.getElementById(id);
         checkField(el, Boolean(value) && valid, 'Please correct this field.');
         if (!value || !valid) missing.push(id);
@@ -570,7 +577,7 @@ async function handleRegister() {
     if (missing.length) {
         hideLoading();
         document.getElementById(missing[0]).focus();
-        Swal.fire({...popupOptions, icon:'warning', title:'Check the highlighted fields', text:'Names must be realistic, email must be valid, and password must be 12–64 characters with uppercase, lowercase, a number and a special character.'});
+        Swal.fire({...popupOptions, icon:'warning', title:'Check the highlighted fields', text:'Names must be realistic, email must be valid, and password must be 8–10 characters with uppercase, lowercase, a number and a special character.'});
         return;
     }
 

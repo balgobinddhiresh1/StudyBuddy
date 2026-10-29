@@ -398,6 +398,12 @@
                     </button>
 
                 </form>
+                <section id="availableTutorsPanel" class="available-tutors-panel" aria-live="polite" style="margin-top:24px;padding:18px;border:1px solid #dbe7ee;border-radius:14px;background:#f7fbfd">
+                    <h3 style="margin-top:0">Available Octo Buddies</h3>
+                    <p>Select a module and date above to see approved tutors, their teaching modules, available days and open time slots.</p>
+                    <div id="availableTutorsList"><p>Choose a module and date to view availability.</p></div>
+                </section>
+
 
             </div>
 
@@ -592,10 +598,10 @@
             <h3 style="margin-top: 0; color: #1e41bb;">Update Profile</h3>
 
             <label style="display: block; font-size: 0.85rem; color: #555; margin-top: 15px;">First Name</label>
-            <input type="text" id="editFirstName" maxlength="50" pattern="[A-Za-zÀ-ÖØ-öø-ÿ]+([ '-][A-Za-zÀ-ÖØ-öø-ÿ]+)*" title="Letters only; spaces, apostrophes and hyphens are allowed" style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box;">
+            <input type="text" id="editFirstName" maxlength="50" readonly aria-readonly="true" pattern="[A-Za-zÀ-ÖØ-öø-ÿ]+([ '-][A-Za-zÀ-ÖØ-öø-ÿ]+)*" title="Letters only; spaces, apostrophes and hyphens are allowed" style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box;">
 
             <label style="display: block; font-size: 0.85rem; color: #555; margin-top: 15px;">Last Name</label>
-            <input type="text" id="editLastName" maxlength="50" pattern="[A-Za-zÀ-ÖØ-öø-ÿ]+([ '-][A-Za-zÀ-ÖØ-öø-ÿ]+)*" title="Letters only; spaces, apostrophes and hyphens are allowed" style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box;">
+            <input type="text" id="editLastName" maxlength="50" readonly aria-readonly="true" pattern="[A-Za-zÀ-ÖØ-öø-ÿ]+([ '-][A-Za-zÀ-ÖØ-öø-ÿ]+)*" title="Letters only; spaces, apostrophes and hyphens are allowed" style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box;">
 
             <!-- Qualification and academic year are saved to the Users table. -->
             <label style="display: block; font-size: 0.85rem; color: #555; margin-top: 15px;">Qualification</label>

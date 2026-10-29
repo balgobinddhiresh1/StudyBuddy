@@ -538,8 +538,8 @@ def valid_name(value):
 
 
 def valid_password(password):
-    """Require 12+ chars with upper/lowercase, digit and special character."""
-    if not isinstance(password, str) or not 12 <= len(password) <= 64:
+    """Require 8-10 characters with upper/lowercase, digit and special character."""
+    if not isinstance(password, str) or not 8 <= len(password) <= 10:
         return False
     return all((re.search(r"[a-z]", password), re.search(r"[A-Z]", password),
                 re.search(r"\d", password), re.search(r"[^A-Za-z0-9]", password)))
@@ -829,7 +829,7 @@ def register():
         if not valid_email(email):
             return jsonify(status="error", message="Enter a valid email address, for example name@example.com."), 400
         if not valid_password(password):
-            return jsonify(status="error", message="Password must be at least 12 characters and include uppercase, lowercase, a number and a special character."), 400
+            return jsonify(status="error", message="Password must be 8–10 characters and include uppercase, lowercase, a number and a special character."), 400
         if User.query.filter_by(email=email).first():
             return jsonify(status="error", message="Email already exists."), 409
 
@@ -1105,7 +1105,7 @@ def reset_password():
         return jsonify({
             "status": "error",
             "message": (
-                "Password must be at least 12 characters and include uppercase, lowercase, a number and a special character."
+                "Password must be 8–10 characters and include uppercase, lowercase, a number and a special character."
             )
         }), 400
 
@@ -1448,6 +1448,20 @@ def review_buddy_application(application_id, action):
             }), 404
 
         action = action.lower()
+
+        # A rejected application is final: never allow it to be approved later.
+        if (application.status or "").strip().lower() == "rejected" and action == "approve":
+            return jsonify({
+                "status": "error",
+                "message": "This application was rejected and cannot be approved."
+            }), 409
+
+        # Only pending applications may be reviewed. Approved/rejected decisions are final.
+        if (application.status or "").strip().lower() != "pending":
+            return jsonify({
+                "status": "error",
+                "message": "Only pending applications can be reviewed."
+            }), 409
 
         if action not in ("approve", "reject"):
             return jsonify({
