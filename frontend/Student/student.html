@@ -113,7 +113,7 @@
 
             <div class="student-avatar">
 
-                <img src="../LOGIN.png" alt="Student">
+                <img src="../student/stud.png" alt="Student">
 
             </div>
 
@@ -198,126 +198,58 @@
 
                 <!-- PROFILE -->
 
-                <div class="action-card">
-
-                    <div class="action-icon">
-                        👤
-                    </div>
-
-                    <h3>My Profile</h3>
-
-                    <p>
-                        View your student information and
-                        academic details.
-                    </p>
-
-                    <a href="#profile" class="dashboard-btn">
-                        View Profile →
-                    </a>
-
-                </div>
+               
 
             </div>
 
         </section>
 
 
-        <!-- ===========================
-                UPCOMING SESSIONS
-        =========================== -->
+      
+<!-- ===========================
+        UPCOMING SESSIONS
+=========================== -->
 
-        <section class="dashboard-section">
+<section class="dashboard-section">
 
-            <div class="section-heading">
+    <div class="section-heading">
 
-                <div>
+        <div>
+            <p class="section-label">
+                TUTORING
+            </p>
 
-                    <p class="section-label">
-                        TUTORING
-                    </p>
+            <h2>Upcoming Sessions</h2>
+        </div>
 
-                    <h2>Upcoming Sessions</h2>
+        <a href="#book" class="view-all">
+            Book New Session →
+        </a>
 
-                </div>
+    </div>
 
-                <a href="#book" class="view-all">
-                    Book New Session →
-                </a>
+    <div class="sessions-container" id="sessionsContainer">
 
-            </div>
+        <!-- Real upcoming sessions will appear here -->
 
+        <div class="no-session" id="noSessionsMessage">
 
-            <div class="sessions-container">
+            <div>📅</div>
 
-                <!-- SESSION -->
+            <p>
+                No upcoming sessions yet.
+                Your confirmed tutoring sessions will appear here.
+            </p>
 
-                <div class="session-card">
+            <a href="#book" class="dashboard-btn">
+                Book a Session →
+            </a>
 
-                    <div class="session-date">
+        </div>
 
-                        <span class="day">
-                            18
-                        </span>
+    </div>
 
-                        <span class="month">
-                            AUG
-                        </span>
-
-                    </div>
-
-                    <div class="session-info">
-
-                        <h3>
-                            Programming
-                        </h3>
-
-                        <p>
-                            🕙 10:00 AM
-                        </p>
-
-                        <p>
-                            🐙 Octo Buddy: Daniel
-                        </p>
-
-                        <p>
-                            Room: <strong id="assignedRoomCode">OctoBuddy_Daniel_Prog101</strong>
-                        </p>
-
-                    </div>
-
-                    <div class="session-status">
-                        Confirmed
-                    </div>
-
-                    <button
-                        class="join-btn"
-                        onclick="joinTutorRoom()">
-
-                        Join Session
-
-                    </button>
-
-                </div>
-
-
-                <!-- EMPTY / FUTURE -->
-
-                <div class="no-session">
-
-                    <div>
-                        📅
-                    </div>
-
-                    <p>
-                        Your other upcoming sessions will
-                        appear here.
-                    </p>
-
-                </div>
-
-            </div>
-
-        </section>
+</section>
 
 
         <!-- ===========================
@@ -649,75 +581,7 @@
                 PROFILE
         =========================== -->
 
-        <section
-            id="profile"
-            class="dashboard-section">
-
-            <div class="section-heading">
-
-                <div>
-
-                    <p class="section-label">
-                        ACCOUNT
-                    </p>
-
-                    <h2>My Profile</h2>
-
-                </div>
-
-            </div>
-
-
-            <div class="profile-card">
-
-                <div class="profile-image">
-
-                    <img
-                        src="../LOGIN.png"
-                        alt="Student Profile">
-
-                </div>
-
-
-                <div class="profile-details">
-
-                    <div>
-                        <span>Full Name</span>
-                        <strong id="profileFullName">Loading...</strong>
-                    </div>
-
-                    <div>
-                        <span>Email</span>
-                        <strong id="profileEmail">Loading...</strong>
-                    </div>
-
-                    <div>
-                        <span>Qualification / Course</span>
-                        <strong id="profileCourse">Loading...</strong>
-                    </div>
-
-                    <div>
-                        <span>Academic Year</span>
-                        <strong id="profileYear">Loading...</strong>
-                    </div>
-
-                    <div>
-                        <span>Role</span>
-                        <strong id="profileRole">Loading...</strong>
-                    </div>
-
-                    <div>
-                        <span>Points</span>
-                        <strong id="profilePoints">0</strong>
-                    </div>
-
-                </div>
-
-            </div>
-
-        </section>
-
-    </main>
+        
 
 
     <!-- =========================
