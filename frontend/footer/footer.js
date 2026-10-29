@@ -273,29 +273,31 @@ document.addEventListener("DOMContentLoaded", function () {
                 </div>
 
 
+                
                 <!-- SUPPORT -->
 
                 <div class="footer-column">
 
                     <h3>Support</h3>
 
-                    <a href="#">
+                    <a href="${page("terms and cons/termscons.html#help-centre")}">
                         Help Centre
                     </a>
 
-                    <a href="#">
+                    <a href="${page("terms and cons/termscons.html#contact-us")}">
                         Contact Us
                     </a>
 
-                    <a href="#">
+                    <a href="${page("terms and cons/termscons.html#privacy-policy")}">
                         Privacy Policy
                     </a>
 
-                    <a href="#">
+                    <a href="${page("terms and cons/termscons.html#terms")}">
                         Terms & Conditions
                     </a>
 
                 </div>
+
 
 
             </div>

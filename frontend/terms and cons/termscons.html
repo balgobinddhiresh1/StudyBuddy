@@ -27,7 +27,7 @@
 
         body {
             font-family: 'Poppins', sans-serif;
-            background:#213A57;
+            background: #14919b;
             color: #80ed99;
             line-height: 1.7;
         }
@@ -86,7 +86,6 @@
         .nav-links a:hover {
             color: var(--green);
         }
-
 
         /* MAIN CONTENT */
         .container {
@@ -231,32 +230,43 @@
             display: block;
         }
 
+        /* WHATSAPP CONTACT BUTTON */
+        .whatsapp-container {
+            margin-top: 25px;
+            text-align: left;
+        }
 
-/* WHATSAPP CONTACT BUTTON */
-.whatsapp-container {
-    margin-top: 25px;
-    text-align: left;
-}
+        .whatsapp-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--green);
+            color: var(--dark-navy);
+            border: 2px solid var(--green);
+            border-radius: 7px;
+            padding: 10px 20px;
+            font-weight: 600;
+            transition: 0.3s;
+        }
 
-.whatsapp-button:hover {
-    background: transparent;
-    color: #45DFB1;
-    border-color: #45DFB1;
-    transform: translateY(-3px);
-}
+        .whatsapp-button:hover {
+            background: transparent;
+            color: #45DFB1;
+            border-color: #45DFB1;
+            transform: translateY(-3px);
+        }
 
-.whatsapp-icon {
-    font-size: 25px;
-    font-weight: bold;
-    margin-right: 10px;
-}
+        .whatsapp-icon {
+            font-size: 25px;
+            font-weight: bold;
+            margin-right: 10px;
+        }
 
-.whatsapp-note {
-    margin-top: 15px;
-    color: #d5e1ec;
-    font-size: 14px;
-}
-
+        .whatsapp-note {
+            margin-top: 15px;
+            color: #d5e1ec;
+            font-size: 14px;
+        }
 
         /* BACK TO TOP */
         .back-to-top {
@@ -264,54 +274,6 @@
             margin-top: 20px;
             color: var(--green);
             font-weight: 600;
-        }
-
-        /* FOOTER */
-        
-        .footer-grid {
-            display: grid;
-            grid-template-columns: 2fr 1fr 1fr 1fr;
-            gap: 35px;
-            padding-bottom: 40px;
-        }
-
-        .footer h3 {
-            color: var(--green);
-            margin-bottom: 18px;
-            font-size: 19px;
-        }
-
-        .footer p {
-            color: var(--muted);
-            margin-bottom: 15px;
-        }
-
-        .footer ul {
-            list-style: none;
-        }
-
-        .footer li {
-            margin-bottom: 12px;
-        }
-
-        .footer li a {
-            color: var(--white);
-            transition: 0.3s;
-        }
-
-        .footer li a:hover {
-            color: var(--green);
-        }
-
-        .copyright {
-            display: flex;
-            justify-content: space-between;
-            gap: 15px;
-            flex-wrap: wrap;
-            border-top: 1px solid #40566d;
-            padding-top: 22px;
-            color: var(--muted);
-            font-size: 14px;
         }
 
         /* MOBILE RESPONSIVENESS */
@@ -330,15 +292,10 @@
             .nav-links a {
                 font-size: 13px;
             }
-
-            .footer-grid {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-            }
         }
 
         @media (max-width: 550px) {
-            .support-grid,
-            .footer-grid {
+            .support-grid {
                 grid-template-columns: 1fr;
             }
 
@@ -350,35 +307,40 @@
                 justify-content: center;
             }
 
-            .hero {
-                padding: 45px 20px;
-            }
-
             .content-section {
                 padding: 22px;
             }
-
-            .copyright {
-                flex-direction: column;
-            }
         }
+        .nav-links a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    margin: 0 10px;
+    font-size: 30px;
+    line-height: 1;
+    text-decoration: none;
+    border-radius: 50%;
+    transition: background-color 0.3s ease;
+}
+
+.nav-links a:hover {
+    background-color: rgba(255, 255, 255, 0.12);
+}
     </style>
 </head>
 
 <body>
 
-    <!-- NAVIGATION -->
-    <nav class="navbar">
-        <a href="index.html" class="logo">
-            OCTO<span>BUDDY</span>
-        </a>
+  
 
         <div class="nav-links">
-            <a href="index.html">Let's go back to Home</a>
-        </div>
-    </nav>
-
-  
+    <a href="../homepage/homepage.html" aria-label="Back home" title="Back home">
+        &#8592;
+    </a>
+</div>
+</nav>
     <main class="container">
 
         <!-- SUPPORT OPTIONS -->
@@ -427,7 +389,7 @@
 
             <article class="support-card">
                 <div class="card-icon"></div>
-                <h3>Terms & Conditions</h3>
+                <h3>Terms &amp; Conditions</h3>
                 <p>
                     Understand the rules and responsibilities
                     involved in using the OctoBuddy platform.
@@ -441,7 +403,8 @@
 
         <!-- HELP CENTRE -->
         <section class="content-section" id="help-centre">
-            <h2> Help Centre</h2>
+            <h2>Help Centre</h2>
+
             <p>
                 Need assistance using OctoBuddy? Explore the questions
                 below to learn more about the platform.
@@ -496,8 +459,8 @@
                 <div class="faq-answer">
                     Check your internet connection and ensure you are
                     using an up-to-date browser. If the problem
-                    continues, use the Contact Us form below to
-                    describe the issue.
+                    continues, use the Contact Us section below to
+                    contact the support team.
                 </div>
             </div>
 
@@ -515,46 +478,44 @@
             </div>
         </section>
 
-       
-<!-- CONTACT US -->
-<section class="content-section" id="contact-us">
-    <h2> Contact Us</h2>
+        <!-- CONTACT US -->
+        <section class="content-section" id="contact-us">
+            <h2>Contact Us</h2>
 
-    <p>
-        Need help with OctoBuddy?
-        Our support team is here to assist you with account questions, 
-        Tutoring sessions and technical issues. 
-        Click the button below to contact us directly on WhatsApp.
-    </p>
+            <p>
+                Need help with OctoBuddy?
+                Our support team is here to assist you with account
+                questions, tutoring sessions and technical issues.
+                Click the button below to contact us directly on WhatsApp.
+            </p>
 
-    <div class="whatsapp-container">
-        <a
-            href="https://wa.me/27XXXXXXXXX?text=Hi%20OctoBuddy%20Support%2C%20I%20need%20assistance."
-            class="whatsapp-button"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Contact OctoBuddy Support on WhatsApp"
-        >
-        <img
-        src="https://cdn.jsdelivr.net/gh/glincker/thesvg@main/public/icons/whatsapp/default.svg"
-        alt="WhatsApp"
-        width="24"
-        height="24"
-        />
-            Chat with Us on WhatsApp
-        </a>
+            <div class="whatsapp-container">
+                <a
+                    href="https://wa.me/27XXXXXXXXX?text=Hi%20OctoBuddy%20Support%2C%20I%20need%20assistance."
+                    class="whatsapp-button"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Contact OctoBuddy Support on WhatsApp"
+                >
+                    <img
+                        src="https://cdn.jsdelivr.net/gh/glincker/thesvg@main/public/icons/whatsapp/default.svg"
+                        alt="WhatsApp"
+                        width="24"
+                        height="24"
+                    >
+                    Chat with Us on WhatsApp
+                </a>
 
-        <p class="whatsapp-note">
-            Click the button to open WhatsApp and start a conversation
-            with OctoBuddy Support.
-        </p>
-    </div>
-</section>
-
+                <p class="whatsapp-note">
+                    Click the button to open WhatsApp and start a conversation
+                    with OctoBuddy Support.
+                </p>
+            </div>
+        </section>
 
         <!-- PRIVACY POLICY -->
         <section class="content-section" id="privacy-policy">
-            <h2> Privacy Policy</h2>
+            <h2>Privacy Policy</h2>
 
             <p>
                 OctoBuddy values the privacy of its users. This section
@@ -618,7 +579,7 @@
 
         <!-- TERMS AND CONDITIONS -->
         <section class="content-section" id="terms">
-            <h2>Terms & Conditions</h2>
+            <h2>Terms &amp; Conditions</h2>
 
             <p>
                 By using OctoBuddy, users are expected to act
@@ -696,14 +657,11 @@
 
     </main>
 
-    <!-- FOOTER -->
-    <footer class="footer">
+    <!-- SHARED FOOTER -->
+    <div id="footer-container"></div>
 
-        <div class="copyright">
-            <p>© 2026 Alpha Tech Corp. All rights reserved.</p>
-            <p>OctoBuddy – Richfield Student Support Platform</p>
-        </div>
-    </footer>
+    <!-- footer.js is in the sibling footer folder -->
+    <script src="../footer/footer.js"></script>
 
     <!-- JAVASCRIPT -->
     <script>
@@ -718,22 +676,6 @@
                     isOpen ? "−" : "+";
             });
         });
-
-        // CONTACT FORM DEMONSTRATION
-        document.getElementById("contactForm").addEventListener(
-            "submit",
-            function(event) {
-                event.preventDefault();
-
-                const notice = document.getElementById("formNotice");
-
-                notice.textContent =
-                    "The form is working, but your message has not been sent. " +
-                    "Connect a backend or email service to receive support requests.";
-
-                this.reset();
-            }
-        );
     </script>
 
 </body>
