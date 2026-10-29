@@ -54,6 +54,8 @@ if not _allowed_origins:
     _allowed_origins = [
         "https://studybuddy-frontend-mocha.vercel.app",
         "http://localhost:3000",
+        "http://localhost:8000",
+        "http://127.0.0.1:8000",
         "http://127.0.0.1:5500",
     ]
 
