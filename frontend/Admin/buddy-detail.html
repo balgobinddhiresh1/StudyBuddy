@@ -1,1 +1,31 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Octo Buddy Profile</title><link rel="stylesheet" href="admin.css"><link rel="stylesheet" href="detail-pages.css"></head><body><main class="detail-page"><a class="outline-btn" href="admin.html">← Back to Admin</a><section class="detail-card"><p class="eyebrow">OCTO BUDDY PROFILE</p><h1 id="buddyName">Loading profile…</h1><div id="buddyDetails" class="detail-grid"></div><h2>Assigned sessions</h2><div id="buddySessions">Loading sessions…</div></section></main><script src="buddy-detail.js"></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Octo Buddy Profile</title>
+  <link rel="stylesheet" href="admin.css">
+  <link rel="stylesheet" href="../Admin/detail-pages.css">
+</head>
+<body>
+  <main class="detail-page">
+    <a class="outline-btn back-link" href="admin.html">&larr; Back to Admin</a>
+
+    <section class="detail-card" aria-labelledby="buddyName">
+      <header class="detail-header">
+        <p class="eyebrow">Octo Buddy profile</p>
+        <h1 id="buddyName">Loading profile…</h1>
+      </header>
+
+      <div id="buddyDetails" class="detail-grid" aria-live="polite"></div>
+
+      <section class="detail-section" aria-labelledby="sessionsHeading">
+        <h2 id="sessionsHeading">Assigned sessions</h2>
+        <div id="buddySessions" class="detail-list">Loading sessions…</div>
+      </section>
+    </section>
+  </main>
+
+  <script src="buddy-detail.js"></script>
+</body>
+</html>
