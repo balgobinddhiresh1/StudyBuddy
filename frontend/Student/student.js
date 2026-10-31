@@ -1,54 +1,54 @@
 
 async function loadAvailableTutors() {
-    const moduleField = document.getElementById("module");
-    const dateField = document.getElementById("date");
-    const buddyField = document.getElementById("buddyId");
-    const timeField = document.getElementById("time");
+    // This roster is independent of the booking form and loads on page entry.
     const listPanel = document.getElementById("availableTutorsList");
-    if (!moduleField || !dateField || !buddyField) return;
-    const module = moduleField.value;
-    const dateValue = dateField.value;
-    buddyField.replaceChildren(new Option("Loading available tutors…", ""));
-    buddyField.disabled = true;
-    if (timeField) { timeField.replaceChildren(new Option("Choose a tutor first", "")); timeField.disabled = true; }
-    if (!module || !dateValue) {
-        buddyField.replaceChildren(new Option("Choose a module and date first", ""));
-        if (listPanel) listPanel.innerHTML = "<p>Choose a module and date to view availability.</p>";
-        return;
-    }
+    if (!listPanel) return;
+    listPanel.innerHTML = "<p>Loading available Octo Buddies…</p>";
+
     try {
-        const response = await fetch(`${API_BASE_URL}available-tutors?module=${encodeURIComponent(module)}&date=${encodeURIComponent(dateValue)}`);
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.message || "Could not load tutors.");
-        buddyField.replaceChildren(new Option(data.tutors.length ? "Select an available tutor" : "No tutors available for this date", ""));
-        (data.tutors || []).forEach(tutor => {
-            const option = new Option(`${tutor.first_name} ${tutor.last_name}`, String(tutor.id));
-            option.dataset.times = JSON.stringify(tutor.available_times || []);
-            buddyField.add(option);
+        const token = localStorage.getItem("auth_token") || "";
+        const response = await fetch(`${API_BASE_URL}available-tutors`, {
+            headers: token ? { Authorization: `Bearer ${token}` } : {}
         });
-        buddyField.disabled = !data.tutors?.length;
-        if (listPanel) {
-            listPanel.innerHTML = (data.tutors || []).length ? data.tutors.map(tutor => `
-                <article class="tutor-availability-card">
-                  <strong>${escapeHtml(`${tutor.first_name} ${tutor.last_name}`)}</strong>
-                  <div>Qualification: ${escapeHtml(tutor.qualification || "—")}</div>
-                  <div>Modules: ${escapeHtml((tutor.modules || []).join(", "))}</div>
-                  <div>Available day: ${escapeHtml(new Date(`${dateValue}T12:00:00`).toLocaleDateString(undefined,{weekday:"long"}))}</div>
-                  <div>Open times: ${escapeHtml((tutor.available_times || []).join(", ") || "None")}</div>
-                  <button type="button" class="select-tutor-availability" data-tutor-id="${Number(tutor.id)}">Select this tutor</button>
-                </article>`).join("") : "<p>No approved tutors have open slots for this module and date.</p>";
-            listPanel.querySelectorAll(".select-tutor-availability").forEach(button => button.addEventListener("click", () => {
-                buddyField.value = button.dataset.tutorId;
-                updateAvailableTimes();
-                const firstTime = timeField?.options?.length > 1 ? timeField.options[1].value : "";
-                if (firstTime && timeField) timeField.value = firstTime;
-                buddyField.scrollIntoView({behavior:"smooth",block:"center"});
-            }));
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || "Could not load Octo Buddies.");
+
+        const tutors = Array.isArray(data.tutors) ? data.tutors : [];
+        if (!tutors.length) {
+            listPanel.innerHTML = `
+              <p>No approved Octo Buddies currently match your saved qualification and academic year.</p>
+              <p><strong>${escapeHtml(data.qualification || "Qualification not set")}</strong> · Year ${escapeHtml(String(data.academic_year || "—"))}</p>`;
+            return;
         }
+
+        const rows = tutors.flatMap(tutor => (tutor.modules || []).map(moduleName => {
+            const dates = (tutor.available_dates || []).map(value => {
+                const parsed = new Date(`${value}T00:00:00`);
+                return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleDateString("en-ZA", { day: "numeric", month: "short" });
+            });
+            return `<tr>
+              <td>${escapeHtml(`${tutor.first_name || ""} ${tutor.last_name || ""}`.trim())}</td>
+              <td>${escapeHtml(moduleName)}</td>
+              <td>${escapeHtml((tutor.available_days || []).join(", ") || "Not published")}</td>
+              <td>${escapeHtml(dates.length ? dates.join(", ") : "No upcoming dates available")}</td>
+            </tr>`;
+        }));
+
+        listPanel.innerHTML = `
+          <p>Automatically matched to <strong>${escapeHtml(data.qualification || "your qualification")}</strong>, Year <strong>${escapeHtml(String(data.academic_year || "—"))}</strong>. No booking-form details are needed to view this list.</p>
+          <div class="available-tutors-scroll" style="max-height:340px;overflow:auto;border:1px solid #dbe7ee;border-radius:10px;background:#fff">
+            <table class="available-tutors-table" style="width:100%;border-collapse:collapse;min-width:650px">
+              <thead style="position:sticky;top:0;background:#eef6fa;z-index:1"><tr>
+                <th style="text-align:left;padding:12px;border-bottom:1px solid #dbe7ee">Octo Buddy</th>
+                <th style="text-align:left;padding:12px;border-bottom:1px solid #dbe7ee">Module</th>
+                <th style="text-align:left;padding:12px;border-bottom:1px solid #dbe7ee">Available days</th>
+                <th style="text-align:left;padding:12px;border-bottom:1px solid #dbe7ee">Available dates (next 30 days)</th>
+              </tr></thead>
+              <tbody>${rows.join("")}</tbody>
+            </table>
+          </div>`;
     } catch (error) {
-        buddyField.replaceChildren(new Option(error.message || "Could not load tutors", ""));
-        buddyField.disabled = true;
-        if (listPanel) listPanel.innerHTML = `<p>${escapeHtml(error.message || "Could not load tutors.")}</p>`;
+        listPanel.innerHTML = `<p>${escapeHtml(error.message || "Could not load Octo Buddies. Please sign in again and refresh the page.")}</p>`;
     }
 }
 
@@ -64,8 +64,6 @@ function updateAvailableTimes() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-    document.getElementById("module")?.addEventListener("change", loadAvailableTutors);
-    document.getElementById("date")?.addEventListener("change", loadAvailableTutors);
     document.getElementById("buddyId")?.addEventListener("change", updateAvailableTimes);
 });
 
@@ -136,7 +134,8 @@ let jitsiApi = null;
 ========================================================= */
 
 document.addEventListener("DOMContentLoaded", () => {
-    loadLoggedInUser();
+    // Resolve saved qualification/year before requesting the tutor roster.
+    loadLoggedInUser().finally(() => loadAvailableTutors());
     loadUpcomingSessions();
     setupBookingForm();
     setupMarksForm();
