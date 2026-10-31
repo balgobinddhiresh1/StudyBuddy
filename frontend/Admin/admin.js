@@ -743,128 +743,35 @@ function getStoredList(key, fallback) {
 }
 
 function renderQualifications() {
-    const names = managedQualifications.length ? managedQualifications.map(item => item.name) : defaultQualifications();
-    const cards = document.querySelectorAll("#qualifications .management-card");
-    cards.forEach((card, index) => {
-        const heading = card.querySelector("h3");
-        const qualification = managedQualifications[index];
-        if (heading && names[index]) heading.textContent = names[index];
-        if (qualification) {
-            let actions = card.querySelector(".qualification-card-actions");
-            if (!actions) { actions = document.createElement("div"); actions.className = "qualification-card-actions"; card.appendChild(actions); }
-            actions.innerHTML = `<button type="button" class="outline-btn qualification-open-btn" data-qualification-id="${qualification.id}">View / Edit</button> <button type="button" class="outline-btn qualification-delete-btn" data-qualification-id="${qualification.id}">Delete</button>`;
-        }
-    });
-    cards.forEach(card => {
-        card.querySelectorAll(".qualification-open-btn").forEach(button => button.onclick = () => window.location.href = `qualification-detail.html?id=${button.dataset.qualificationId}`);
-        card.querySelectorAll(".qualification-delete-btn").forEach(button => button.onclick = async () => {
-            const q = managedQualifications.find(item => Number(item.id) === Number(button.dataset.qualificationId));
-            if (!q || !confirm(`Delete qualification “${q.name}”? This may be blocked if modules or bookings depend on it.`)) return;
-            try {
-                const response = await apiFetch(`${API_BASE_URL}admin/qualifications/${q.id}`, { method: "DELETE" });
-                const data = await response.json();
-                if (!response.ok) throw new Error(data.message || "Could not delete qualification.");
-                await loadManagedCatalogue();
-            } catch (error) { alert(error.message || "Could not delete qualification."); }
-        });
-    });
-
-    const sidebar = document.querySelector("#modules .module-sidebar");
-    if (sidebar) {
-        const existingButtons = [...sidebar.querySelectorAll(".qualification-select")];
-        names.forEach((name, index) => {
-            let button = existingButtons[index];
-            if (!button) {
-                button = document.createElement("button");
-                button.type = "button";
-                button.className = "qualification-select";
-                sidebar.appendChild(button);
-            }
-            button.textContent = name;
-            button.dataset.qualificationId = managedQualifications[index]?.id || "";
-            button.hidden = false;
-            if (index === 0 && !sidebar.querySelector(".qualification-select.active")) button.classList.add("active");
-        });
-        existingButtons.slice(names.length).forEach(button => button.hidden = true);
-    }
-}
-
-async function renderModules() {
-    const list = document.querySelector("#modules .module-list");
-    if (!list) return;
-
-    if (!managedModules.length) {
-        // Keep the original module list visible if the server catalogue could not load.
-        const fallback = getStoredList("octo_modules", defaultModules());
-        const header = list.querySelector(".module-list-header");
-        list.innerHTML = "";
-        if (header) list.appendChild(header);
-        fallback.forEach(module => {
-            const item = document.createElement("div");
-            item.className = "module-item";
-            item.innerHTML = `<div><strong>${escapeHtml(module)}</strong></div><span class="status">Catalogue unavailable</span>`;
-            list.appendChild(item);
-        });
+    const grid = document.getElementById("qualificationCards");
+    if (!grid) return;
+    if (!managedQualifications.length) {
+        grid.innerHTML = `<div class="management-card"><h3>No qualifications yet</h3><p>Add a qualification to begin managing its modules.</p></div>`;
         return;
     }
-
-    const selectedButton = document.querySelector("#modules .qualification-select.active");
-    const selectedId = Number(selectedButton?.dataset.qualificationId || managedQualifications[0]?.id);
-    const modules = managedModules.filter(module => module.qualification_id === selectedId);
-    const header = list.querySelector(".module-list-header");
-    const headerTitle = header?.querySelector("h3");
-    const selectedQualification = managedQualifications.find(item => item.id === selectedId);
-    if (headerTitle && selectedQualification) headerTitle.textContent = selectedQualification.name;
-    list.innerHTML = "";
-    if (header) list.appendChild(header);
-
-    modules.forEach(module => {
-        const item = document.createElement("div");
-        item.className = "module-item";
-        item.innerHTML = `<div><strong>${escapeHtml(module.name)}</strong><small>${escapeHtml(module.qualification)} · Year ${escapeHtml(module.academic_year)}</small></div><button type="button" class="outline-btn module-edit-btn" data-module-id="${module.id}">Edit</button>`;
-        list.appendChild(item);
+    grid.innerHTML = managedQualifications.map(q => {
+        const modules = managedModules.filter(m => Number(m.qualification_id) === Number(q.id));
+        const years = [...new Set(modules.map(m => Number(m.academic_year)))].sort((a,b) => a-b);
+        return `<article class="management-card qualification-live-card">
+          <div class="management-icon"><span>🎓</span></div>
+          <h3>${escapeHtml(q.name)}</h3>
+          <p>${years.length ? `${years.length} academic year${years.length===1?"":"s"}` : "No modules added yet"} · ${modules.length} modules</p>
+          <div class="management-footer"><span class="status ${q.active ? "approved" : "rejected"}">${q.active ? "Active" : "Inactive"}</span>
+            <div class="qualification-card-actions"><button type="button" class="outline-btn qualification-open-btn" data-qualification-id="${q.id}">View / Edit</button>
+            <button type="button" class="outline-btn qualification-delete-btn" data-qualification-id="${q.id}">Delete</button></div>
+          </div></article>`;
+    }).join("");
+    grid.querySelectorAll(".qualification-open-btn").forEach(button => button.onclick = () => window.location.href = `qualification-detail.html?id=${button.dataset.qualificationId}`);
+    grid.querySelectorAll(".qualification-delete-btn").forEach(button => button.onclick = async () => {
+        const q = managedQualifications.find(item => Number(item.id) === Number(button.dataset.qualificationId));
+        if (!q || !confirm(`Delete qualification “${q.name}”? This may be blocked if modules or bookings depend on it.`)) return;
+        try {
+            const response = await apiFetch(`${API_BASE_URL}admin/qualifications/${q.id}`, { method: "DELETE" });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.message || "Could not delete qualification.");
+            await loadManagedCatalogue();
+        } catch (error) { alert(error.message || "Could not delete qualification."); }
     });
-    if (!modules.length) {
-        const empty = document.createElement("div");
-        empty.className = "module-item";
-        empty.textContent = "No modules for this qualification yet.";
-        list.appendChild(empty);
-    }
-
-    list.querySelectorAll(".module-edit-btn").forEach(button => {
-        button.addEventListener("click", async () => {
-            const module = managedModules.find(item => Number(item.id) === Number(button.dataset.moduleId));
-            if (!module) return;
-            const updated = prompt("Edit module name:", module.name);
-            if (!updated?.trim() || updated.trim() === module.name) return;
-            try {
-                const response = await apiFetch(`${API_BASE_URL}admin/modules/${module.id}`, {
-                    method: "PUT", body: JSON.stringify({ name: updated.trim() })
-                });
-                const data = await response.json();
-                if (!response.ok) throw new Error(data.message || "Could not update module.");
-                await loadManagedCatalogue();
-                alert("Module updated successfully.");
-            } catch (error) { alert(error.message || "Could not update module."); }
-        });
-    });
-}
-
-/* =========================================================
-   REPORTS / LEADERBOARD
-========================================================= */
-
-async function loadReports() {
-    try {
-        const response = await apiFetch(`${API_BASE_URL}admin/leaderboard`);
-        if (!response.ok) return;
-        const data = await response.json();
-        renderReportTable(data.buddies || []);
-        drawBuddySessionsChart(data.buddies || []);
-        drawSessionStatusChart();
-    } catch (error) {
-        console.warn("Could not load reports:", error);
-    }
 }
 
 function renderReportTable(buddies) {
@@ -1303,12 +1210,3 @@ document.addEventListener("click", function (event) {
 });
 
 
-// The notification bell opens the live pending-application list.
-document.addEventListener("DOMContentLoaded", function () {
-    const bell = document.querySelector(".notification-btn");
-    if (bell) bell.addEventListener("click", function () {
-        const applicationsNav = document.querySelector('.nav-item[data-section="applications"]');
-        if (applicationsNav) applicationsNav.click();
-        if (typeof loadApplications === "function") loadApplications();
-    });
-});

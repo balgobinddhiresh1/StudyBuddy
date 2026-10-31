@@ -443,6 +443,20 @@ def add_notification(user_id, title, message, kind, session_id=None):
                                     kind=kind, session_id=session_id))
 
 
+def notify_admins_by_email(subject, message, event_type):
+    """Email every active administrator about important platform events."""
+    admins = User.query.filter(db.func.lower(User.role) == "admin").all()
+    sent = 0
+    for admin_user in admins:
+        if admin_user.email:
+            try:
+                send_event_email(admin_user.email, subject, message, event_type)
+                sent += 1
+            except Exception:
+                app.logger.exception("Admin event email failed for user %s", admin_user.id)
+    return sent
+
+
 def send_event_email(recipient_email, subject, message, event_type):
     """Send a non-OTP message through the configured Apps Script relay.
 
@@ -646,6 +660,7 @@ def application_to_dict(application):
     return {
         "id": application.id,
         "user_id": application.user_id,
+        "email": application.user.email if application.user else "",
         "full_name": application.full_name,
         "student_number": application.student_number,
         "qualification": application.qualification,
@@ -1403,6 +1418,11 @@ def create_buddy_application():
 
         db.session.add(application)
         db.session.commit()
+        notify_admins_by_email(
+            "New Octo Buddy application received",
+            f"A new Octo Buddy application has been submitted.\n\nApplicant: {application.full_name}\nStudent number: {application.student_number}\nQualification: {application.qualification}\nAcademic year: {application.academic_year}\nStatus: Pending",
+            "buddy_application_submitted"
+        )
 
         return jsonify({
             "status": "success",
@@ -1565,6 +1585,14 @@ def session_room_end(room_code):
             add_notification(session.student_id, "Tutoring session completed", f"Your {session.module} session has ended.", "session_completed", session.id)
             add_notification(actor.id, "Tutoring session completed", f"You completed the {session.module} session.", "session_completed", session.id)
         db.session.commit()
+        if session.status == "Completed":
+            student_name = f"{session.student.first_name} {session.student.last_name}" if session.student else "Student"
+            buddy_name = f"{session.buddy.first_name} {session.buddy.last_name}" if session.buddy else "Octo Buddy"
+            notify_admins_by_email(
+                "Octo Buddy session completed",
+                f"A tutoring session has been completed.\n\nStudent: {student_name}\nOcto Buddy: {buddy_name}\nModule: {session.module}\nDate: {session.session_date.isoformat()}\nTime: {session.session_time}\nSession ID: {session.id}",
+                "session_completed"
+            )
     return jsonify(status="success", message="Session ended and recorded.", session=session_to_dict(session)), 200
 
 
