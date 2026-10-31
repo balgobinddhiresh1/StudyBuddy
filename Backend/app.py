@@ -538,8 +538,8 @@ def valid_name(value):
 
 
 def valid_password(password):
-    """Require 12+ chars with upper/lowercase, digit and special character."""
-    if not isinstance(password, str) or not 12 <= len(password) <= 64:
+    """Require 8-10 characters with upper/lowercase, digit and special character."""
+    if not isinstance(password, str) or not 8 <= len(password) <= 10:
         return False
     return all((re.search(r"[a-z]", password), re.search(r"[A-Z]", password),
                 re.search(r"\d", password), re.search(r"[^A-Za-z0-9]", password)))
@@ -829,7 +829,7 @@ def register():
         if not valid_email(email):
             return jsonify(status="error", message="Enter a valid email address, for example name@example.com."), 400
         if not valid_password(password):
-            return jsonify(status="error", message="Password must be at least 12 characters and include uppercase, lowercase, a number and a special character."), 400
+            return jsonify(status="error", message="Password must be 8–10 characters and include uppercase, lowercase, a number and a special character."), 400
         if User.query.filter_by(email=email).first():
             return jsonify(status="error", message="Email already exists."), 409
 
@@ -1105,7 +1105,7 @@ def reset_password():
         return jsonify({
             "status": "error",
             "message": (
-                "Password must be at least 12 characters and include uppercase, lowercase, a number and a special character."
+                "Password must be 8–10 characters and include uppercase, lowercase, a number and a special character."
             )
         }), 400
 
@@ -1448,6 +1448,20 @@ def review_buddy_application(application_id, action):
             }), 404
 
         action = action.lower()
+
+        # A rejected application is final: never allow it to be approved later.
+        if (application.status or "").strip().lower() == "rejected" and action == "approve":
+            return jsonify({
+                "status": "error",
+                "message": "This application was rejected and cannot be approved."
+            }), 409
+
+        # Only pending applications may be reviewed. Approved/rejected decisions are final.
+        if (application.status or "").strip().lower() != "pending":
+            return jsonify({
+                "status": "error",
+                "message": "Only pending applications can be reviewed."
+            }), 409
 
         if action not in ("approve", "reject"):
             return jsonify({
@@ -2307,8 +2321,8 @@ def admin_qualifications():
         return jsonify(status="success", qualifications=[{"id": q.id, "name": q.name, "active": q.active} for q in items]), 200
     data = request.get_json(silent=True) or {}
     name = str(data.get("name", "")).strip()
-    if not 2 <= len(name) <= 150 or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9 &().,'/-]*", name):
-        return jsonify(status="error", message="Enter a valid qualification name."), 400
+    if not 2 <= len(name) <= 150 or not re.fullmatch(r"[A-Za-zÀ-ÖØ-öø-ÿ][A-Za-zÀ-ÖØ-öø-ÿ &().,'/-]*", name) or not re.search(r"[A-Za-zÀ-ÖØ-öø-ÿ]", name):
+        return jsonify(status="error", message="Enter a realistic qualification name using letters and normal punctuation only; numbers are not allowed."), 400
     existing = ManagedQualification.query.filter(db.func.lower(ManagedQualification.name) == name.lower()).first()
     if existing:
         return jsonify(status="error", message="That qualification already exists."), 409
@@ -2334,8 +2348,8 @@ def admin_update_qualification(qualification_id):
         item.active = data["active"]
     if "name" in data:
         name = str(data.get("name", "")).strip()
-        if not 2 <= len(name) <= 150:
-            return jsonify(status="error", message="Enter a valid qualification name."), 400
+        if not 2 <= len(name) <= 150 or not re.fullmatch(r"[A-Za-zÀ-ÖØ-öø-ÿ][A-Za-zÀ-ÖØ-öø-ÿ &().,'/-]*", name):
+            return jsonify(status="error", message="Enter a realistic qualification name using letters and normal punctuation only; numbers are not allowed."), 400
         duplicate = ManagedQualification.query.filter(
             db.func.lower(ManagedQualification.name) == name.lower(),
             ManagedQualification.id != item.id
@@ -2346,6 +2360,23 @@ def admin_update_qualification(qualification_id):
     write_audit("qualification_updated", "qualification", item.id, {"name": item.name, "active": item.active})
     db.session.commit()
     return jsonify(status="success", qualification={"id": item.id, "name": item.name, "active": item.active}), 200
+
+
+@app.route("/api/admin/qualifications/<int:qualification_id>", methods=["DELETE"])
+def admin_delete_qualification(qualification_id):
+    denied = _admin_required()
+    if denied:
+        return denied
+    item = db.session.get(ManagedQualification, qualification_id)
+    if not item:
+        return jsonify(status="error", message="Qualification not found."), 404
+    # Do not delete catalogue rows still referenced by modules; this avoids orphaned data.
+    if ManagedModule.query.filter_by(qualification_id=item.id).first():
+        return jsonify(status="error", message="Delete or reassign this qualification's modules before deleting the qualification."), 409
+    write_audit("qualification_deleted", "qualification", item.id, {"name": item.name})
+    db.session.delete(item)
+    db.session.commit()
+    return jsonify(status="success", message="Qualification deleted."), 200
 
 
 @app.route("/api/admin/modules", methods=["GET", "POST"])
@@ -2373,8 +2404,8 @@ def admin_modules():
         return jsonify(status="error", message="Select a valid qualification."), 400
     if not isinstance(year, int) or year not in (1, 2, 3, 4, 5, 6):
         return jsonify(status="error", message="Academic year must be a number from 1 to 6."), 400
-    if not 2 <= len(name) <= 150:
-        return jsonify(status="error", message="Enter a valid module name."), 400
+    if not 2 <= len(name) <= 150 or not re.fullmatch(r"[A-Za-zÀ-ÖØ-öø-ÿ][A-Za-zÀ-ÖØ-öø-ÿ &().,'/-]*(?: [0-9]{3})?", name):
+        return jsonify(status="error", message="Module names must start with a letter and may only end with a three-digit module code, e.g. Programming 621."), 400
     item = ManagedModule(name=name, qualification_id=qid, academic_year=year)
     db.session.add(item)
     try:
@@ -2401,8 +2432,8 @@ def admin_update_module(module_id):
         item.active = data["active"]
     if "name" in data:
         name = str(data.get("name", "")).strip()
-        if not 2 <= len(name) <= 150:
-            return jsonify(status="error", message="Enter a valid module name."), 400
+        if not 2 <= len(name) <= 150 or not re.fullmatch(r"[A-Za-zÀ-ÖØ-öø-ÿ][A-Za-zÀ-ÖØ-öø-ÿ &().,'/-]*(?: [0-9]{3})?", name):
+            return jsonify(status="error", message="Module names must start with a letter and may only end with a three-digit module code, e.g. Programming 621."), 400
         duplicate = ManagedModule.query.filter(
             db.func.lower(ManagedModule.name) == name.lower(),
             ManagedModule.qualification_id == item.qualification_id,

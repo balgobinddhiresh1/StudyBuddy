@@ -4,6 +4,7 @@ async function loadAvailableTutors() {
     const dateField = document.getElementById("date");
     const buddyField = document.getElementById("buddyId");
     const timeField = document.getElementById("time");
+    const listPanel = document.getElementById("availableTutorsList");
     if (!moduleField || !dateField || !buddyField) return;
     const module = moduleField.value;
     const dateValue = dateField.value;
@@ -12,6 +13,7 @@ async function loadAvailableTutors() {
     if (timeField) { timeField.replaceChildren(new Option("Choose a tutor first", "")); timeField.disabled = true; }
     if (!module || !dateValue) {
         buddyField.replaceChildren(new Option("Choose a module and date first", ""));
+        if (listPanel) listPanel.innerHTML = "<p>Choose a module and date to view availability.</p>";
         return;
     }
     try {
@@ -25,9 +27,28 @@ async function loadAvailableTutors() {
             buddyField.add(option);
         });
         buddyField.disabled = !data.tutors?.length;
+        if (listPanel) {
+            listPanel.innerHTML = (data.tutors || []).length ? data.tutors.map(tutor => `
+                <article class="tutor-availability-card">
+                  <strong>${escapeHtml(`${tutor.first_name} ${tutor.last_name}`)}</strong>
+                  <div>Qualification: ${escapeHtml(tutor.qualification || "—")}</div>
+                  <div>Modules: ${escapeHtml((tutor.modules || []).join(", "))}</div>
+                  <div>Available day: ${escapeHtml(new Date(`${dateValue}T12:00:00`).toLocaleDateString(undefined,{weekday:"long"}))}</div>
+                  <div>Open times: ${escapeHtml((tutor.available_times || []).join(", ") || "None")}</div>
+                  <button type="button" class="select-tutor-availability" data-tutor-id="${Number(tutor.id)}">Select this tutor</button>
+                </article>`).join("") : "<p>No approved tutors have open slots for this module and date.</p>";
+            listPanel.querySelectorAll(".select-tutor-availability").forEach(button => button.addEventListener("click", () => {
+                buddyField.value = button.dataset.tutorId;
+                updateAvailableTimes();
+                const firstTime = timeField?.options?.length > 1 ? timeField.options[1].value : "";
+                if (firstTime && timeField) timeField.value = firstTime;
+                buddyField.scrollIntoView({behavior:"smooth",block:"center"});
+            }));
+        }
     } catch (error) {
         buddyField.replaceChildren(new Option(error.message || "Could not load tutors", ""));
         buddyField.disabled = true;
+        if (listPanel) listPanel.innerHTML = `<p>${escapeHtml(error.message || "Could not load tutors.")}</p>`;
     }
 }
 
@@ -378,11 +399,9 @@ function closeEditModal() {
  */
 async function saveProfileChanges() {
     const namePattern = /^[A-Za-zÀ-ÖØ-öø-ÿ]+(?:[ '\u2019-][A-Za-zÀ-ÖØ-öø-ÿ]+)*$/;
-    const firstName =
-        document.getElementById("editFirstName").value.trim();
-
-    const lastName =
-        document.getElementById("editLastName").value.trim();
+    const cachedProfile = JSON.parse(localStorage.getItem("user") || "{}");
+    const firstName = cachedProfile.first_name || localStorage.getItem("first_name") || document.getElementById("editFirstName").value.trim();
+    const lastName = cachedProfile.last_name || localStorage.getItem("last_name") || document.getElementById("editLastName").value.trim();
 
     const course =
         document.getElementById("editCourse")?.value.trim() || "";
@@ -393,12 +412,6 @@ async function saveProfileChanges() {
     const userId =
         localStorage.getItem("user_id") ||
         sessionStorage.getItem("user_id");
-
-    if (!namePattern.test(firstName) || !namePattern.test(lastName)) {
-        alert("First and last names must contain letters only. Spaces, apostrophes and hyphens are allowed.");
-        document.getElementById(!namePattern.test(firstName) ? "editFirstName" : "editLastName").focus();
-        return;
-    }
 
     if (!userId) {
         alert("Your login session could not be found. Please log in again.");

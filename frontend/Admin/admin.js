@@ -52,6 +52,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     setupAdminManagementControls();
 
     await refreshAdminData();
+    // Keep headline statistics fresh without requiring a page reload.
+    window.setInterval(() => { loadAdminDashboard(); loadApplications(); loadSchedule(); loadAdminBookings(); }, 15000);
 });
 
 /* =========================================================
@@ -206,7 +208,7 @@ async function loadApplications() {
                 .map(day => escapeHtml(day.slice(0, 3))).join(" · ");
             const statusClass = (application.status || "pending").toLowerCase();
 
-            const actions = application.status === "Pending"
+            const actions = String(application.status || "").toLowerCase() === "pending"
                 ? `<div class="action-buttons">
                     <button class="approve-btn" data-application-id="${application.id}">Approve</button>
                     <button class="reject-btn" data-application-id="${application.id}">Reject</button>
@@ -434,7 +436,7 @@ function setupSessionModal() {
     const closeModal = document.getElementById("closeModal");
     const saveSession = document.getElementById("saveSession");
 
-    if (newSessionBtn) newSessionBtn.addEventListener("click", openSessionModal);
+    if (newSessionBtn) { newSessionBtn.hidden = true; newSessionBtn.disabled = true; }
     if (closeModal) closeModal.addEventListener("click", closeSessionModal);
     if (modal) modal.addEventListener("click", event => {
         if (event.target === modal) closeSessionModal();
@@ -598,24 +600,18 @@ function renderCalendar() {
                         (item.date || item.session_date) === dateString && String(item.time || item.session_time || "").slice(0, 5) === hour
                     );
                     return session
-                        ? `<button class="time-slot booked" type="button" title="${escapeHtml(session.status)}">
+                        ? `<button class="time-slot booked" type="button" data-session-id="${session.id}" title="View session details">
                             <span>${escapeHtml(hour)}</span>
-                            ${escapeHtml(session.student_name || "Student")} · ${escapeHtml(session.module)}
+                            ${escapeHtml(session.student_name || session.student || "Student")} · ${escapeHtml(session.module)}
                            </button>`
-                        : `<button class="time-slot available" type="button" data-date="${dateString}" data-time="${hour}">
-                            <span>${hour}</span>Available
-                           </button>`;
+                        : `<div class="time-slot available" aria-label="Available time slot"><span>${hour}</span>Available</div>`;
                 }).join("")}
             </div>`;
     }).join("");
 
-    calendar.querySelectorAll(".time-slot.available").forEach(slot => {
+    calendar.querySelectorAll(".time-slot.booked").forEach(slot => {
         slot.addEventListener("click", () => {
-            openSessionModal();
-            const date = document.getElementById("sessionDate");
-            const time = document.getElementById("sessionTime");
-            if (date) date.value = slot.dataset.date;
-            if (time) time.value = slot.dataset.time;
+            window.location.href = `session-detail.html?id=${encodeURIComponent(slot.dataset.sessionId)}`;
         });
     });
 }
@@ -664,6 +660,7 @@ async function setupQualificationButtons() {
             if (!qualification) { alert("Add a qualification before adding modules."); return; }
             const name = prompt("Enter the module name:");
             if (!name?.trim()) return;
+            if (!/^[A-Za-zÀ-ÖØ-öø-ÿ][A-Za-zÀ-ÖØ-öø-ÿ &().,'/-]*(?: [0-9]{3})?$/.test(name.trim())) { alert("Module names must start with a letter and may only end with a three-digit module code, for example Programming 621."); return; }
             const yearText = prompt("Enter the academic year for this module (1–6):", "1");
             if (yearText === null) return;
             const year = Number(yearText);
@@ -750,7 +747,26 @@ function renderQualifications() {
     const cards = document.querySelectorAll("#qualifications .management-card");
     cards.forEach((card, index) => {
         const heading = card.querySelector("h3");
+        const qualification = managedQualifications[index];
         if (heading && names[index]) heading.textContent = names[index];
+        if (qualification) {
+            let actions = card.querySelector(".qualification-card-actions");
+            if (!actions) { actions = document.createElement("div"); actions.className = "qualification-card-actions"; card.appendChild(actions); }
+            actions.innerHTML = `<button type="button" class="outline-btn qualification-open-btn" data-qualification-id="${qualification.id}">View / Edit</button> <button type="button" class="outline-btn qualification-delete-btn" data-qualification-id="${qualification.id}">Delete</button>`;
+        }
+    });
+    cards.forEach(card => {
+        card.querySelectorAll(".qualification-open-btn").forEach(button => button.onclick = () => window.location.href = `qualification-detail.html?id=${button.dataset.qualificationId}`);
+        card.querySelectorAll(".qualification-delete-btn").forEach(button => button.onclick = async () => {
+            const q = managedQualifications.find(item => Number(item.id) === Number(button.dataset.qualificationId));
+            if (!q || !confirm(`Delete qualification “${q.name}”? This may be blocked if modules or bookings depend on it.`)) return;
+            try {
+                const response = await apiFetch(`${API_BASE_URL}admin/qualifications/${q.id}`, { method: "DELETE" });
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.message || "Could not delete qualification.");
+                await loadManagedCatalogue();
+            } catch (error) { alert(error.message || "Could not delete qualification."); }
+        });
     });
 
     const sidebar = document.querySelector("#modules .module-sidebar");
@@ -969,8 +985,7 @@ function setupAdminActions() {
     document.addEventListener("click", event => {
         const buddyButton = event.target.closest(".buddy-view-btn");
         if (buddyButton) {
-            const buddy = allBuddies.find(item => Number(item.id) === Number(buddyButton.dataset.userId));
-            if (buddy) alert(`${buddy.first_name} ${buddy.last_name}\n${buddy.email}\n${buddy.course || "General"}\nPoints: ${buddy.points || 0}`);
+            window.location.href = `buddy-detail.html?id=${encodeURIComponent(buddyButton.dataset.userId)}`;
         }
     });
 }
@@ -1009,12 +1024,12 @@ function setupAdminManagementControls() {
         panel.id = "adminBookingPanel";
         panel.className = "table-panel";
         panel.style.marginTop = "24px";
-        panel.innerHTML = `<div class="section-heading"><div><h2>Booking management</h2><p>Filter bookings and update their status when resolving issues.</p></div>
+        panel.innerHTML = `<div class="section-heading"><div><h2>Booking management</h2><p>View session status and manage session records.</p></div>
           <div class="search-box"><select id="bookingStatusFilter" aria-label="Filter bookings by status"><option value="">All statuses</option><option>Pending</option><option>Confirmed</option><option>Completed</option><option>Cancelled</option><option>Rejected</option></select>
           <select id="bookingQualificationFilter" aria-label="Filter bookings by qualification"><option value="">All qualifications</option></select>
           <select id="bookingYearFilter" aria-label="Filter bookings by academic year"><option value="">All years</option><option value="1">Year 1</option><option value="2">Year 2</option><option value="3">Year 3</option><option value="4">Year 4</option><option value="5">Year 5</option><option value="6">Year 6</option></select>
           <input id="bookingStartDate" type="date" aria-label="Booking start date"><input id="bookingEndDate" type="date" aria-label="Booking end date"></div></div>
-          <div class="table-wrapper"><table><thead><tr><th>Student</th><th>Octo Buddy</th><th>Module</th><th>Date</th><th>Time</th><th>Qualification</th><th>Status</th><th>Update status</th><th>Actions</th></tr></thead><tbody id="adminBookingsTable"><tr><td colspan="8">Loading bookings…</td></tr></tbody></table></div>`;
+          <div class="table-wrapper"><table><thead><tr><th>Student</th><th>Octo Buddy</th><th>Module</th><th>Date</th><th>Time</th><th>Qualification</th><th>Status</th><th>Actions</th></tr></thead><tbody id="adminBookingsTable"><tr><td colspan="8">Loading bookings…</td></tr></tbody></table></div>`;
         scheduleSection.appendChild(panel);
         panel.querySelectorAll("select,input").forEach(control => control.addEventListener("change", renderAdminBookings));
     }
@@ -1099,9 +1114,7 @@ function renderAdminBookings() {
       <td>${escapeHtml(session.session_time || "")}</td>
       <td>${escapeHtml(session.qualification || "—")} · Year ${escapeHtml(session.academic_year || "—")}</td>
       <td><span class="status ${escapeHtml((session.status || "").toLowerCase())}">${escapeHtml(session.status || "Pending")}</span></td>
-      <td><select class="booking-status-update" data-session-id="${session.id}" aria-label="Update booking ${session.id} status">
-        ${["Pending","Confirmed","Completed","Cancelled","Rejected"].map(status => `<option ${session.status === status ? "selected" : ""}>${status}</option>`).join("")}
-      </select></td><td><button type="button" class="delete-session-btn" data-session-id="${session.id}">Delete</button></td></tr>`).join("") : `<tr><td colspan="9">No bookings match this filter.</td></tr>`;
+      <td><button type="button" class="view-session-btn outline-btn" data-session-id="${session.id}">View session</button> <button type="button" class="delete-session-btn" data-session-id="${session.id}">Delete</button></td></tr>`).join("") : `<tr><td colspan="9">No bookings match this filter.</td></tr>`;
     table.querySelectorAll(".delete-session-btn").forEach(button => button.addEventListener("click", async () => {
         const id = button.dataset.sessionId;
         if (!confirm(`Permanently delete session #${id}? This cannot be undone.`)) return;
@@ -1112,22 +1125,8 @@ function renderAdminBookings() {
             await Promise.all([loadSchedule(), loadAdminBookings(), loadAuditLogs()]);
         } catch (error) { alert(error.message || "Could not delete session."); }
     }));
-    table.querySelectorAll(".booking-status-update").forEach(select => select.addEventListener("change", async () => {
-        const id = select.dataset.sessionId;
-        const status = select.value;
-        if (!confirm(`Change booking #${id} to ${status}?`)) { renderAdminBookings(); return; }
-        try {
-            const response = await apiFetch(`${API_BASE_URL}admin/sessions/${id}/status`, {
-                method: "PUT", body: JSON.stringify({ status })
-            });
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.message || "Could not update booking.");
-            await Promise.all([loadSchedule(), loadAdminBookings(), loadAuditLogs()]);
-            alert("Booking status updated.");
-        } catch (error) {
-            alert(error.message || "Could not update booking.");
-            renderAdminBookings();
-        }
+    table.querySelectorAll(".view-session-btn").forEach(button => button.addEventListener("click", () => {
+        window.location.href = `session-detail.html?id=${encodeURIComponent(button.dataset.sessionId)}`;
     }));
 }
 
