@@ -20,6 +20,21 @@
 
     <!-- Jitsi External API Script (needed so the student can join their tutoring session) -->
     <script src="https://meet.jit.si/external_api.js"></script>
+<style>
+#availableTutorsPanel{margin-top:26px;padding:22px;border:1px solid #dce8ee;border-radius:18px;background:#fff;box-shadow:0 10px 28px rgba(20,55,75,.06)}
+.available-buddies-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:16px}
+.available-buddies-heading h3{margin:4px 0 7px;color:#164b60;font-size:1.35rem}
+.available-buddies-heading p:not(.section-label){margin:0;color:#637985;max-width:680px;font-size:.9rem;line-height:1.5}
+.buddy-count{white-space:nowrap;padding:7px 11px;background:#e8f8f4;color:#087c69;border-radius:20px;font-size:.78rem;font-weight:700}
+.buddy-table-scroll{max-height:360px;overflow:auto;border:1px solid #e3edf1;border-radius:12px}
+.buddy-directory-table{width:100%;min-width:850px;border-collapse:collapse;background:#fff}
+.buddy-directory-table th{position:sticky;top:0;background:#eaf5f6;color:#24596a;text-align:left;font-size:.78rem;padding:13px;z-index:1}
+.buddy-directory-table td{padding:13px;border-top:1px solid #edf2f4;color:#415965;font-size:.84rem;vertical-align:top}
+.buddy-directory-table tbody tr:hover{background:#f8fcfc}
+.buddy-directory-table .tutor-name{font-weight:700;color:#174c60}
+.buddy-directory-table .select-tutor-directory{border:0;border-radius:8px;padding:8px 11px;background:#0d9c83;color:white;font-weight:700;cursor:pointer}
+@media(max-width:650px){#availableTutorsPanel{padding:15px}.available-buddies-heading{flex-direction:column}}
+</style>
 </head>
 
 <body>
@@ -398,10 +413,18 @@
                     </button>
 
                 </form>
-                <section id="availableTutorsPanel" class="available-tutors-panel" aria-live="polite" style="margin-top:24px;padding:18px;border:1px solid #dbe7ee;border-radius:14px;background:#f7fbfd">
-                    <h3 style="margin-top:0">Available Octo Buddies</h3>
-                    <p>Select a module and date above to see approved tutors, their teaching modules, available days and open time slots.</p>
-                    <div id="availableTutorsList"><p>Choose a module and date to view availability.</p></div>
+                <section id="availableTutorsPanel" class="available-tutors-panel" aria-live="polite">
+                    <div class="available-buddies-heading">
+                        <div><p class="section-label">FIND YOUR STUDY PARTNER</p><h3>Available Octo Buddies</h3>
+                        <p>Browse approved tutors and their published weekly availability. Choose a module, date and an open slot above to book.</p></div>
+                        <span class="buddy-count" id="buddyDirectoryCount">Loading tutors…</span>
+                    </div>
+                    <div class="buddy-table-scroll">
+                        <table class="buddy-directory-table">
+                            <thead><tr><th>Octo Buddy</th><th>Qualification</th><th>Modules</th><th>Available days</th><th>Available times</th><th></th></tr></thead>
+                            <tbody id="availableTutorsList"><tr><td colspan="6">Loading available Octo Buddies…</td></tr></tbody>
+                        </table>
+                    </div>
                 </section>
 
 

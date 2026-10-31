@@ -63,7 +63,56 @@ function updateAvailableTimes() {
     timeField.disabled = !times.length;
 }
 
+
+async function loadBuddyDirectory() {
+    const body = document.getElementById("availableTutorsList");
+    const count = document.getElementById("buddyDirectoryCount");
+    if (!body) return;
+    body.innerHTML = '<tr><td colspan="6">Loading available Octo Buddies…</td></tr>';
+    try {
+        const response = await fetch(`${API_BASE_URL}available-tutors/catalog`);
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || "Could not load Octo Buddies.");
+        const tutors = data.tutors || [];
+        if (count) count.textContent = `${tutors.length} tutor${tutors.length === 1 ? "" : "s"} available`;
+        if (!tutors.length) {
+            body.innerHTML = '<tr><td colspan="6">There are no approved Octo Buddies yet. Please check again later.</td></tr>';
+            return;
+        }
+        body.innerHTML = tutors.map(tutor => `
+            <tr>
+                <td class="tutor-name">${escapeHtml(`${tutor.first_name} ${tutor.last_name}`)}</td>
+                <td>${escapeHtml(tutor.qualification || "—")}</td>
+                <td>${escapeHtml((tutor.modules || []).join(", ") || "—")}</td>
+                <td>${escapeHtml((tutor.available_days || []).join(", ") || "Not listed")}</td>
+                <td>${escapeHtml((tutor.available_times || []).join(", ") || "Not listed")}</td>
+                <td><button type="button" class="select-tutor-directory" data-tutor-id="${Number(tutor.id)}">Choose</button></td>
+            </tr>`).join("");
+        body.querySelectorAll(".select-tutor-directory").forEach(button => {
+            button.addEventListener("click", () => {
+                const dateField = document.getElementById("date");
+                const buddyField = document.getElementById("buddyId");
+                if (!dateField?.value) {
+                    dateField?.focus();
+                    alert("Choose your session date first. The booking form will then show this Buddy's real open slots.");
+                    return;
+                }
+                loadAvailableTutors().then(() => {
+                    buddyField.value = button.dataset.tutorId;
+                    updateAvailableTimes();
+                    document.getElementById("time")?.focus();
+                    document.getElementById("bookingForm")?.scrollIntoView({behavior:"smooth",block:"center"});
+                });
+            });
+        });
+    } catch (error) {
+        if (count) count.textContent = "Unavailable";
+        body.innerHTML = `<tr><td colspan="6">${escapeHtml(error.message || "Could not load available Octo Buddies.")}</td></tr>`;
+    }
+}
+
 document.addEventListener("DOMContentLoaded", () => {
+    loadBuddyDirectory();
     document.getElementById("module")?.addEventListener("change", loadAvailableTutors);
     document.getElementById("date")?.addEventListener("change", loadAvailableTutors);
     document.getElementById("buddyId")?.addEventListener("change", updateAvailableTimes);
@@ -456,6 +505,7 @@ headers: {
 
         closeEditModal();
         await loadLoggedInUser();
+        await loadBuddyDirectory();
 
     } catch (error) {
         console.error("Profile update error:", error);

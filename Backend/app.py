@@ -570,26 +570,20 @@ def resolve_managed_qualification(course):
 
 
 def modules_for_qualification(course, academic_year=None):
-    """Return modules from the persistent admin-managed catalogue when available."""
+    """Return only active modules configured for this exact qualification and year."""
     qualification = resolve_managed_qualification(course)
-    if qualification:
-        query = ManagedModule.query.filter_by(qualification_id=qualification.id, active=True)
-        if academic_year is not None:
-            try:
-                # Students can book modules from prior or current academic years.
-                query = query.filter(ManagedModule.academic_year <= int(academic_year))
-            except (TypeError, ValueError):
-                return set()
-        return {item.name for item in query.all()}
-    course = (course or "General").strip().lower()
-    if "computer science" in course:
-        return {"Programming", "Database Systems", "Networking"}
-    if "information technology" in course or course == "general":
-        return {"Programming", "Database Systems", "Networking", "Web Development"}
-    if "business administration" in course:
+    if not qualification:
         return set()
-    # Preserve legacy profiles until their qualification is set in the profile.
-    return {"Programming", "Database Systems", "Networking", "Web Development"}
+    query = ManagedModule.query.filter_by(
+        qualification_id=qualification.id,
+        active=True
+    )
+    if academic_year is not None:
+        try:
+            query = query.filter(ManagedModule.academic_year == int(academic_year))
+        except (TypeError, ValueError):
+            return set()
+    return {item.name for item in query.all()}
 
 
 @app.route("/api/modules", methods=["GET"])
@@ -733,7 +727,7 @@ def current_user(user_id):
 # ============================================================
 
 PUBLIC_API_ENDPOINTS = {
-    "register", "verify_otp", "login", "verify_login_otp", "forgot_password", "reset_password",
+    "register", "verify_otp", "login", "verify_login_otp", "forgot_password", "reset_password", "send_session_reminders",
     "home", "health"
 }
 
@@ -1021,12 +1015,12 @@ def forgot_password():
 
     user = User.query.filter_by(email=email).first()
 
-    # Only send reset codes to verified accounts.
+    # Explicit not-found feedback requested for the password reset screen.
     if not user or not user.is_verified:
         return jsonify({
-            "status": "success",
-            "message": generic_message
-        }), 200
+            "status": "error",
+            "message": "We couldn't find a verified account with that email address. Check the email or register for an account."
+        }), 404
 
     try:
         # Invalidate previous unused reset codes for this user.
@@ -1667,6 +1661,34 @@ def available_tutors():
         if slots:
             results.append({"id": tutor.id, "first_name": tutor.first_name, "last_name": tutor.last_name, "qualification": tutor.course, "modules": json_list(application.modules), "available_times": slots})
     return jsonify(status="success", tutors=results), 200
+
+
+@app.route("/api/available-tutors/catalog", methods=["GET"])
+def available_tutor_catalog():
+    """Return approved Octo Buddies and their published weekly availability."""
+    student = getattr(g, "current_user", None)
+    if not student or (student.role or "").lower() != "student":
+        return jsonify(status="error", message="A student account is required."), 403
+
+    weekday_names = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+    published_times = [f"{hour:02d}:00" for hour in range(8, 19)]
+    applications = BuddyApplication.query.filter_by(status="Approved").order_by(BuddyApplication.id.desc()).all()
+    tutors = []
+    for application in applications:
+        tutor = application.user
+        if not tutor or (tutor.role or "").lower() != "buddy":
+            continue
+        days = [day for day in json_list(application.availability) if day in weekday_names]
+        tutors.append({
+            "id": tutor.id,
+            "first_name": tutor.first_name,
+            "last_name": tutor.last_name,
+            "qualification": application.qualification,
+            "modules": json_list(application.modules),
+            "available_days": days,
+            "available_times": published_times,
+        })
+    return jsonify(status="success", tutors=tutors), 200
 
 
 @app.route("/api/bookings", methods=["POST"])
