@@ -745,7 +745,7 @@ def current_user(user_id):
 
 PUBLIC_API_ENDPOINTS = {
     "register", "verify_otp", "login", "verify_login_otp", "forgot_password", "reset_password",
-    "home", "health"
+    "home", "health", "send_session_reminders"
 }
 
 
