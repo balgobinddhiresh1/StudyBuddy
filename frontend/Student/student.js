@@ -5,50 +5,81 @@ async function loadAvailableTutors() {
     const buddyField = document.getElementById("buddyId");
     const timeField = document.getElementById("time");
     const listPanel = document.getElementById("availableTutorsList");
-    if (!moduleField || !dateField || !buddyField) return;
+    if (!moduleField || !dateField || !buddyField || !listPanel) return;
+
     const module = moduleField.value;
     const dateValue = dateField.value;
-    buddyField.replaceChildren(new Option("Loading available tutors…", ""));
+    const params = new URLSearchParams();
+    if (module) params.set("module", module);
+    if (dateValue) params.set("date", dateValue);
+
+    listPanel.innerHTML = "<p>Loading approved Octo Buddies…</p>";
+    buddyField.replaceChildren(new Option("Select a module and date first", ""));
     buddyField.disabled = true;
-    if (timeField) { timeField.replaceChildren(new Option("Choose a tutor first", "")); timeField.disabled = true; }
-    if (!module || !dateValue) {
-        buddyField.replaceChildren(new Option("Choose a module and date first", ""));
-        if (listPanel) listPanel.innerHTML = "<p>Choose a module and date to view availability.</p>";
-        return;
+    if (timeField) {
+        timeField.replaceChildren(new Option("Choose a tutor first", ""));
+        timeField.disabled = true;
     }
+
     try {
-        const response = await fetch(`${API_BASE_URL}available-tutors?module=${encodeURIComponent(module)}&date=${encodeURIComponent(dateValue)}`);
+        const response = await fetch(`${API_BASE_URL}available-tutors${params.toString() ? `?${params}` : ""}`);
         const data = await response.json();
         if (!response.ok) throw new Error(data.message || "Could not load tutors.");
-        buddyField.replaceChildren(new Option(data.tutors.length ? "Select an available tutor" : "No tutors available for this date", ""));
-        (data.tutors || []).forEach(tutor => {
-            const option = new Option(`${tutor.first_name} ${tutor.last_name}`, String(tutor.id));
-            option.dataset.times = JSON.stringify(tutor.available_times || []);
-            buddyField.add(option);
-        });
-        buddyField.disabled = !data.tutors?.length;
-        if (listPanel) {
-            listPanel.innerHTML = (data.tutors || []).length ? data.tutors.map(tutor => `
-                <article class="tutor-availability-card">
-                  <strong>${escapeHtml(`${tutor.first_name} ${tutor.last_name}`)}</strong>
-                  <div>Qualification: ${escapeHtml(tutor.qualification || "—")}</div>
-                  <div>Modules: ${escapeHtml((tutor.modules || []).join(", "))}</div>
-                  <div>Available day: ${escapeHtml(new Date(`${dateValue}T12:00:00`).toLocaleDateString(undefined,{weekday:"long"}))}</div>
-                  <div>Open times: ${escapeHtml((tutor.available_times || []).join(", ") || "None")}</div>
-                  <button type="button" class="select-tutor-availability" data-tutor-id="${Number(tutor.id)}">Select this tutor</button>
-                </article>`).join("") : "<p>No approved tutors have open slots for this module and date.</p>";
-            listPanel.querySelectorAll(".select-tutor-availability").forEach(button => button.addEventListener("click", () => {
-                buddyField.value = button.dataset.tutorId;
-                updateAvailableTimes();
-                const firstTime = timeField?.options?.length > 1 ? timeField.options[1].value : "";
-                if (firstTime && timeField) timeField.value = firstTime;
-                buddyField.scrollIntoView({behavior:"smooth",block:"center"});
-            }));
+        const tutors = data.tutors || [];
+
+        if (module && dateValue) {
+            buddyField.replaceChildren(new Option(tutors.length ? "Select an available tutor" : "No tutors available for this date", ""));
+            tutors.forEach(tutor => {
+                if (!(tutor.available_times || []).length) return;
+                const option = new Option(`${tutor.first_name} ${tutor.last_name}`, String(tutor.id));
+                option.dataset.times = JSON.stringify(tutor.available_times || []);
+                buddyField.add(option);
+            });
+            buddyField.disabled = buddyField.options.length <= 1;
         }
+
+        if (!tutors.length) {
+            listPanel.innerHTML = "<p>No approved Octo Buddies currently match your qualification, academic year and selected filters.</p>";
+            return;
+        }
+
+        const showTimes = Boolean(module && dateValue);
+        listPanel.innerHTML = `
+          <div class="table-responsive" style="overflow-x:auto">
+            <table class="available-tutors-table" style="width:100%;border-collapse:collapse;min-width:650px">
+              <thead><tr>
+                <th style="text-align:left;padding:12px;border-bottom:1px solid #dbe7ee">Octo Buddy</th>
+                <th style="text-align:left;padding:12px;border-bottom:1px solid #dbe7ee">Qualification / Year</th>
+                <th style="text-align:left;padding:12px;border-bottom:1px solid #dbe7ee">Modules</th>
+                <th style="text-align:left;padding:12px;border-bottom:1px solid #dbe7ee">Available days</th>
+                <th style="text-align:left;padding:12px;border-bottom:1px solid #dbe7ee">Open times</th>
+                <th style="text-align:left;padding:12px;border-bottom:1px solid #dbe7ee">Action</th>
+              </tr></thead>
+              <tbody>${tutors.map(tutor => {
+                const times = tutor.available_times || [];
+                const canSelect = showTimes && times.length > 0;
+                return `<tr>
+                  <td style="padding:12px;border-bottom:1px solid #e5edf2">${escapeHtml(`${tutor.first_name} ${tutor.last_name}`)}</td>
+                  <td style="padding:12px;border-bottom:1px solid #e5edf2">${escapeHtml(tutor.qualification || "—")}<br>${escapeHtml(tutor.academic_year || "")}</td>
+                  <td style="padding:12px;border-bottom:1px solid #e5edf2">${escapeHtml((tutor.modules || []).join(", "))}</td>
+                  <td style="padding:12px;border-bottom:1px solid #e5edf2">${escapeHtml((tutor.available_days || []).join(", ") || "—")}</td>
+                  <td style="padding:12px;border-bottom:1px solid #e5edf2">${showTimes ? escapeHtml(times.join(", ") || "No open slots") : "Choose a date to check"}</td>
+                  <td style="padding:12px;border-bottom:1px solid #e5edf2">${canSelect ? `<button type="button" class="select-tutor-availability" data-tutor-id="${Number(tutor.id)}">Select</button>` : "—"}</td>
+                </tr>`;
+              }).join("")}</tbody>
+            </table>
+          </div>`;
+
+        listPanel.querySelectorAll(".select-tutor-availability").forEach(button => button.addEventListener("click", () => {
+            buddyField.value = button.dataset.tutorId;
+            updateAvailableTimes();
+            if (timeField && timeField.options.length > 1) timeField.value = timeField.options[1].value;
+            buddyField.scrollIntoView({ behavior: "smooth", block: "center" });
+        }));
     } catch (error) {
-        buddyField.replaceChildren(new Option(error.message || "Could not load tutors", ""));
+        buddyField.replaceChildren(new Option("Tutors could not be loaded", ""));
         buddyField.disabled = true;
-        if (listPanel) listPanel.innerHTML = `<p>${escapeHtml(error.message || "Could not load tutors.")}</p>`;
+        listPanel.innerHTML = `<p>${escapeHtml(error.message || "Could not load tutors.")}</p>`;
     }
 }
 
@@ -126,6 +157,7 @@ async function configureBookingModules(user) {
         select.add(new Option("No matching modules are configured for this qualification/year", ""));
         select.disabled = true;
     } else select.disabled = false;
+    loadAvailableTutors();
 }
 
 let jitsiApi = null;
@@ -140,6 +172,7 @@ document.addEventListener("DOMContentLoaded", () => {
     loadUpcomingSessions();
     setupBookingForm();
     setupMarksForm();
+    loadAvailableTutors();
 });
 
 
