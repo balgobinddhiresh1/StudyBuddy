@@ -1,12 +1,11 @@
 <!DOCTYPE html>
+
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Octo Buddy Dashboard | Octo Buddy</title>
-
-    <script>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Octo Buddy Dashboard | Octo Buddy</title>
+<script>
       // Prevent direct access to the Buddy dashboard without an authenticated session.
       (function () {
         const userId = localStorage.getItem('user_id');
@@ -16,355 +15,205 @@
         }
       })();
     </script>
-
-    <!-- Google Font -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
-    <!-- Jitsi External API Script -->
-    <script src="https://meet.jit.si/external_api.js"></script>
-
-    <!-- Dashboard CSS -->
-    <link rel="stylesheet" href="Dashboard.css">
+<!-- Google Font -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Jitsi External API Script -->
+<script src="https://meet.jit.si/external_api.js"></script>
+<!-- Dashboard CSS -->
+<link href="Dashboard.css" rel="stylesheet"/>
 </head>
-
 <body>
-
-    <!-- =========================
+<!-- =========================
          NAVBAR
     ========================== -->
-    <header class="dashboard-header">
-        <nav class="navbar">
-
-            <div class="logo">
-                <a href="../homepage/homepage.html">
-                    <img src="../homepage/logo.png" alt="Octo Buddy Logo">
-                </a>
-            </div>
-
-            <ul class="nav-links" id="navLinks">
-                <li><a href="../homepage/homepage.html">Home</a></li>
-                <li><a href="../homepage/homepage.html#about">About</a></li>
-                <li><a href="Dashboard.html" class="active">Dashboard</a></li>
-                <li><a href="../sessions/sessions.html">Sessions</a></li>
-            </ul>
-
-            <div class="navbar-right">
-
-               <div class="profile-menu">
-    <button class="profile-icon" id="profileBtn" aria-label="Account menu">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
-        <path d="M12 12c2.7 0 4.9-2.2 4.9-4.9S14.7 2.2 12 2.2 7.1 4.4 7.1 7.1 9.3 12 12 12zm0 2.2c-3.3 0-9.8 1.6-9.8 4.9v2.7h19.6v-2.7c0-3.3-6.5-4.9-9.8-4.9z"/>
-    </svg>
-</button>
-
-    <div class="profile-dropdown" id="profileDropdown">
-        <a href="#" onclick="openEditModal()">Edit Profile</a>
-        <a href="../Dashboard/Dashboard.html">Dashboard</a>
-        <a href="../sessions/sessions.html">Sessions</a>
-        <a href="../signin_login/project.html">Logout</a>
-    </div>
+<header class="dashboard-header">
+<nav class="navbar">
+<div class="logo">
+<a href="../homepage/homepage.html">
+<img alt="Octo Buddy Logo" src="../homepage/logo.png"/>
+</a>
 </div>
-
-            </div>
-
-        </nav>
-
-    </header>
-
-
-    <!-- =========================
+<ul class="nav-links" id="navLinks">
+<li><a href="../homepage/homepage.html">Home</a></li>
+<li><a href="../homepage/homepage.html#about">About</a></li>
+<li><a class="active" href="Dashboard.html">Dashboard</a></li>
+<li><a href="../sessions/sessions.html">Sessions</a></li>
+</ul>
+<div class="navbar-right">
+<div class="profile-menu">
+<button aria-label="Account menu" class="profile-icon" id="profileBtn">
+<svg fill="currentColor" height="22" viewbox="0 0 24 24" width="22" xmlns="http://www.w3.org/2000/svg">
+<path d="M12 12c2.7 0 4.9-2.2 4.9-4.9S14.7 2.2 12 2.2 7.1 4.4 7.1 7.1 9.3 12 12 12zm0 2.2c-3.3 0-9.8 1.6-9.8 4.9v2.7h19.6v-2.7c0-3.3-6.5-4.9-9.8-4.9z"></path>
+</svg>
+</button>
+<div class="profile-dropdown" id="profileDropdown">
+<a href="../Dashboard/Dashboard.html">Dashboard</a>
+<a href="../sessions/sessions.html">Sessions</a>
+<a href="../signin_login/project.html">Logout</a>
+</div>
+</div>
+</div>
+</nav>
+</header>
+<!-- =========================
          MAIN DASHBOARD
     ========================== -->
-    <main class="dashboard">
-
-        <!-- WELCOME SECTION -->
-        <section class="welcome-section">
-            <div class="welcome-text">
-                <span class="welcome-label">OCTO BUDDY DASHBOARD</span>
-                <h1>
+<main class="dashboard">
+<!-- WELCOME SECTION -->
+<section class="welcome-section">
+<div class="welcome-text">
+<span class="welcome-label">OCTO BUDDY DASHBOARD</span>
+<h1>
                     Welcome back, Octo Buddy
                     <span id="welcomeFirstName">Buddy</span>!
                 </h1>
-                <p>
+<p>
                     Here's your teaching schedule, the students you're
                     helping, and your tutoring stats.
                 </p>
-            </div>
+</div>
+<div class="welcome-date">
+<span>Today</span>
+<strong id="currentDate">Loading...</strong>
+</div>
+</section>
+<!-- QUICK STATISTICS -->
+<section class="stats-grid">
+<div class="stat-card">
+<div class="stat-icon">
+<svg fill="none" height="24" viewbox="-0.75 -0.75 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<g id="calendar-add--add-calendar-date-day-month">
+<path d="M10.809 18.747H1.107V2.871h17.64v7.938" stroke="#17c786" stroke-width="1.5"></path>
+<path d="M18.747 6.399H1.107V2.871h17.64v3.528Z" stroke="#000cfe" stroke-width="1.5"></path>
+<path d="M4.635 0.225v2.646" stroke="#000cfe" stroke-width="1.5"></path>
+<path d="M15.219 0.225v2.646" stroke="#000cfe" stroke-width="1.5"></path>
+<path d="M21.393 16.983h-8.82m4.41-4.41v8.82" stroke="#000cfe" stroke-width="1.5"></path>
+</g>
+</svg>
+</div>
+<div class="stat-content">
+<span>Upcoming Sessions</span>
+<strong id="statUpcoming">0</strong>
+</div>
+</div>
+<div class="stat-card">
+<div class="stat-icon">
+<svg fill="none" height="24" viewbox="-0.855 -0.855 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+<g id="check-square">
+<path d="m15.789 7.563-6.369 7.96-3.184-2.388" stroke="#000cfe" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.71"></path>
+<path d="M1.592 3.184v15.922c0 .879.713 1.592 1.592 1.592h15.922c.879 0 1.592-.713 1.592-1.592V3.184c0-.879-.713-1.592-1.592-1.592H3.184c-.879 0-1.592.713-1.592 1.592Z" stroke="#2211f1" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.71"></path>
+</g>
+</svg>
+</div>
+<div class="stat-content">
+<span>Completed Sessions</span>
+<strong id="statCompleted">0</strong>
+</div>
+</div>
+<div class="stat-card">
+<div class="stat-icon">
+<svg fill="#1e41bb" height="25" viewbox="0 0 20 20" width="25" xmlns="http://www.w3.org/2000/svg">
+<g clip-rule="evenodd" fill="#1e41bb" fill-rule="evenodd">
+<path d="M11.5 2.5a1 1 0 0 1 .87.507l2.314 4.078l4.527.976a1 1 0 0 1 .537 1.641l-3.106 3.502l.488 4.693a1 1 0 0 1-1.407 1.014L11.5 16.997l-4.223 1.914a1 1 0 0 1-1.407-1.014l.488-4.693l-3.106-3.502a1 1 0 0 1 .537-1.641l4.527-.976l2.314-4.078a1 1 0 0 1 .87-.507Zm0 3.026L9.834 8.462a1 1 0 0 1-.659.484l-3.291.71l2.262 2.55a1 1 0 0 1 .246.768L8.04 16.37l3.047-1.381a1 1 0 0 1 .826 0l3.047 1.38l-.353-3.396a1 1 0 0 1 .247-.766l2.262-2.551l-3.291-.71a1 1 0 0 1-.66-.484L11.5 5.526Z" opacity=".2"></path>
+<path d="M10 2a.5.5 0 0 1 .435.253l2.425 4.274l4.745 1.023a.5.5 0 0 1 .27.82l-3.253 3.667l.51 4.911a.5.5 0 0 1-.703.507L10 15.448l-4.429 2.007a.5.5 0 0 1-.704-.507l.51-4.91l-3.25-3.668a.5.5 0 0 1 .269-.82L7.14 6.527l2.425-4.274A.5.5 0 0 1 10 2Zm0 1.513L7.9 7.215a.5.5 0 0 1-.33.242l-4.128.89l2.83 3.191a.5.5 0 0 1 .123.384l-.443 4.263l3.842-1.74a.5.5 0 0 1 .412 0l3.842 1.74l-.443-4.263a.5.5 0 0 1 .123-.384l2.83-3.191l-4.128-.89a.5.5 0 0 1-.33-.242L10 3.513Z"></path>
+</g>
+</svg>
+</div>
+<div class="stat-content">
+<span>Points Earned</span>
+<strong id="statPoints">0</strong>
+</div>
+</div>
+<div class="stat-card">
+<div class="stat-icon">
+<svg fill="none" height="24" viewbox="0 -960 960 960" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="M480-120 200-272v-240L40-600l440-240 440 240v320h-80v-276l-80 44v240L480-120Zm0-332 274-148-274-148-274 148 274 148Zm0 241 200-108v-151L480-360 280-470v151l200 108Z" fill="#3532ba"></path>
+</svg>
+</div>
+<div class="stat-content">
+<span>Students Helped</span>
+<strong id="statStudents">0</strong>
+</div>
+</div>
+</section>
+<!-- MAIN CONTENT GRID -->
+<section class="dashboard-grid">
+<!-- NEXT TUTORING SESSION -->
+<div class="dashboard-card upcoming-card">
+<div class="card-header">
+<div>
+<span class="card-label">NEXT SESSION</span>
+<h2>Your Next Tutoring Session</h2>
+</div>
+<span class="status-badge" id="nextSessionStatus">Loading</span>
+</div>
+<div class="session-details">
+<div class="session-date">
+<span class="day">NEXT</span>
+<strong>—</strong>
+<span class="month"></span>
+</div>
+<div class="session-info">
+<h3>Loading next session…</h3>
+<p>Student: <strong id="assignedStudentName">—</strong></p>
+<p>—</p>
+<p>Room: <strong id="assignedRoomCode">—</strong></p>
+</div>
+</div>
+<div class="session-actions">
+<button class="primary-button" onclick="joinBuddyRoom()">Join Session →</button>
+</div>
+</div>
+<!-- TEACHING SCHEDULE (assigned by admin) -->
+<div class="dashboard-card schedule-card">
+<div class="card-header">
+<div>
+<span class="card-label">ASSIGNED BY ADMIN</span>
+<h2>Your Teaching Schedule</h2>
+</div>
+<button class="small-button" onclick="openMySchedule()">View All →</button>
+</div>
+<div class="schedule-list">
+</div>
+<p class="schedule-note">Loading your saved tutoring sessions…</p>
+</div>
+</section>
+<!-- QUICK ACTIONS -->
+<section class="quick-section">
+<div class="section-heading">
+<div>
+<span class="card-label">QUICK ACTIONS</span>
+<h2>What would you like to do?</h2>
+</div>
+</div>
+<div class="action-grid">
+<!-- MY SCHEDULE -->
+<button class="action-card" onclick="openMySchedule()">
+<div class="action-icon">🗓️</div>
+<div>
+<h3>My Schedule</h3>
+<p>View all your assigned tutoring sessions.</p>
+</div>
+<span class="action-arrow">→</span>
+</button>
+<!-- MY STUDENTS -->
+<button class="action-card" onclick="viewMyStudents()">
+<div class="action-icon">🧑‍🎓</div>
+<div>
+<h3>My Students</h3>
+<p>See the students you're currently tutoring.</p>
+</div>
+<span class="action-arrow">→</span>
+</button>
+<!-- UPDATE PROFILE -->
 
-            <div class="welcome-date">
-                <span>Today</span>
-                <strong id="currentDate">Loading...</strong>
-            </div>
-        </section>
-
-
-        <!-- QUICK STATISTICS -->
-        <section class="stats-grid">
-
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="-0.75 -0.75 24 24" height="24" width="24">
-                        <g id="calendar-add--add-calendar-date-day-month">
-                            <path stroke="#17c786" d="M10.809 18.747H1.107V2.871h17.64v7.938" stroke-width="1.5"></path>
-                            <path stroke="#000cfe" d="M18.747 6.399H1.107V2.871h17.64v3.528Z" stroke-width="1.5"></path>
-                            <path stroke="#000cfe" d="M4.635 0.225v2.646" stroke-width="1.5"></path>
-                            <path stroke="#000cfe" d="M15.219 0.225v2.646" stroke-width="1.5"></path>
-                            <path stroke="#000cfe" d="M21.393 16.983h-8.82m4.41-4.41v8.82" stroke-width="1.5"></path>
-                        </g>
-                    </svg>
-                </div>
-                <div class="stat-content">
-                    <span>Upcoming Sessions</span>
-                    <strong id="statUpcoming">3</strong>
-                </div>
-            </div>
-
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="-0.855 -0.855 24 24" height="24" width="24">
-                        <g id="check-square">
-                            <path stroke="#000cfe" stroke-linecap="round" stroke-linejoin="round" d="m15.789 7.563-6.369 7.96-3.184-2.388" stroke-width="1.71"></path>
-                            <path stroke="#2211f1" stroke-linecap="round" stroke-linejoin="round" d="M1.592 3.184v15.922c0 .879.713 1.592 1.592 1.592h15.922c.879 0 1.592-.713 1.592-1.592V3.184c0-.879-.713-1.592-1.592-1.592H3.184c-.879 0-1.592.713-1.592 1.592Z" stroke-width="1.71"></path>
-                        </g>
-                    </svg>
-                </div>
-                <div class="stat-content">
-                    <span>Completed Sessions</span>
-                    <strong id="statCompleted">17</strong>
-                </div>
-            </div>
-
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 20 20" fill="#1e41bb">
-                        <g fill="#1e41bb" fill-rule="evenodd" clip-rule="evenodd">
-                            <path d="M11.5 2.5a1 1 0 0 1 .87.507l2.314 4.078l4.527.976a1 1 0 0 1 .537 1.641l-3.106 3.502l.488 4.693a1 1 0 0 1-1.407 1.014L11.5 16.997l-4.223 1.914a1 1 0 0 1-1.407-1.014l.488-4.693l-3.106-3.502a1 1 0 0 1 .537-1.641l4.527-.976l2.314-4.078a1 1 0 0 1 .87-.507Zm0 3.026L9.834 8.462a1 1 0 0 1-.659.484l-3.291.71l2.262 2.55a1 1 0 0 1 .246.768L8.04 16.37l3.047-1.381a1 1 0 0 1 .826 0l3.047 1.38l-.353-3.396a1 1 0 0 1 .247-.766l2.262-2.551l-3.291-.71a1 1 0 0 1-.66-.484L11.5 5.526Z" opacity=".2"/>
-                            <path d="M10 2a.5.5 0 0 1 .435.253l2.425 4.274l4.745 1.023a.5.5 0 0 1 .27.82l-3.253 3.667l.51 4.911a.5.5 0 0 1-.703.507L10 15.448l-4.429 2.007a.5.5 0 0 1-.704-.507l.51-4.91l-3.25-3.668a.5.5 0 0 1 .269-.82L7.14 6.527l2.425-4.274A.5.5 0 0 1 10 2Zm0 1.513L7.9 7.215a.5.5 0 0 1-.33.242l-4.128.89l2.83 3.191a.5.5 0 0 1 .123.384l-.443 4.263l3.842-1.74a.5.5 0 0 1 .412 0l3.842 1.74l-.443-4.263a.5.5 0 0 1 .123-.384l2.83-3.191l-4.128-.89a.5.5 0 0 1-.33-.242L10 3.513Z"/>
-                        </g>
-                    </svg>
-                </div>
-                <div class="stat-content">
-                    <span>Points Earned</span>
-                    <strong id="statPoints">425</strong>
-                </div>
-            </div>
-
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 -960 960 960" height="24" width="24">
-                        <path fill="#3532ba" d="M480-120 200-272v-240L40-600l440-240 440 240v320h-80v-276l-80 44v240L480-120Zm0-332 274-148-274-148-274 148 274 148Zm0 241 200-108v-151L480-360 280-470v151l200 108Z"/>
-                    </svg>
-                </div>
-                <div class="stat-content">
-                    <span>Students Helped</span>
-                    <strong id="statStudents">6</strong>
-                </div>
-            </div>
-
-        </section>
-
-
-        <!-- MAIN CONTENT GRID -->
-        <section class="dashboard-grid">
-
-            <!-- NEXT TUTORING SESSION -->
-            <div class="dashboard-card upcoming-card">
-                <div class="card-header">
-                    <div>
-                        <span class="card-label">NEXT SESSION</span>
-                        <h2>Your Next Tutoring Session</h2>
-                    </div>
-                    <span class="status-badge" id="nextSessionStatus">Loading</span>
-                </div>
-
-                <div class="session-details">
-                    <div class="session-date">
-                        <span class="day">NEXT</span>
-                        <strong>—</strong>
-                        <span class="month"></span>
-                    </div>
-
-                    <div class="session-info">
-                        <h3>Loading next session…</h3>
-                        <p>Student: <strong id="assignedStudentName">—</strong></p>
-                        <p>—</p>
-                        <p>Room: <strong id="assignedRoomCode">—</strong></p>
-                    </div>
-                </div>
-
-                <div class="session-actions">
-                    <button class="primary-button" onclick="joinBuddyRoom()">Join Session →</button>
-                    <button class="secondary-button" onclick="joinCustomRoomPrompt()">Enter Room Code</button>
-                </div>
-            </div>
-
-            <!-- TEACHING SCHEDULE (assigned by admin) -->
-            <div class="dashboard-card schedule-card">
-                <div class="card-header">
-                    <div>
-                        <span class="card-label">ASSIGNED BY ADMIN</span>
-                        <h2>Your Teaching Schedule</h2>
-                    </div>
-                    <button class="small-button" onclick="openMySchedule()">View All →</button>
-                </div>
-
-                <div class="schedule-list">
-
-
-
-                </div>
-
-                <p class="schedule-note">Loading your saved tutoring sessions…</p>
-            </div>
-
-        </section>
-
-
-        <!-- QUICK ACTIONS -->
-        <section class="quick-section">
-            <div class="section-heading">
-                <div>
-                    <span class="card-label">QUICK ACTIONS</span>
-                    <h2>What would you like to do?</h2>
-                </div>
-            </div>
-
-            <div class="action-grid">
-
-                <!-- MY SCHEDULE -->
-                <button class="action-card" onclick="openMySchedule()">
-                    <div class="action-icon">🗓️</div>
-                    <div>
-                        <h3>My Schedule</h3>
-                        <p>View all your assigned tutoring sessions.</p>
-                    </div>
-                    <span class="action-arrow">→</span>
-                </button>
-
-                <!-- MY STUDENTS -->
-                <button class="action-card" onclick="viewMyStudents()">
-                    <div class="action-icon">🧑‍🎓</div>
-                    <div>
-                        <h3>My Students</h3>
-                        <p>See the students you're currently tutoring.</p>
-                    </div>
-                    <span class="action-arrow">→</span>
-                </button>
-
-                <!-- UPDATE PROFILE -->
-                <button class="action-card" onclick="openEditModal()">
-                    <div class="action-icon">✏️</div>
-                    <div>
-                        <h3>Update Profile</h3>
-                        <p>Change your display name or account details.</p>
-                    </div>
-                    <span class="action-arrow">→</span>
-                </button>
-
-            </div>
-        </section>
-
-    </main>
-
-
-    <!-- =========================
-         UPDATE PROFILE MODAL
-    ========================== -->
-<!-- this is the drop down menu where you can edit you profile name-->
-    <div id="editModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.6); z-index: 2000; justify-content: center; align-items: center;">
-        <div style="width: 90%; max-width: 450px; background: #fff; border-radius: 12px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
-            <h3 style="margin-top: 0; color: #1e41bb;">Update Profile</h3>
-            
-            <label style="display: block; font-size: 0.85rem; color: #555; margin-top: 15px;">First Name</label>
-            <input type="text" id="editFirstName" maxlength="50" pattern="[A-Za-zÀ-ÖØ-öø-ÿ]+([ '-][A-Za-zÀ-ÖØ-öø-ÿ]+)*" title="Letters only; spaces, apostrophes and hyphens are allowed" style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box;">
-
-            <label style="display: block; font-size: 0.85rem; color: #555; margin-top: 15px;">Last Name</label>
-            <input type="text" id="editLastName" maxlength="50" pattern="[A-Za-zÀ-ÖØ-öø-ÿ]+([ '-][A-Za-zÀ-ÖØ-öø-ÿ]+)*" title="Letters only; spaces, apostrophes and hyphens are allowed" style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box;">
-
-            </select>
-
-            <div style="margin-top: 25px; display: flex; justify-content: flex-end; gap: 10px;">
-                <button onclick="closeEditModal()" style="background: #ccc; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer;">Cancel</button>
-                <button onclick="saveProfileChanges()" style="background: #1e41bb; color: #fff; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-weight: bold;">Save Changes</button>
-            </div>
-        </div>
-    </div>
-
-
-    <!-- =========================
-         JITSI MEET EMBEDDED MODAL
-    ========================== -->
-    <div id="jitsiModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.85); z-index: 2000; justify-content: center; align-items: center; flex-direction: column;">
-        <div style="width: 90%; max-width: 1100px; background: #111; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
-            <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background: #1e41bb; color: #fff;">
-                <h3 style="margin: 0; font-size: 1.1rem; font-weight: 600;" id="jitsiModalTitle">Octo Buddy Room</h3>
-                <button onclick="closeJitsiSession()" style="background: #ff4d4d; border: none; color: #fff; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold;">Leave & Close</button>
-            </div>
-            <div id="jitsiContainer" style="width: 100%; height: 600px; max-height: 75vh; background: #000;"></div>
-        </div>
-    </div>
-<!-- =========================
-        BOTTOM MOBILE NAV
-========================= -->
-<nav class="bottom-nav" id="bottomNav">
-
-    <div class="bottom-nav-circle" id="bottomNavCircle"></div>
-
-    <div class="bottom-nav-items">
-
-        <a href="../homepage/homepage.html" class="bottom-nav-item" data-label="Home">
-            <span class="bottom-nav-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M3 11.5 12 4l9 7.5"/>
-                    <path d="M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9"/>
-                </svg>
-            </span>
-        </a>
-
-        <a href="../homepage/homepage.html#about" class="bottom-nav-item" data-label="About">
-            <span class="bottom-nav-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="9"/>
-                    <line x1="12" y1="11" x2="12" y2="16"/>
-                    <circle cx="12" cy="7.5" r="0.6" fill="currentColor" stroke="none"/>
-                </svg>
-            </span>
-        </a>
-
-        <a href="dashboard.html" class="bottom-nav-item active" data-label="Dashboard">
-            <span class="bottom-nav-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="6" y1="20" x2="6" y2="12"/>
-                    <line x1="12" y1="20" x2="12" y2="8"/>
-                    <line x1="18" y1="20" x2="18" y2="14"/>
-                </svg>
-            </span>
-        </a>
-
-        <a href="../sessions/sessions.html" class="bottom-nav-item" data-label="Sessions">
-            <span class="bottom-nav-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="3" y="5" width="18" height="16" rx="2"/>
-                    <line x1="3" y1="10" x2="21" y2="10"/>
-                    <line x1="8" y1="3" x2="8" y2="7"/>
-                    <line x1="16" y1="3" x2="16" y2="7"/>
-                </svg>
-            </span>
-        </a>
-
-    </div>
-
-</nav>
-
-    <!-- Dashboard functionality is handled by Dashboard.js. -->
-    <script src="Dashboard.js"></script>
-
-
-    <div id="footer-container"></div>
-    <script src="../footer/footer.js"></script>
-
+</div>
+</section>
+</main>
+<script src="Dashboard.js"></script>
+<div id="footer-container"></div>
 <script>
 /* Octo Buddy API session helper: attaches the signed login token to protected API calls. */
 (() => {
@@ -383,5 +232,4 @@
 </script>
 <script src="../notifications.js"></script>
 </body>
-
 </html>

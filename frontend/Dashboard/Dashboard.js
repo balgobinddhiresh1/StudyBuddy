@@ -254,84 +254,7 @@ function setText(id, value) {
 }
 
 
-/* =========================================================
-   PROFILE EDIT
-========================================================= */
-
-function openEditModal() {
-    const modal =
-        document.getElementById("editModal");
-
-    if (!modal) return;
-
-    document.getElementById("editFirstName").value =
-        localStorage.getItem("first_name") || "";
-
-    document.getElementById("editLastName").value =
-        localStorage.getItem("last_name") || "";
-
-    modal.style.display = "flex";
-}
-
-
-function closeEditModal() {
-    const modal =
-        document.getElementById("editModal");
-
-    if (modal) {
-        modal.style.display = "none";
-    }
-}
-
-
-async function saveProfileChanges() {
-    const namePattern = /^[A-Za-zÀ-ÖØ-öø-ÿ]+(?:[ '\u2019-][A-Za-zÀ-ÖØ-öø-ÿ]+)*$/;
-    const userId =
-        localStorage.getItem("user_id");
-
-    const firstName =
-        document.getElementById("editFirstName").value.trim();
-
-    const lastName =
-        document.getElementById("editLastName").value.trim();
-
-    if (!userId || !namePattern.test(firstName) || !namePattern.test(lastName)) {
-        alert("A valid user is required. First and last names must contain letters only (spaces, apostrophes and hyphens are allowed).");
-        document.getElementById(!namePattern.test(firstName) ? "editFirstName" : "editLastName").focus();
-        return;
-    }
-
-    try {
-        const response =
-            await fetch(`${API_BASE_URL}user/${userId}`, {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    first_name: firstName,
-                    last_name: lastName
-                })
-            });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-            alert(data.message || "Could not update profile.");
-            return;
-        }
-
-        localStorage.setItem("first_name", firstName);
-        localStorage.setItem("last_name", lastName);
-
-        closeEditModal();
-        updateDOMProfile(data.user);
-
-    } catch (error) {
-        console.error("Profile update error:", error);
-        alert("Could not connect to the backend server.");
-    }
-}
+/* Buddy profiles are read-only. */
 
 document.addEventListener('DOMContentLoaded', function () {
     const profileBtn = document.getElementById('profileBtn');
@@ -386,7 +309,7 @@ async function loadBuddySessions() {
 
         const now = new Date();
         const futureSessions = sessions
-            .filter(session => !["cancelled", "completed"].includes(String(session.status || "").toLowerCase()))
+            .filter(session => ["pending", "confirmed"].includes(String(session.status || "").toLowerCase()))
             .filter(session => {
                 const dateValue = String(session.date || session.session_date || session.sessionDate || "").slice(0, 10);
                 const timeValue = String(session.time || session.session_time || "00:00").slice(0, 5);
@@ -436,7 +359,14 @@ function renderNextBuddySession(session) {
     if (dateBox) dateBox.innerHTML = `<span class="day">${start ? buddyEscape(start.toLocaleDateString("en-ZA", {weekday:"short"}).toUpperCase()) : "DATE"}</span><strong>${start ? start.getDate() : "—"}</strong><span class="month">${start ? buddyEscape(start.toLocaleDateString("en-ZA", {month:"short"}).toUpperCase()) : ""}</span>`;
     if (info) info.innerHTML = `<h3>${buddyEscape(session.module || "Tutoring session")}</h3><p>Student: <strong>${buddyEscape(session.student || "Student")}</strong></p><p>${buddyEscape(String(session.time || session.session_time || "Time not specified").slice(0,5))}</p><p>Room: <strong>${buddyEscape(session.room_code || "Not assigned")}</strong></p>`;
     if (badge) badge.textContent = session.status || "Confirmed";
-    if (actions) actions.style.display = "flex";
+    if (actions) {
+        const isConfirmed = String(session.status || "").toLowerCase() === "confirmed";
+        const canEnter = isConfirmed && start && new Date() >= start && start.toDateString() === new Date().toDateString();
+        actions.innerHTML = isConfirmed && session.room_code
+            ? `<button class="primary-button" ${canEnter ? `onclick="joinTutorRoom('${buddyEscape(session.room_code)}')"` : "disabled"}>Enter Session →</button>`
+            : `<p>Waiting for your approval</p>`;
+        actions.style.display = "flex";
+    }
     if (session.room_code) localStorage.setItem("active_buddy_room", session.room_code);
     else localStorage.removeItem("active_buddy_room");
 }
@@ -456,10 +386,32 @@ function renderBuddySchedule(sessions) {
     if (note) note.remove();
     list.innerHTML = upcoming.slice(0, 6).map(session => {
         const start = sessionStart(session);
-        const dateLabel = start ? start.toLocaleDateString("en-ZA", {weekday:"short", day:"numeric", month:"short"}) : (session.date || session.session_date || "Date not set");
+        const dateLabel = start ? start.toLocaleDateString("en-ZA", {weekday:"short", day:"numeric", month:"long", year:"numeric"}) : (session.date || session.session_date || "Date not set");
         const timeText = String(session.time || session.session_time || "Time not set").slice(0,5);
-        return `<div class="schedule-row"><div class="schedule-time"><strong>${buddyEscape(timeText)}</strong><span>${buddyEscape(dateLabel)}</span></div><div class="schedule-info"><strong>${buddyEscape(session.module || "Tutoring session")}</strong><p>${buddyEscape(session.student || "Student")} · ${buddyEscape(session.status || "Confirmed")}</p></div><span class="status-badge">${buddyEscape(session.status || "Confirmed")}</span></div>`;
+        const status = String(session.status || "Pending");
+        const controls = status.toLowerCase() === "pending"
+            ? `<div class="buddy-session-actions"><button type="button" onclick="respondToBooking(${Number(session.id)}, 'Confirmed')">Approve</button><button type="button" onclick="respondToBooking(${Number(session.id)}, 'Rejected')">Reject</button></div>`
+            : status.toLowerCase() === "confirmed"
+                ? `<div class="buddy-session-actions">${session.room_code ? `<button type="button" onclick="joinTutorRoom('${buddyEscape(session.room_code)}')" ${start && (new Date() < start) ? "disabled" : ""}>Enter session</button>` : ""}</div>`
+                : "";
+        return `<div class="schedule-row"><div class="schedule-time"><strong>${buddyEscape(timeText)}</strong><span>${buddyEscape(dateLabel)}</span></div><div class="schedule-info"><strong>${buddyEscape(session.module || "Tutoring session")}</strong><p>${buddyEscape(session.student || "Student")} · ${buddyEscape(status)}</p></div><div class="schedule-controls"><span class="status-badge">${buddyEscape(status)}</span>${controls}</div></div>`;
     }).join("");
+}
+
+async function respondToBooking(sessionId, status) {
+    const verb = status === "Confirmed" ? "approve" : "reject";
+    if (!confirm(`Are you sure you want to ${verb} this session request?`)) return;
+    try {
+        const response = await fetch(`${API_BASE_URL}sessions/${sessionId}/status`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ status })
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || `Could not ${verb} request.`);
+        await loadBuddySessions();
+        alert(status === "Confirmed" ? "Session approved. The student has been notified." : "Session request rejected.");
+    } catch (error) { alert(error.message || "Could not update the session."); }
 }
 
 /* =========================================================
@@ -512,15 +464,13 @@ function openMySchedule() {
 ========================================================= */
 
 function joinBuddyRoom() {
-    const room =
-        localStorage.getItem("active_buddy_room");
-
+    const room = localStorage.getItem("active_buddy_room");
     if (!room) {
-        alert("You do not currently have an active session.");
+        alert("There is no approved session available to enter.");
         return;
     }
-
-    launchJitsiCall(room);
+    // Always ask the backend to validate approval and scheduled start time.
+    joinTutorRoom(room);
 }
 
 
@@ -534,20 +484,6 @@ async function joinTutorRoom(roomName) {
         localStorage.setItem("octo_active_buddy_room", roomName);
         launchJitsiCall(roomName);
     } catch (error) { alert(error.message || "Could not join the session."); }
-}
-
-function joinCustomRoomPrompt() {
-    const room =
-        prompt(
-            "Enter the Room Code for this session:",
-            localStorage.getItem("active_buddy_room") || ""
-        );
-
-    if (!room || !room.trim()) return;
-
-    launchJitsiCall(
-        room.trim().replace(/\s+/g, "_")
-    );
 }
 
 

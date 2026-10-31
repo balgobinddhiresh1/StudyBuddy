@@ -689,7 +689,7 @@ def find_available_buddy(module_name, requested_date):
             buddy_id=buddy.id,
             session_date=requested_date
         ).filter(
-            TutoringSession.status.in_(["Confirmed", "Completed"])
+            TutoringSession.status.in_(["Pending", "Confirmed", "Completed"])
         ).count()
 
         if sessions_today < (application.daily_limit or 3):
@@ -1244,6 +1244,10 @@ def update_user(user_id):
                 "message": "User not found."
             }), 404
 
+        actor = getattr(g, "current_user", None)
+        if (user.role or "").lower() == "buddy" and actor and (actor.role or "").lower() != "admin":
+            return jsonify(status="error", message="Octo Buddy profiles cannot be edited."), 403
+
         data = request.get_json() or {}
 
         # Only fields supplied by the frontend are changed. This means a
@@ -1513,6 +1517,12 @@ def session_room_join(room_code):
     local_now = datetime.now(ZoneInfo("Africa/Johannesburg"))
     if session.session_date != local_now.date():
         return jsonify(status="error", message="This video session can only be entered on its scheduled date."), 403
+    try:
+        scheduled_start = datetime.combine(session.session_date, datetime.strptime(session.session_time, "%H:%M").time(), tzinfo=ZoneInfo("Africa/Johannesburg"))
+    except ValueError:
+        return jsonify(status="error", message="The scheduled session time is invalid."), 400
+    if local_now < scheduled_start:
+        return jsonify(status="error", message="This session cannot be entered before its scheduled start time."), 403
     lifecycle = SessionLifecycle.query.filter_by(session_id=session.id).first()
     if not lifecycle:
         lifecycle = SessionLifecycle(session_id=session.id)
@@ -1817,22 +1827,27 @@ def create_booking():
             session_date=requested_date,
             session_time=time_text,
             room_code=room_code,
-            status="Confirmed"
+            status="Pending"
         )
 
         db.session.add(session)
         db.session.flush()
         detail = f"{module} on {requested_date.isoformat()} at {time_text}."
-        add_notification(student.id, "Session booked", f"Your session is booked: {detail}", "booked", session.id)
+        add_notification(student.id, "Session request submitted", f"Your request is pending Octo Buddy approval: {detail}", "booking_pending", session.id)
         if buddy:
-            add_notification(buddy.id, "New tutoring booking", f"A student booked {detail}", "booked", session.id)
+            add_notification(buddy.id, "New session request", f"A student requested a session: {detail}", "booking_pending", session.id)
         db.session.commit()
-        for user in (student, buddy):
-            try:
-                if user and user.email:
-                    send_event_email(user.email, "Octo Buddy session booked", f"A tutoring session has been booked: {detail}", "session_booked")
-            except Exception:
-                app.logger.exception("Booking email delivery failed.")
+        # The assigned Octo Buddy receives an email for every new booking request.
+        try:
+            if buddy and buddy.email:
+                send_event_email(
+                    buddy.email,
+                    "New Octo Buddy session request",
+                    f"A student has requested a tutoring session.\n\nStudent: {student.first_name} {student.last_name}\nModule: {module}\nDate: {requested_date.isoformat()}\nTime: {time_text}\n\nPlease sign in to approve or reject this request.",
+                    "session_booked"
+                )
+        except Exception:
+            app.logger.exception("Buddy booking email delivery failed.")
 
         return jsonify({
             "status": "success",
@@ -1846,12 +1861,27 @@ def create_booking():
         return jsonify({"status": "error", "message": "The request could not be completed. Please try again."}), 500
 
 
+def purge_past_sessions():
+    """Permanently remove tutoring sessions scheduled before today (South Africa time)."""
+    cutoff = datetime.now(ZoneInfo("Africa/Johannesburg")).date()
+    old_sessions = TutoringSession.query.filter(TutoringSession.session_date < cutoff).all()
+    if not old_sessions:
+        return
+    old_ids = [item.id for item in old_sessions]
+    SessionLifecycle.query.filter(SessionLifecycle.session_id.in_(old_ids)).delete(synchronize_session=False)
+    UserNotification.query.filter(UserNotification.session_id.in_(old_ids)).delete(synchronize_session=False)
+    for item in old_sessions:
+        db.session.delete(item)
+    db.session.commit()
+
+
 @app.route("/api/sessions/student/<int:user_id>", methods=["GET"])
 def student_sessions(user_id):
     """Return sessions belonging to a student."""
     denied = require_self_or_admin(user_id)
     if denied:
         return denied
+    purge_past_sessions()
     sessions = TutoringSession.query.filter_by(
         student_id=user_id
     ).order_by(
@@ -1871,6 +1901,7 @@ def buddy_sessions(user_id):
     denied = require_self_or_admin(user_id)
     if denied:
         return denied
+    purge_past_sessions()
     sessions = TutoringSession.query.filter_by(
         buddy_id=user_id
     ).order_by(
@@ -1890,6 +1921,7 @@ def buddy_students(buddy_id):
     actor = getattr(g, "current_user", None)
     if not actor or (actor.id != buddy_id and (actor.role or "").lower() != "admin"):
         return jsonify(status="error", message="You are not allowed to view these students."), 403
+    purge_past_sessions()
     buddy = db.session.get(User, buddy_id)
     if not buddy or (buddy.role or "").lower() != "buddy":
         return jsonify(status="error", message="Octo Buddy not found."), 404
@@ -1937,10 +1969,16 @@ def update_session_status(session_id):
         actor_role = (actor.role or "student").lower()
         if actor_role == "student" and (actor.id != session.student_id or new_status != "Cancelled"):
             return jsonify(status="error", message="Students may only cancel their own sessions."), 403
-        if actor_role == "buddy" and (actor.id != session.buddy_id or new_status not in {"Completed", "Cancelled"}):
-            return jsonify(status="error", message="Buddies may only complete or cancel their own sessions."), 403
-
-        allowed = {"Confirmed", "Completed", "Cancelled"}
+        if actor_role == "student" and session.status not in {"Pending", "Confirmed"}:
+            return jsonify(status="error", message="Only pending or confirmed sessions can be cancelled."), 409
+        if actor_role == "buddy":
+            if actor.id != session.buddy_id or new_status not in {"Confirmed", "Rejected", "Completed", "Cancelled"}:
+                return jsonify(status="error", message="You may only approve, reject, complete or cancel your assigned sessions."), 403
+            if new_status in {"Confirmed", "Rejected"} and session.status != "Pending":
+                return jsonify(status="error", message="Only pending session requests can be approved or rejected."), 409
+            if new_status == "Cancelled" and session.status not in {"Pending", "Confirmed"}:
+                return jsonify(status="error", message="Only pending or confirmed sessions can be cancelled."), 409
+        allowed = {"Confirmed", "Rejected", "Completed", "Cancelled"}
 
         if new_status == "Completed":
             if actor_role != "buddy" or actor.id != session.buddy_id:
@@ -1964,8 +2002,17 @@ def update_session_status(session_id):
 
         previous_status = session.status
         session.status = new_status
+        detail = f"{session.module} on {session.session_date.isoformat()} at {session.session_time}."
+        if new_status == "Confirmed" and previous_status == "Pending":
+            add_notification(session.student_id, "Session confirmed", f"Your Octo Buddy approved your session: {detail}", "session_confirmed", session.id)
+            if session.student and session.student.email:
+                try:
+                    send_event_email(session.student.email, "Your Octo Buddy session is confirmed", f"Your session has been approved.\n\n{detail}", "session_confirmed")
+                except Exception:
+                    app.logger.exception("Session approval email failed.")
+        if new_status == "Rejected" and previous_status == "Pending":
+            add_notification(session.student_id, "Session request rejected", f"Your Octo Buddy could not accept this request: {detail}", "session_rejected", session.id)
         if new_status == "Cancelled" and previous_status != "Cancelled":
-            detail = f"{session.module} on {session.session_date.isoformat()} at {session.session_time}."
             for recipient in (session.student, session.buddy):
                 if recipient:
                     add_notification(recipient.id, "Session cancelled", f"The session was cancelled: {detail}", "cancelled", session.id)
@@ -2055,7 +2102,7 @@ def admin_create_session():
             session_date=requested_date,
             session_time=time_text,
             room_code=room_code,
-            status="Confirmed"
+            status="Pending"
         )
 
         db.session.add(session)
@@ -2157,6 +2204,7 @@ def admin_delete_session(session_id):
 def admin_sessions():
     """Return tutoring sessions for the admin calendar."""
     try:
+        purge_past_sessions()
         start_text = request.args.get("start")
         end_text = request.args.get("end")
 
@@ -2236,7 +2284,8 @@ def admin_leaderboard():
 @app.route("/api/admin/dashboard", methods=["GET"])
 def admin_dashboard():
     """Return live statistics and recent activity for the admin dashboard."""
-    today = date.today()
+    purge_past_sessions()
+    today = datetime.now(ZoneInfo("Africa/Johannesburg")).date()
     sessions = TutoringSession.query.all()
     recent_applications = BuddyApplication.query.order_by(
         BuddyApplication.submitted_at.desc()

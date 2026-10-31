@@ -131,8 +131,10 @@ function createSessionCard(session) {
         "Your Octo Buddy";
 
     const status = String(session.status || "pending").toLowerCase();
-    const canJoin = Boolean(session.room_code) &&
-        ["confirmed", "approved", "booked", "scheduled"].includes(status);
+    const scheduledStart = date ? new Date(`${String(session.date || session.session_date).slice(0,10)}T${String(session.time || session.session_time || "00:00").slice(0,5)}:00`) : null;
+    const isBuddy = ["buddy", "octo buddy"].includes((localStorage.getItem("user_role") || localStorage.getItem("role") || "").toLowerCase());
+    const canJoin = Boolean(session.room_code) && status === "confirmed" &&
+        scheduledStart && scheduledStart.toDateString() === new Date().toDateString() && new Date() >= scheduledStart;
 
     const dateBox = document.createElement("div");
     dateBox.className = "session-date";
@@ -142,8 +144,11 @@ function createSessionCard(session) {
 
     const day = document.createElement("strong");
     day.textContent = dayNumber;
+    const month = document.createElement("span");
+    month.className = "session-month";
+    month.textContent = date ? date.toLocaleDateString("en-ZA", { month: "long", year: "numeric" }) : "Date not set";
 
-    dateBox.append(weekday, day);
+    dateBox.append(weekday, day, month);
 
     const info = document.createElement("div");
     info.className = "session-info";
@@ -172,27 +177,60 @@ function createSessionCard(session) {
 
     action.appendChild(statusBadge);
 
-    if (canJoin) {
+    if (status === "confirmed" && session.room_code) {
         const joinButton = document.createElement("button");
         joinButton.className = "join-btn";
-        joinButton.textContent = "Join Session →";
-
-        joinButton.addEventListener("click", () => {
-            const roomUrl =
-                `https://meet.jit.si/${encodeURIComponent(session.room_code)}`;
-
-            window.open(roomUrl, "_blank", "noopener,noreferrer");
+        joinButton.textContent = "Enter Session →";
+        joinButton.disabled = !canJoin;
+        joinButton.title = canJoin ? "Enter your tutoring session" : "Available on the scheduled date and time";
+        joinButton.addEventListener("click", async () => {
+            try {
+                const response = await fetch(`${API_URL}/sessions/room/${encodeURIComponent(session.room_code)}/join`, { method: "POST" });
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.message || "This session cannot be entered yet.");
+                window.open(`https://meet.jit.si/${encodeURIComponent(session.room_code)}`, "_blank", "noopener,noreferrer");
+            } catch (error) { alert(error.message); }
         });
-
         action.appendChild(joinButton);
     } else {
         const message = document.createElement("p");
         message.className = "session-message";
-        message.textContent = session.room_code
-            ? "Waiting for confirmation"
-            : "Meeting room not available yet";
-
+        message.textContent = status === "pending" ? "Waiting for Octo Buddy approval" : "Session not available";
         action.appendChild(message);
+    }
+
+    if (isBuddy && status === "pending") {
+        ["Confirmed", "Rejected"].forEach(nextStatus => {
+            const button = document.createElement("button");
+            button.className = "join-btn";
+            button.textContent = nextStatus === "Confirmed" ? "Approve" : "Reject";
+            button.addEventListener("click", async () => {
+                if (!confirm(`${nextStatus === "Confirmed" ? "Approve" : "Reject"} this session request?`)) return;
+                const response = await fetch(`${API_URL}/sessions/${session.id}/status`, {
+                    method: "PUT", headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ status: nextStatus })
+                });
+                const data = await response.json();
+                if (!response.ok) { alert(data.message || "Could not update request."); return; }
+                loadSessions();
+            });
+            action.appendChild(button);
+        });
+    } else if (!isBuddy && !["cancelled", "rejected", "completed"].includes(status)) {
+        const cancel = document.createElement("button");
+        cancel.className = "cancel-session-btn";
+        cancel.textContent = "Cancel booking";
+        cancel.addEventListener("click", async () => {
+            if (!confirm("Cancel this tutoring session?")) return;
+            const response = await fetch(`${API_URL}/sessions/${session.id}/status`, {
+                method: "PUT", headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ status: "Cancelled" })
+            });
+            const data = await response.json();
+            if (!response.ok) { alert(data.message || "Could not cancel session."); return; }
+            loadSessions();
+        });
+        action.appendChild(cancel);
     }
 
     card.append(dateBox, info, action);

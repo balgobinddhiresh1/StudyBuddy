@@ -357,14 +357,19 @@ function updateDOMProfile(data) {
 ========================================================= */
 
 function openEditModal() {
+    const role = (localStorage.getItem("user_role") || localStorage.getItem("role") || "").toLowerCase();
+    if (role === "buddy" || role === "octo buddy") {
+        alert("Octo Buddy profiles cannot be edited.");
+        return;
+    }
     const modal = document.getElementById("editModal");
 
     if (!modal) return;
 
-    document.getElementById("editFirstName").value =
+    document.getElementById("editFirstName").textContent =
         localStorage.getItem("first_name") || "";
 
-    document.getElementById("editLastName").value =
+    document.getElementById("editLastName").textContent =
         localStorage.getItem("last_name") || "";
 
     // Load the student's current qualification and year into the form.
@@ -399,8 +404,8 @@ function closeEditModal() {
 async function saveProfileChanges() {
     const namePattern = /^[A-Za-zÀ-ÖØ-öø-ÿ]+(?:[ '\u2019-][A-Za-zÀ-ÖØ-öø-ÿ]+)*$/;
     const cachedProfile = JSON.parse(localStorage.getItem("user") || "{}");
-    const firstName = cachedProfile.first_name || localStorage.getItem("first_name") || document.getElementById("editFirstName").value.trim();
-    const lastName = cachedProfile.last_name || localStorage.getItem("last_name") || document.getElementById("editLastName").value.trim();
+    const firstName = cachedProfile.first_name || localStorage.getItem("first_name") || "";
+    const lastName = cachedProfile.last_name || localStorage.getItem("last_name") || "";
 
     const course =
         document.getElementById("editCourse")?.value.trim() || "";
@@ -497,79 +502,68 @@ async function loadUpcomingSessions() {
  * Update the existing session card without changing its design.
  */
 function renderUpcomingSessions(sessions) {
-    const container =
-        document.querySelector(".sessions-container");
-
+    const container = document.querySelector(".sessions-container");
     if (!container) return;
+    container.querySelectorAll(".dynamic-session").forEach(card => card.remove());
 
-    // Remove old dynamically generated session cards.
-    container
-        .querySelectorAll(".dynamic-session")
-        .forEach(card => card.remove());
-
-    const futureSessions = sessions
-        .filter(session => session.status !== "Cancelled")
+    const now = new Date();
+    const futureSessions = (sessions || [])
+        .filter(session => !["Cancelled", "Rejected"].includes(String(session.status || "").toLowerCase()))
         .filter(session => {
-            const dateTime =
-                new Date(`${session.date}T${session.time}`);
-
-            return dateTime >= new Date();
+            const start = new Date(`${String(session.date || "").slice(0,10)}T${String(session.time || "00:00").slice(0,5)}:00`);
+            return !Number.isNaN(start.getTime()) && start >= now;
         })
-        .slice(0, 5);
+        .sort((a,b) => `${a.date} ${a.time}`.localeCompare(`${b.date} ${b.time}`))
+        .slice(0,5);
 
     const noSession = container.querySelector(".no-session");
-
-    if (futureSessions.length === 0) {
+    if (!futureSessions.length) {
         if (noSession) noSession.style.display = "";
         return;
     }
-
     if (noSession) noSession.style.display = "none";
 
     futureSessions.forEach(session => {
+        const start = new Date(`${session.date}T${session.time || "00:00"}`);
         const card = document.createElement("div");
         card.className = "session-card dynamic-session";
-
-        const sessionDate = new Date(
-            `${session.date}T00:00:00`
-        );
-
-        const day =
-            String(sessionDate.getDate()).padStart(2, "0");
-
-        const month =
-            sessionDate
-                .toLocaleDateString("en-ZA", { month: "short" })
-                .toUpperCase();
-
+        const canJoin = String(session.status || "").toLowerCase() === "confirmed" &&
+            start.toDateString() === now.toDateString() && now >= start && Boolean(session.room_code);
+        const dateLabel = start.toLocaleDateString("en-ZA", { day:"2-digit", month:"long", year:"numeric" });
         card.innerHTML = `
-            <div class="session-date">
-                <span class="day">${day}</span>
-                <span class="month">${month}</span>
-            </div>
-
+            <div class="session-date"><span class="day">${String(start.getDate()).padStart(2,"0")}</span><span class="month">${escapeHtml(start.toLocaleDateString("en-ZA",{month:"long"}))}</span></div>
             <div class="session-info">
-                <h3>${escapeHtml(session.module)}</h3>
-                <p>🕙 ${escapeHtml(session.time)}</p>
+                <h3>${escapeHtml(session.module || "Tutoring session")}</h3>
+                <p>🗓️ ${escapeHtml(dateLabel)}</p>
+                <p>🕙 ${escapeHtml(session.time || "Time not set")}</p>
                 <p>🐙 Octo Buddy: ${escapeHtml(session.buddy || "Assigned Buddy")}</p>
-                <p>Room: <strong>${escapeHtml(session.room_code)}</strong></p>
+                <p>Status: <strong>${escapeHtml(session.status || "Pending")}</strong></p>
             </div>
-
-            <div class="session-status">
-                ${escapeHtml(session.status)}
-            </div>
-
-            <button
-                class="join-btn"
-                onclick="joinTutorRoom('${escapeJs(session.room_code)}')">
-                Join Session
-            </button>
-        `;
-
+            <div class="session-actions">
+                ${String(session.status).toLowerCase() === "confirmed" ? `<button class="join-btn" type="button" ${canJoin ? "" : "disabled"}>${canJoin ? "Enter session" : "Enter session (not yet available)"}</button>` : `<p>Waiting for Octo Buddy approval</p>`}
+                <button class="cancel-session-btn" type="button" data-session-id="${Number(session.id)}">Cancel booking</button>
+            </div>`;
+        const join = card.querySelector(".join-btn");
+        if (join) join.addEventListener("click", () => joinTutorRoom(session.room_code));
+        card.querySelector(".cancel-session-btn").addEventListener("click", () => cancelStudentSession(Number(session.id)));
         container.insertBefore(card, container.firstChild);
     });
 }
 
+async function cancelStudentSession(sessionId) {
+    if (!confirm("Cancel this tutoring session request?")) return;
+    try {
+        const response = await fetch(`${API_BASE_URL}sessions/${sessionId}/status`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ status: "Cancelled" })
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || "Could not cancel this session.");
+        await loadUpcomingSessions();
+        alert("Your session has been cancelled.");
+    } catch (error) { alert(error.message || "Could not cancel the session."); }
+}
 
 /**
  * Join a Jitsi room assigned by the backend.
@@ -791,7 +785,7 @@ function setupBookingForm() {
             }
 
             alert(
-                "Tutoring session booked successfully!\n\n" +
+                "Your session request has been sent to the Octo Buddy. It will remain Pending until they approve it.\n\n" +
                 `Module: ${module}\n` +
                 `Date: ${date}\n` +
                 `Time: ${time}\n` +
