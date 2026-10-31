@@ -384,7 +384,6 @@ with app.app_context():
             "Diploma in Information Technology",
             "Bachelor of Business Administration",
             "Bachelor of Science in IT",
-            "Higher Certificate in IT",
         ]
         for name in defaults:
             db.session.add(ManagedQualification(name=name))
@@ -418,9 +417,6 @@ with app.app_context():
         1: ["Business Ethics 500", "Economics 511", "Accounting 511", "Statistics 511", "Information Systems 511", "Human Resource Management 511", "Marketing Management 511", "Entrepreneurship 500", "Economics 512", "Accounting 512", "Statistics 512", "Information Systems 512", "Human Resource Management 512", "Marketing Management 512"],
         2: ["Economics 621", "Stakeholder Relations 621", "Commercial Law 621", "Accounting 621", "Marketing Management 621", "Human Resource Management 621", "Economics 622", "Stakeholder Relations 622", "Commercial Law 622", "Accounting 622", "Marketing Management 622", "Human Resource Management 622"],
         3: ["Strategic Management 731", "Market Research 700", "Entrepreneurship & Small Business Management 700", "Contemporary Issues in Industrial Relations 700", "Accounting 731", "Marketing Management 731", "Human Resource Management 731", "Strategic Management 732", "Training & Development 700", "Total Quality Management 700", "Work Integrated Learning 700", "Accounting 732", "Marketing Management 732", "Human Resource Management 732"]
-      },
-      "Higher Certificate in IT": {
-        1: ["Digital Literacy", "Introduction to Information Technology", "Programming Fundamentals", "Computer Systems", "Communication Skills"]
       }
     }
     for qualification_name, year_map in qualification_catalog.items():
@@ -1258,30 +1254,21 @@ def update_user(user_id):
         course = data.get("course")
         academic_year = data.get("academic_year")
 
-        current_user = getattr(g, "current_user", None)
-        current_role = (getattr(current_user, "role", "") or "").lower()
-
         if first_name is not None:
-            first_name = str(first_name).strip()
-            # Student profile forms may submit the existing read-only name
-            # along with editable fields. Reject only an actual name change.
-            if current_role != "admin" and first_name != (user.first_name or "").strip():
+            if (getattr(g, "current_user", None).role or "").lower() != "admin":
                 return jsonify({"status": "error", "message": "Your registered name cannot be edited from the profile page."}), 403
-            if first_name != (user.first_name or "").strip():
-                if not valid_name(first_name) or len(first_name) > 50:
-                    return jsonify({"status": "error", "message": "Enter a valid first name of no more than 50 characters."}), 400
-                user.first_name = first_name
+            first_name = str(first_name).strip()
+            if not valid_name(first_name) or len(first_name) > 50:
+                return jsonify({"status": "error", "message": "Enter a valid first name of no more than 50 characters."}), 400
+            user.first_name = first_name
 
         if last_name is not None:
-            last_name = str(last_name).strip()
-            # Same rule for the registered surname: unchanged is permitted;
-            # an actual student-initiated change is not.
-            if current_role != "admin" and last_name != (user.last_name or "").strip():
+            if (getattr(g, "current_user", None).role or "").lower() != "admin":
                 return jsonify({"status": "error", "message": "Your registered surname cannot be edited from the profile page."}), 403
-            if last_name != (user.last_name or "").strip():
-                if not valid_name(last_name) or len(last_name) > 50:
-                    return jsonify({"status": "error", "message": "Enter a valid last name of no more than 50 characters."}), 400
-                user.last_name = last_name
+            last_name = str(last_name).strip()
+            if not valid_name(last_name) or len(last_name) > 50:
+                return jsonify({"status": "error", "message": "Enter a valid last name of no more than 50 characters."}), 400
+            user.last_name = last_name
 
         if course is not None:
             course = str(course).strip()

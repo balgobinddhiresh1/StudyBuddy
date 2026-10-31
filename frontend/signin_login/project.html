@@ -737,10 +737,9 @@ async function handleLogin() {
                 ...popupOptions, title: 'Set up your student profile',
                 text: 'Choose your qualification before booking tutoring sessions.',
                 input: 'select', inputOptions: {
-                    'Diploma in Information Technology': 'Diploma in Information Technology',
-                    'Bachelor of Science in IT': 'Bachelor of Science in IT',
-                    'Bachelor of Business Administration': 'Bachelor of Business Administration',
-                    'Higher Certificate in IT': 'Higher Certificate in IT'
+                    'Diploma in Information Technology': 'Diploma in Information Technology (DIT)',
+                    'Bachelor of Science in IT': 'Bachelor of Science in Information Technology (BSc IT)',
+                    'Bachelor of Business Administration': 'Bachelor of Business Administration'
                 }, inputPlaceholder: 'Select your qualification',
                 inputValidator: value => value ? undefined : 'Please select your qualification.',
                 showCancelButton: false, allowOutsideClick: false, confirmButtonText: 'Continue'
