@@ -1624,76 +1624,45 @@ def send_session_reminders():
 
 @app.route("/api/available-tutors", methods=["GET"])
 def available_tutors():
-    """Always return the student's matching approved tutor roster.
-
-    Optional module/date filters only calculate open slots; they never hide
-    tutors from the qualification/year roster shown on the booking page.
-    """
+    """List approved tutors and free future hourly slots for a module/date."""
+    module = request.args.get("module", "").strip()
+    date_text = request.args.get("date", "").strip()
+    if not module or not date_text:
+        return jsonify(status="error", message="Choose a module and date."), 400
+    try:
+        requested_date = date.fromisoformat(date_text)
+    except ValueError:
+        return jsonify(status="error", message="Invalid date."), 400
+    local_tz = ZoneInfo("Africa/Johannesburg")
+    now = datetime.now(local_tz)
+    if requested_date < now.date():
+        return jsonify(status="error", message="Past dates cannot be selected."), 400
     student = getattr(g, "current_user", None)
     if not student or (student.role or "").lower() != "student":
         return jsonify(status="error", message="A student account is required."), 403
-
-    student_modules = modules_for_qualification(student.course, student.academic_year)
-    module = request.args.get("module", "").strip()
-    date_text = request.args.get("date", "").strip()
-    if module and module not in student_modules:
+    if module not in modules_for_qualification(student.course, student.academic_year):
         return jsonify(status="error", message="That module is not part of your qualification/year."), 400
-
-    requested_date = None
-    weekday = None
-    local_tz = ZoneInfo("Africa/Johannesburg")
-    now = datetime.now(local_tz)
-    if date_text:
-        try:
-            requested_date = date.fromisoformat(date_text)
-        except ValueError:
-            return jsonify(status="error", message="Invalid date."), 400
-        if requested_date < now.date():
-            return jsonify(status="error", message="Past dates cannot be selected."), 400
-        weekday = requested_date.strftime("%A")
-
+    weekday = requested_date.strftime("%A")
     results = []
-    applications = BuddyApplication.query.filter_by(status="Approved").order_by(BuddyApplication.id.desc()).all()
+    applications = BuddyApplication.query.filter_by(status="Approved").all()
     for application in applications:
         tutor = application.user
         if not tutor or (tutor.role or "").lower() != "buddy":
             continue
-        matching_modules = [name for name in json_list(application.modules) if name in student_modules]
-        if not matching_modules:
+        if module not in json_list(application.modules) or weekday not in json_list(application.availability):
             continue
-
-        available_days = json_list(application.availability)
         slots = []
-        if requested_date and module and module in matching_modules and weekday in available_days:
-            for hour in range(8, 19):
-                slot = f"{hour:02d}:00"
-                start = datetime.combine(requested_date, datetime.strptime(slot, "%H:%M").time(), tzinfo=local_tz)
-                if start <= now:
-                    continue
-                conflict = TutoringSession.query.filter_by(
-                    buddy_id=tutor.id, session_date=requested_date, session_time=slot
-                ).filter(TutoringSession.status.in_(["Pending", "Confirmed"])).first()
-                if not conflict:
-                    slots.append(slot)
-
-        results.append({
-            "id": tutor.id,
-            "first_name": tutor.first_name,
-            "last_name": tutor.last_name,
-            "qualification": application.qualification or tutor.course,
-            "academic_year": application.academic_year or tutor.academic_year,
-            "modules": matching_modules,
-            "available_days": available_days,
-            "available_times": slots,
-        })
-
-    return jsonify(
-        status="success",
-        qualification=student.course,
-        academic_year=student.academic_year,
-        modules=sorted(student_modules),
-        tutors=results,
-    ), 200
+        for hour in range(8, 19):
+            slot = f"{hour:02d}:00"
+            start = datetime.combine(requested_date, datetime.strptime(slot, "%H:%M").time(), tzinfo=local_tz)
+            if start <= now:
+                continue
+            conflict = TutoringSession.query.filter_by(buddy_id=tutor.id, session_date=requested_date, session_time=slot).filter(TutoringSession.status.in_(["Pending", "Confirmed"])).first()
+            if not conflict:
+                slots.append(slot)
+        if slots:
+            results.append({"id": tutor.id, "first_name": tutor.first_name, "last_name": tutor.last_name, "qualification": tutor.course, "modules": json_list(application.modules), "available_times": slots})
+    return jsonify(status="success", tutors=results), 200
 
 
 @app.route("/api/bookings", methods=["POST"])
