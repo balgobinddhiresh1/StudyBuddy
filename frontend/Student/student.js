@@ -98,9 +98,7 @@ const API_BASE_URL = "https://studybuddy-bl8d.onrender.com/api/";
 async function configureBookingModules(user) {
     const select = document.getElementById("module");
     if (!select) return;
-    const course = String(user?.course || "General").toLowerCase();
-    const fallbackCatalog = ["Programming", "Database Systems", "Networking", "Web Development"];
-    let modules = fallbackCatalog;
+    let modules = [];
     try {
         const token = localStorage.getItem("auth_token") || "";
         const response = await fetch(`${API_BASE_URL}modules`, {
@@ -109,12 +107,12 @@ async function configureBookingModules(user) {
         if (response.ok) {
             const data = await response.json();
             if (Array.isArray(data.modules)) modules = data.modules;
-        } else if (course.includes("computer science")) modules = ["Programming", "Database Systems", "Networking"];
-        else if (course.includes("business administration")) modules = [];
+        } else {
+            throw new Error("Could not load modules for your saved qualification and year.");
+        }
     } catch (error) {
-        console.warn("Could not load the managed module catalogue; using fallback modules.", error);
-        if (course.includes("computer science")) modules = ["Programming", "Database Systems", "Networking"];
-        else if (course.includes("business administration")) modules = [];
+        console.warn("Could not load the managed module catalogue.", error);
+        modules = [];
     }
     const previous = select.value;
     select.replaceChildren(new Option("Select a module", ""));
@@ -434,8 +432,6 @@ headers: {
 },
 
                 body: JSON.stringify({
-                    first_name: firstName,
-                    last_name: lastName,
                     course: course,
                     academic_year: Number(academicYear)
                 })

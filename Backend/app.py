@@ -565,27 +565,24 @@ def resolve_managed_qualification(course):
     return None
 
 
-def modules_for_qualification(course, academic_year=None):
-    """Return modules from the persistent admin-managed catalogue when available."""
+def modules_for_qualification(course, academic_year=None, include_previous=False):
+    """Return prospectus modules for one year, or current plus earlier years for tutors."""
     qualification = resolve_managed_qualification(course)
     if qualification:
         query = ManagedModule.query.filter_by(qualification_id=qualification.id, active=True)
         if academic_year is not None:
             try:
-                # Students can book modules from prior or current academic years.
-                query = query.filter(ManagedModule.academic_year <= int(academic_year))
+                year = int(academic_year)
+                if include_previous:
+                    query = query.filter(ManagedModule.academic_year <= year)
+                else:
+                    query = query.filter(ManagedModule.academic_year == year)
             except (TypeError, ValueError):
                 return set()
         return {item.name for item in query.all()}
     course = (course or "General").strip().lower()
-    if "computer science" in course:
-        return {"Programming", "Database Systems", "Networking"}
-    if "information technology" in course or course == "general":
-        return {"Programming", "Database Systems", "Networking", "Web Development"}
-    if "business administration" in course:
-        return set()
-    # Preserve legacy profiles until their qualification is set in the profile.
-    return {"Programming", "Database Systems", "Networking", "Web Development"}
+    # Unknown or unset qualifications must not receive generic modules.
+    return set()
 
 
 @app.route("/api/modules", methods=["GET"])
@@ -594,9 +591,12 @@ def student_module_catalog():
     user = getattr(g, "current_user", None)
     if not user:
         return jsonify(status="error", message="Please log in to continue."), 401
-    modules = sorted(modules_for_qualification(user.course, user.academic_year))
+    include_previous = request.args.get("include_previous", "").lower() in {"1", "true", "yes"}
+    modules = sorted(modules_for_qualification(user.course, user.academic_year,
+                                               include_previous=include_previous))
     return jsonify(status="success", modules=modules, qualification=user.course,
-                   academic_year=user.academic_year), 200
+                   academic_year=user.academic_year,
+                   includes_previous_years=include_previous), 200
 
 
 def json_list(value):
@@ -1352,9 +1352,9 @@ def create_buddy_application():
             return jsonify(status="error", message="Select at least one valid module."), 400
         if not isinstance(availability, list) or not availability or any(day not in allowed_days for day in availability):
             return jsonify(status="error", message="Select valid availability days."), 400
-        permitted_modules = modules_for_qualification(user.course, user.academic_year)
+        permitted_modules = modules_for_qualification(user.course, user.academic_year, include_previous=True)
         if any(module not in permitted_modules for module in modules):
-            return jsonify(status="error", message="One or more modules are not available for your saved qualification."), 400
+            return jsonify(status="error", message="Select only modules from your qualification and your current or previous academic years."), 400
 
         full_name = str(data.get("full_name", f"{user.first_name} {user.last_name}")).strip()
         student_number = str(data.get("student_number", "")).strip()

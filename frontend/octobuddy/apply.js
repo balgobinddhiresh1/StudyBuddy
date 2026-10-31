@@ -31,6 +31,30 @@ async function readTranscriptImage(file) {
 
 const API_URL = "https://studybuddy-bl8d.onrender.com/api";
 
+async function loadTutorModuleOptions(user) {
+    const container = document.getElementById("tutorModulesList");
+    if (!container) return;
+    container.textContent = "Loading modules…";
+    try {
+        const response = await fetch(`${API_URL}/modules?include_previous=true`);
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || "Could not load your modules.");
+        const modules = Array.isArray(data.modules) ? data.modules : [];
+        if (!modules.length) {
+            container.textContent = "No modules are configured for your qualification and academic year.";
+            return;
+        }
+        container.innerHTML = modules.map((name, index) => `
+            <label class="module-option">
+                <input type="checkbox" name="modules" value="${String(name).replace(/[&<>\"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[ch]))}">
+                <span class="custom-checkbox"></span>
+                <span>${String(name).replace(/[&<>\"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[ch]))}</span>
+            </label>`).join("");
+    } catch (error) {
+        container.textContent = error.message || "Could not load modules. Please refresh and try again.";
+    }
+}
+
 document.addEventListener("DOMContentLoaded", function () {
     // This page is private: redirect to Login before exposing the application.
     const signedInUserId = localStorage.getItem("user_id");
@@ -79,14 +103,7 @@ document.addEventListener("DOMContentLoaded", function () {
             fullName.value = `${user.first_name || ""} ${user.last_name || ""}`.trim();
             fullName.readOnly = true;
         }
-        const year = Number(user.academic_year || 1);
-        document.querySelectorAll('input[name="modules"][data-year]').forEach(input => {
-            const available = Number(input.dataset.year) <= year;
-            input.disabled = !available;
-            if (!available) input.checked = false;
-            const label = input.closest('.module-option');
-            if (label) label.hidden = !available;
-        });
+        loadTutorModuleOptions(user);
     } catch (error) { console.warn("Could not load profile details", error); }
 
     const form = document.getElementById("buddyApplicationForm");
