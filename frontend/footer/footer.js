@@ -1,3 +1,4 @@
+
 document.addEventListener("DOMContentLoaded", function () {
 
     const footerContainer = document.getElementById("footer-container");
@@ -39,20 +40,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 display: grid;
 
-                grid-template-columns:
-                    2fr
-                    1fr
-                    1fr
-                    1fr;
+                grid-template-columns: 1.5fr 1fr;
 
-                gap: 60px;
+                gap: 100px;
 
                 padding-bottom: 60px;
             }
 
 
             .footer-brand {
-                max-width: 380px;
+                max-width: 420px;
             }
 
 
@@ -86,6 +83,8 @@ document.addEventListener("DOMContentLoaded", function () {
             .footer-column {
                 display: flex;
                 flex-direction: column;
+                justify-self: end;
+                width: 220px;
             }
 
 
@@ -167,6 +166,12 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
 
 
+                .footer-column {
+                    justify-self: start;
+                    width: 100%;
+                }
+
+
                 .footer-bottom {
                     flex-direction: column;
                     justify-content: center;
@@ -223,57 +228,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 </div>
 
 
-                <!-- OCTO BUDDY -->
-
-                <div class="footer-column">
-
-                    <h3>Octo Buddy</h3>
-
-                    <a href="${page("homepage/homepage.html")}">
-                        Home
-                    </a>
-
-                    <a href="${page("homepage/homepage.html#about")}">
-                        About Us
-                    </a>
-
-                    <a href="${page("Dashboard/Dashboard.html")}">
-                        Student Dashboard
-                    </a>
-
-                    <a href="${page("octobuddy/apply.html")}">
-                        Become an Octo Buddy
-                    </a>
-
-                </div>
-
-
-                <!-- PLATFORM -->
-
-                <div class="footer-column">
-
-                    <h3>Platform</h3>
-
-                    <a href="${page("Dashboard/Dashboard.html")}">
-                        Student Dashboard
-                    </a>
-
-                    <a href="${page("sessions/sessions.html")}">
-                        Book a Session
-                    </a>
-
-                    <a href="${page("octobuddy/apply.html")}">
-                        Become an Octo Buddy
-                    </a>
-
-                    <a href="${page("homepage/homepage.html#about")}">
-                        Academic Support
-                    </a>
-
-                </div>
-
-
-                
                 <!-- SUPPORT -->
 
                 <div class="footer-column">
