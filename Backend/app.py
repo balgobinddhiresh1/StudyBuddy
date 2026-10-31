@@ -1624,15 +1624,18 @@ def send_session_reminders():
 
 @app.route("/api/available-tutors", methods=["GET"])
 def available_tutors():
-    """List approved tutors for this student's course. The roster is available
-    without filters; choosing a module/date additionally returns open time slots."""
-    module = request.args.get("module", "").strip()
-    date_text = request.args.get("date", "").strip()
+    """Always return the student's matching approved tutor roster.
+
+    Optional module/date filters only calculate open slots; they never hide
+    tutors from the qualification/year roster shown on the booking page.
+    """
     student = getattr(g, "current_user", None)
     if not student or (student.role or "").lower() != "student":
         return jsonify(status="error", message="A student account is required."), 403
 
     student_modules = modules_for_qualification(student.course, student.academic_year)
+    module = request.args.get("module", "").strip()
+    date_text = request.args.get("date", "").strip()
     if module and module not in student_modules:
         return jsonify(status="error", message="That module is not part of your qualification/year."), 400
 
@@ -1655,18 +1658,13 @@ def available_tutors():
         tutor = application.user
         if not tutor or (tutor.role or "").lower() != "buddy":
             continue
-        tutor_modules = json_list(application.modules)
-        matching_modules = [name for name in tutor_modules if name in student_modules]
-        if module:
-            matching_modules = [name for name in matching_modules if name == module]
+        matching_modules = [name for name in json_list(application.modules) if name in student_modules]
         if not matching_modules:
             continue
-        available_days = json_list(application.availability)
-        if weekday and weekday not in available_days:
-            continue
 
+        available_days = json_list(application.availability)
         slots = []
-        if requested_date and module:
+        if requested_date and module and module in matching_modules and weekday in available_days:
             for hour in range(8, 19):
                 slot = f"{hour:02d}:00"
                 start = datetime.combine(requested_date, datetime.strptime(slot, "%H:%M").time(), tzinfo=local_tz)
@@ -1682,13 +1680,20 @@ def available_tutors():
             "id": tutor.id,
             "first_name": tutor.first_name,
             "last_name": tutor.last_name,
-            "qualification": application.qualification,
-            "academic_year": application.academic_year,
+            "qualification": application.qualification or tutor.course,
+            "academic_year": application.academic_year or tutor.academic_year,
             "modules": matching_modules,
             "available_days": available_days,
             "available_times": slots,
         })
-    return jsonify(status="success", tutors=results), 200
+
+    return jsonify(
+        status="success",
+        qualification=student.course,
+        academic_year=student.academic_year,
+        modules=sorted(student_modules),
+        tutors=results,
+    ), 200
 
 
 @app.route("/api/bookings", methods=["POST"])
