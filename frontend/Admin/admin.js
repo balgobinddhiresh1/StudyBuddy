@@ -113,7 +113,12 @@ function setupNavigation() {
         }
 
         window.scrollTo({ top: 0, behavior: "smooth" });
-        if (sectionId === "reports") loadReports();
+        if (sectionId === "reports") {
+            loadReports().then(() => requestAnimationFrame(() => {
+                drawBuddySessionsChart(lastReportBuddies);
+                drawSessionStatusChart(lastReportSessions);
+            }));
+        }
     }
 
     navItems.forEach(item => {
@@ -776,6 +781,9 @@ function renderQualifications() {
     });
 }
 
+let lastReportBuddies = [];
+let lastReportSessions = [];
+
 async function loadReports() {
     try {
         const [leaderboardResponse, sessionsResponse] = await Promise.all([
@@ -791,9 +799,12 @@ async function loadReports() {
             throw new Error(sessionsData.message || "Could not load session report data.");
         }
         const buddies = leaderboardData.buddies || [];
+        const sessions = sessionsData.sessions || [];
+        lastReportBuddies = buddies;
+        lastReportSessions = sessions;
         renderReportTable(buddies);
         drawBuddySessionsChart(buddies);
-        drawSessionStatusChart(sessionsData.sessions || []);
+        drawSessionStatusChart(sessions);
     } catch (error) {
         console.error("Could not load reports:", error);
         const table = document.querySelector("#reports .report-table-panel tbody");
@@ -830,10 +841,13 @@ function drawBuddySessionsChart(buddies) {
     const canvas = document.getElementById("buddySessionsChart");
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
-    const width = canvas.clientWidth || 320;
-    canvas.width = width * (window.devicePixelRatio || 1);
-    canvas.height = 230 * (window.devicePixelRatio || 1);
-    ctx.scale(window.devicePixelRatio || 1, window.devicePixelRatio || 1);
+    const width = Math.max(280, canvas.getBoundingClientRect().width || canvas.parentElement?.clientWidth || 320);
+    const ratio = window.devicePixelRatio || 1;
+    canvas.style.width = "100%";
+    canvas.style.height = "230px";
+    canvas.width = Math.round(width * ratio);
+    canvas.height = Math.round(230 * ratio);
+    ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
     ctx.clearRect(0, 0, width, 230);
     const items = buddies.slice(0, 6);
     if (!items.length) { ctx.fillStyle = "#64748b"; ctx.fillText("No completed-session data yet", 12, 28); return; }
@@ -853,9 +867,14 @@ function drawSessionStatusChart(sessions = []) {
     const canvas = document.getElementById("sessionStatusChart");
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
-    const width = canvas.clientWidth || 320;
-    canvas.width = width * (window.devicePixelRatio || 1); canvas.height=230*(window.devicePixelRatio||1);
-    ctx.scale(window.devicePixelRatio||1,window.devicePixelRatio||1); ctx.clearRect(0,0,width,230);
+    const width = Math.max(280, canvas.getBoundingClientRect().width || canvas.parentElement?.clientWidth || 320);
+    const ratio = window.devicePixelRatio || 1;
+    canvas.style.width = "100%";
+    canvas.style.height = "230px";
+    canvas.width = Math.round(width * ratio);
+    canvas.height = Math.round(230 * ratio);
+    ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+    ctx.clearRect(0,0,width,230);
     try {
       const counts={Confirmed:0,Completed:0,Cancelled:0,Pending:0};
       sessions.forEach(x=>{const key=String(x.status||'Pending');counts[key]=(counts[key]||0)+1;});
@@ -1060,12 +1079,22 @@ function renderAdminBookings() {
     table.querySelectorAll(".delete-session-btn").forEach(button => button.addEventListener("click", async () => {
         const id = button.dataset.sessionId;
         if (!await octoConfirm(`Permanently delete session #${id}? This cannot be undone.`)) return;
+        button.disabled = true;
+        button.textContent = "Deleting…";
         try {
             const response = await apiFetch(`${API_BASE_URL}admin/sessions/${id}`, { method: "DELETE" });
             const data = await response.json();
-            if (!response.ok) throw new Error(data.message || "Could not delete session.");
+            if (!response.ok || data.status !== "success") throw new Error(data.message || "Could not delete session.");
             await Promise.all([loadSchedule(), loadAdminBookings(), loadAuditLogs(), loadReports()]);
-        } catch (error) { alert(error.message || "Could not delete session."); }
+            if (allAdminBookings.some(item => String(item.id) === String(id))) {
+                throw new Error("The server responded, but the session is still appearing in the booking list. Please refresh and check.");
+            }
+            if (typeof octoAlert === "function") octoAlert("Session deleted successfully.", "success");
+        } catch (error) {
+            button.disabled = false;
+            button.textContent = "Delete";
+            alert(error.message || "Could not delete session.");
+        }
     }));
     table.querySelectorAll(".view-session-btn").forEach(button => button.addEventListener("click", () => {
         window.location.href = `session-detail.html?id=${encodeURIComponent(button.dataset.sessionId)}`;

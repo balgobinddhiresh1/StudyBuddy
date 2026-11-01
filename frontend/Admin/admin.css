@@ -1978,3 +1978,56 @@ td {
         flex: 1 1 140px;
     }
 }
+
+
+/* Octo Buddy UI polish: reports, booking actions and fallback buttons */
+#reports .report-chart-grid .panel {
+    background: #ffffff;
+    border: 1px solid #dbe4ee;
+    border-radius: 14px;
+    box-shadow: 0 5px 18px rgba(25, 45, 70, 0.08);
+    color: #172b42;
+}
+#reports .report-chart-grid .panel h3,
+#reports .section-heading,
+#reports .report-chart-grid .panel canvas {
+    color: #172b42;
+}
+#reports .report-chart-grid canvas {
+    display: block;
+    width: 100%;
+    height: 230px;
+}
+.delete-session-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 9px 15px;
+    border: 1px solid #dc5555;
+    border-radius: 9px;
+    background: #fff0f0;
+    color: #a92323;
+    font: 600 12px inherit;
+    cursor: pointer;
+    transition: background .2s ease, color .2s ease, transform .2s ease, box-shadow .2s ease;
+}
+.delete-session-btn:hover {
+    background: #c93636;
+    color: #ffffff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(201,54,54,.2);
+}
+.delete-session-btn:disabled { opacity: .6; cursor: wait; transform: none; }
+button:not([class]) {
+    padding: 9px 14px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: #f8fafc;
+    color: #243447;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+}
+button:not([class]):hover { background: #eaf1f8; border-color: #94a3b8; }
+button:focus-visible { outline: 3px solid rgba(20,145,155,.35); outline-offset: 2px; }
