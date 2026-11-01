@@ -576,7 +576,7 @@ function renderUpcomingSessions(sessions) {
             const dateText = String(session.date || "").slice(0, 10);
             const timeText = String(session.time || "00:00").slice(0, 5);
             const start = new Date(`${dateText}T${timeText}:00`);
-            return { ...session, _start: start, _entryOpens: new Date(start.getTime() - 15 * 60000), _entryCloses: new Date(start.getTime() + 15 * 60000) };
+            return { ...session, _start: start, _entryOpens: new Date(start.getTime() - 30 * 60000), _entryCloses: new Date(start.getTime() + 30 * 60000) };
         })
         .filter(session => !Number.isNaN(session._start.getTime()) && session._entryCloses >= now)
         .sort((a, b) => a._start - b._start)
@@ -606,7 +606,7 @@ function renderUpcomingSessions(sessions) {
                 <p>Status: <strong>${escapeHtml(session.status || "Pending")}</strong></p>
             </div>
             <div class="session-actions">
-                ${isConfirmed ? `<button class="join-btn" type="button">Enter session</button><small class="session-entry-hint">${canJoinNow ? "Available now" : "Available 15 minutes before until 15 minutes after start"}</small>` : `<p>Waiting for Octo Buddy approval</p>`}
+                ${isConfirmed ? `<button class="join-btn" type="button">Enter session</button><small class="session-entry-hint">${canJoinNow ? "Available now" : "Available 30 minutes before until 30 minutes after start"}</small>` : `<p>Waiting for Octo Buddy approval</p>`}
                 <button class="cancel-session-btn" type="button" data-session-id="${Number(session.id)}">Cancel booking</button>
             </div>`;
         const join = card.querySelector(".join-btn");
@@ -614,11 +614,11 @@ function renderUpcomingSessions(sessions) {
             const current = new Date();
             if (current < session._entryOpens) {
                 const minutes = Math.ceil((session._entryOpens - current) / 60000);
-                octoAlert(`This session is not available yet. You can enter 15 minutes before the scheduled start time. Please try again in about ${minutes} minute${minutes === 1 ? "" : "s"}.`, "Session not available");
+                octoAlert(`This session is not available yet. You can enter 30 minutes before the scheduled start time. Please try again in about ${minutes} minute${minutes === 1 ? "" : "s"}.`, "Session not available");
                 return;
             }
             if (current > session._entryCloses) {
-                octoAlert("This session has expired. You can only enter from 15 minutes before until 15 minutes after the scheduled start time.", "Session expired");
+                octoAlert("This session has expired. You can only enter from 30 minutes before until 30 minutes after the scheduled start time.", "Session expired");
                 return;
             }
             if (!session.room_code) {
