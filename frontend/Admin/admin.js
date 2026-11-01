@@ -837,31 +837,140 @@ function renderReportTable(buddies) {
         </tr>`).join("") : `<tr><td colspan="5">No Buddy performance data yet.</td></tr>`;
 }
 
-function drawBuddySessionsChart(buddies) {
+
+function drawBuddySessionsChart(buddies = []) {
     const canvas = document.getElementById("buddySessionsChart");
     if (!canvas) return;
+
     const ctx = canvas.getContext("2d");
-    const width = Math.max(280, canvas.getBoundingClientRect().width || canvas.parentElement?.clientWidth || 320);
+    if (!ctx) return;
+
+    const width = Math.max(
+        320,
+        Math.floor(
+            canvas.parentElement?.getBoundingClientRect().width - 40 || 640
+        )
+    );
+
+    const height = 260;
     const ratio = window.devicePixelRatio || 1;
+
+    canvas.style.display = "block";
     canvas.style.width = "100%";
-    canvas.style.height = "230px";
-    canvas.width = Math.round(width * ratio);
-    canvas.height = Math.round(230 * ratio);
+    canvas.style.height = height + "px";
+    canvas.width = width * ratio;
+    canvas.height = height * ratio;
+
     ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
-    ctx.clearRect(0, 0, width, 230);
-    const items = buddies.slice(0, 6);
-    if (!items.length) { ctx.fillStyle = "#64748b"; ctx.fillText("No completed-session data yet", 12, 28); return; }
-    const max = Math.max(1, ...items.map(x => Number(x.completed_sessions) || 0));
-    const left = 12, right = 12, top = 18, bottom = 58;
-    const plotW = width-left-right, plotH = 230-top-bottom, slot = plotW/items.length;
-    items.forEach((item, i) => {
-      const val = Number(item.completed_sessions) || 0;
-      const h = (val/max)*(plotH-12), x = left+i*slot+slot*.2, y = top+plotH-h;
-      ctx.fillStyle = "#1596a3"; ctx.beginPath(); ctx.roundRect(x,y,slot*.6,h,5); ctx.fill();
-      ctx.fillStyle = "#23415c"; ctx.font = "11px Poppins, Arial"; ctx.textAlign = "center"; ctx.fillText(String(val), x+slot*.3, y-5);
-      const name = String(item.name || "Buddy").split(" ")[0].slice(0,10); ctx.fillStyle="#64748b"; ctx.fillText(name, x+slot*.3, top+plotH+18);
+    ctx.clearRect(0, 0, width, height);
+
+    const items = Array.isArray(buddies) ? buddies.slice(0, 8) : [];
+
+    const left = 48;
+    const right = 20;
+    const top = 24;
+    const bottom = 72;
+
+    const plotW = width - left - right;
+    const plotH = height - top - bottom;
+    const baselineY = top + plotH;
+
+    if (!items.length) {
+        ctx.fillStyle = "#334155";
+        ctx.font = "14px Arial";
+        ctx.textAlign = "center";
+        ctx.fillText("No Buddy data available yet", width / 2, 130);
+        return;
+    }
+
+    const values = items.map(item =>
+        Math.max(0, Number(item.completed_sessions) || 0)
+    );
+
+    const maxValue = Math.max(0, ...values);
+    const axisMax = maxValue === 0
+        ? 4
+        : Math.max(4, Math.ceil(maxValue / 4) * 4);
+
+    // Draw horizontal grid lines and numbers.
+    for (let i = 0; i <= 4; i++) {
+        const value = i * axisMax / 4;
+        const y = baselineY - (value / axisMax) * plotH;
+
+        ctx.beginPath();
+        ctx.strokeStyle = "#d8e1eb";
+        ctx.lineWidth = 1;
+        ctx.moveTo(left, y);
+        ctx.lineTo(width - right, y);
+        ctx.stroke();
+
+        ctx.fillStyle = "#243b53";
+        ctx.font = "12px Arial";
+        ctx.textAlign = "right";
+        ctx.fillText(String(value), left - 10, y + 4);
+    }
+
+    // Draw vertical axis.
+    ctx.beginPath();
+    ctx.strokeStyle = "#64748b";
+    ctx.lineWidth = 2;
+    ctx.moveTo(left, top);
+    ctx.lineTo(left, baselineY);
+    ctx.stroke();
+
+    const slot = plotW / items.length;
+    const barWidth = Math.min(52, slot * 0.58);
+
+    items.forEach((item, index) => {
+        const value = values[index];
+        const centerX = left + index * slot + slot / 2;
+        const barHeight = (value / axisMax) * plotH;
+        const x = centerX - barWidth / 2;
+        const y = baselineY - barHeight;
+
+        ctx.fillStyle = "#1596a3";
+
+        if (value > 0) {
+            ctx.fillRect(x, y, barWidth, barHeight);
+        } else {
+            // Visible marker for zero completed sessions.
+            ctx.beginPath();
+            ctx.arc(centerX, baselineY - 3, 4, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        ctx.fillStyle = "#243b53";
+        ctx.font = "bold 12px Arial";
+        ctx.textAlign = "center";
+        ctx.fillText(
+            String(value),
+            centerX,
+            value > 0 ? Math.max(top + 12, y - 8) : baselineY - 12
+        );
+
+        ctx.fillStyle = "#334155";
+        ctx.font = "12px Arial";
+
+        const name = String(item.name || "Buddy");
+        ctx.fillText(
+            name.length > 16 ? name.slice(0, 14) + "…" : name,
+            centerX,
+            baselineY + 24
+        );
     });
+
+    if (maxValue === 0) {
+        ctx.fillStyle = "#475569";
+        ctx.font = "12px Arial";
+        ctx.textAlign = "center";
+        ctx.fillText(
+            "No completed sessions yet",
+            width / 2,
+            height - 10
+        );
+    }
 }
+
 
 function drawSessionStatusChart(sessions = []) {
     const canvas = document.getElementById("sessionStatusChart");
