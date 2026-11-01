@@ -1199,3 +1199,76 @@ header.nav-hidden {
     transform: translateY(-100%);
 }
 .profile-readonly-name { margin:5px 0 12px; padding:10px 0; font-weight:600; color:#20324a; }
+/* =========================================================
+   CANCEL BOOKING BUTTON (Upcoming Sessions)
+========================================================= */
+
+.session-card button:not(.join-btn),
+.cancel-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    padding: 11px 20px;
+
+    background: rgba(255, 107, 107, 0.10);
+    color: #ff8f8f;
+
+    border: 1.5px solid rgba(255, 107, 107, 0.55);
+    border-radius: 8px;
+
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+
+    cursor: pointer;
+
+    transition: 0.3s ease;
+}
+
+.session-card button:not(.join-btn)::before,
+.cancel-btn::before {
+    content: "✕";
+    font-size: 12px;
+    line-height: 1;
+}
+
+.session-card button:not(.join-btn):hover,
+.cancel-btn:hover {
+    background: #ff6b6b;
+    color: var(--white);
+    border-color: #ff6b6b;
+
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px rgba(255, 107, 107, 0.30);
+}
+
+.session-card button:not(.join-btn):active,
+.cancel-btn:active {
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+.session-card button:not(.join-btn):focus-visible,
+.cancel-btn:focus-visible {
+    outline: 2px solid var(--mint);
+    outline-offset: 3px;
+}
+
+.session-card button:not(.join-btn):disabled,
+.cancel-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* matches the full-width Join button on small phones */
+@media (max-width: 500px) {
+    .session-card button:not(.join-btn),
+    .cancel-btn {
+        width: 100%;
+    }
+}
