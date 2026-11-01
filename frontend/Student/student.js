@@ -35,18 +35,71 @@ async function loadAvailableTutors() {
         }));
 
         listPanel.innerHTML = `
-          <p>These Octo Buddies are matched to the modules you study: <strong>${escapeHtml((data.modules || []).join(", ") || "No modules configured")}</strong>. Qualification and year do not restrict the match.</p>
-          <div class="available-tutors-scroll" style="max-height:340px;overflow:auto;border:1px solid #dbe7ee;border-radius:10px;background:#fff">
-            <table class="available-tutors-table" style="width:100%;border-collapse:collapse;min-width:650px">
-              <thead style="position:sticky;top:0;background:#eef6fa;z-index:1"><tr>
-                <th style="text-align:left;padding:12px;border-bottom:1px solid #dbe7ee">Octo Buddy</th>
-                <th style="text-align:left;padding:12px;border-bottom:1px solid #dbe7ee">Module</th>
-                <th style="text-align:left;padding:12px;border-bottom:1px solid #dbe7ee">Available days</th>
-                <th style="text-align:left;padding:12px;border-bottom:1px solid #dbe7ee">Available dates (next 30 days)</th>
-              </tr></thead>
-              <tbody>${rows.join("")}</tbody>
-            </table>
-          </div>`;
+  <p style="color:#263b59;font-size:14px;margin-bottom:15px;">
+    These Octo Buddies are matched to the modules you study:
+    <strong>${escapeHtml((data.modules || []).join(", ") || "No modules configured")}</strong>.
+    Qualification and year do not restrict the match.
+  </p>
+
+  <style>
+    .available-tutors-table tbody tr:nth-child(odd) {
+      background-color: #ffffff;
+    }
+
+    .available-tutors-table tbody tr:nth-child(even) {
+      background-color: #eaf1f8;
+    }
+
+    .available-tutors-table tbody tr:hover {
+      background-color: #d5e5f5;
+    }
+
+    .available-tutors-table tbody td {
+      color: #263b59;
+      padding: 13px 12px;
+      border-bottom: 1px solid #dbe4ee;
+      font-size: 14px;
+    }
+
+    .available-tutors-table thead th {
+      color: #ffffff;
+      background-color: #263b59;
+      padding: 14px 12px;
+      text-align: left;
+      border-bottom: 2px solid #1b2b43;
+      font-size: 14px;
+    }
+  </style>
+
+  <div class="available-tutors-scroll" style="
+    max-height:340px;
+    overflow:auto;
+    border:2px solid #b8c8d8;
+    border-radius:12px;
+    background:#ffffff;
+    box-shadow:0 4px 12px rgba(0,0,0,0.08);
+  ">
+    <table class="available-tutors-table" style="
+      width:100%;
+      border-collapse:collapse;
+      min-width:650px;
+    ">
+      <thead style="position:sticky;top:0;z-index:2;">
+        <tr>
+          <th>Octo Buddy</th>
+          <th>Module</th>
+          <th>Available days</th>
+          <th>Available dates (next 30 days)</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        ${rows.join("")}
+      </tbody>
+    </table>
+  </div>
+`;
+
     } catch (error) {
         listPanel.innerHTML = `<p>${escapeHtml(error.message || "Could not load Octo Buddies. Please sign in again and refresh the page.")}</p>`;
     }
