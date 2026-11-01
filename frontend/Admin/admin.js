@@ -113,6 +113,7 @@ function setupNavigation() {
         }
 
         window.scrollTo({ top: 0, behavior: "smooth" });
+        if (sectionId === "reports") loadReports();
     }
 
     navItems.forEach(item => {
@@ -660,7 +661,7 @@ async function setupQualificationButtons() {
             if (!qualification) { alert("Add a qualification before adding modules."); return; }
             const name = await octoPrompt("Enter the module name:");
             if (!name?.trim()) return;
-            if (!/^[A-Za-zÀ-ÖØ-öø-ÿ][A-Za-zÀ-ÖØ-öø-ÿ &().,'/-]*(?: [0-9]{3})?$/.test(name.trim())) { alert("Module names must start with a letter and may only end with a three-digit module code, for example Programming 621."); return; }
+            if (!/^[A-Za-zÀ-ÖØ-öø-ÿ][A-Za-zÀ-ÖØ-öø-ÿ &().,'/-]*(?: [0-9]{3})?$/.test(name.trim())) { alert("Enter a valid module name. A three-digit module code is allowed at the end, for example Programming 621."); return; }
             const yearText = await octoPrompt("Enter the academic year for this module (1–6):", "1");
             if (yearText === null) return;
             const year = Number(yearText);
@@ -715,6 +716,7 @@ async function loadManagedCatalogue() {
         if (!moduleResponse.ok) throw new Error(moduleData.message || "Could not load modules.");
         managedQualifications = (qualificationData.qualifications || []).filter(item => item.active);
         managedModules = (moduleData.modules || []).filter(item => item.active);
+        populateQualificationFilters();
         renderQualifications();
         renderModules();
     } catch (error) {
@@ -764,7 +766,7 @@ function renderQualifications() {
     grid.querySelectorAll(".qualification-open-btn").forEach(button => button.onclick = () => window.location.href = `qualification-detail.html?id=${button.dataset.qualificationId}`);
     grid.querySelectorAll(".qualification-delete-btn").forEach(button => button.onclick = async () => {
         const q = managedQualifications.find(item => Number(item.id) === Number(button.dataset.qualificationId));
-        if (!q || !await octoConfirm(`Delete qualification “${q.name}”? This may be blocked if modules or bookings depend on it.`)) return;
+        if (!q || !await octoConfirm(`Delete qualification “${q.name}”? Its modules will also be removed from the active catalogue and Buddy application selections.`)) return;
         try {
             const response = await apiFetch(`${API_BASE_URL}admin/qualifications/${q.id}`, { method: "DELETE" });
             const data = await response.json();
@@ -772,6 +774,42 @@ function renderQualifications() {
             await loadManagedCatalogue();
         } catch (error) { alert(error.message || "Could not delete qualification."); }
     });
+}
+
+async function loadReports() {
+    try {
+        const [leaderboardResponse, sessionsResponse] = await Promise.all([
+            apiFetch(`${API_BASE_URL}admin/leaderboard`),
+            apiFetch(`${API_BASE_URL}admin/sessions`)
+        ]);
+        const leaderboardData = await leaderboardResponse.json();
+        const sessionsData = await sessionsResponse.json();
+        if (!leaderboardResponse.ok) {
+            throw new Error(leaderboardData.message || "Could not load Buddy report data.");
+        }
+        if (!sessionsResponse.ok) {
+            throw new Error(sessionsData.message || "Could not load session report data.");
+        }
+        const buddies = leaderboardData.buddies || [];
+        renderReportTable(buddies);
+        drawBuddySessionsChart(buddies);
+        drawSessionStatusChart(sessionsData.sessions || []);
+    } catch (error) {
+        console.error("Could not load reports:", error);
+        const table = document.querySelector("#reports .report-table-panel tbody");
+        if (table) table.innerHTML = `<tr><td colspan="5">${escapeHtml(error.message || "Reports could not be loaded.")}</td></tr>`;
+        const first = document.getElementById("buddySessionsChart");
+        const second = document.getElementById("sessionStatusChart");
+        [first, second].forEach(canvas => {
+            const ctx = canvas?.getContext("2d");
+            if (ctx) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = "#64748b";
+                ctx.font = "13px Arial";
+                ctx.fillText("Report data unavailable", 12, 28);
+            }
+        });
+    }
 }
 
 function renderReportTable(buddies) {
@@ -811,7 +849,7 @@ function drawBuddySessionsChart(buddies) {
     });
 }
 
-async function drawSessionStatusChart() {
+function drawSessionStatusChart(sessions = []) {
     const canvas = document.getElementById("sessionStatusChart");
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
@@ -819,9 +857,6 @@ async function drawSessionStatusChart() {
     canvas.width = width * (window.devicePixelRatio || 1); canvas.height=230*(window.devicePixelRatio||1);
     ctx.scale(window.devicePixelRatio||1,window.devicePixelRatio||1); ctx.clearRect(0,0,width,230);
     try {
-      const response = await apiFetch(`${API_BASE_URL}admin/sessions`);
-      if (!response.ok) throw new Error("Could not load session data");
-      const data = await response.json(); const sessions=data.sessions||[];
       const counts={Confirmed:0,Completed:0,Cancelled:0,Pending:0};
       sessions.forEach(x=>{const key=String(x.status||'Pending');counts[key]=(counts[key]||0)+1;});
       const values=Object.entries(counts).filter(([,v])=>v>0); const total=values.reduce((a,[,v])=>a+v,0);
@@ -1029,7 +1064,7 @@ function renderAdminBookings() {
             const response = await apiFetch(`${API_BASE_URL}admin/sessions/${id}`, { method: "DELETE" });
             const data = await response.json();
             if (!response.ok) throw new Error(data.message || "Could not delete session.");
-            await Promise.all([loadSchedule(), loadAdminBookings(), loadAuditLogs()]);
+            await Promise.all([loadSchedule(), loadAdminBookings(), loadAuditLogs(), loadReports()]);
         } catch (error) { alert(error.message || "Could not delete session."); }
     }));
     table.querySelectorAll(".view-session-btn").forEach(button => button.addEventListener("click", () => {
@@ -1038,7 +1073,10 @@ function renderAdminBookings() {
 }
 
 function populateQualificationFilters() {
-    const names = [...new Set(allUsers.map(user => user.course).filter(Boolean))].sort();
+    const names = [...new Set([
+        ...managedQualifications.map(item => item.name),
+        ...allUsers.map(user => user.course).filter(Boolean)
+    ])].sort();
     ["studentQualificationFilter", "reportQualificationFilter", "bookingQualificationFilter"].forEach(id => {
         const select = document.getElementById(id);
         if (!select) return;

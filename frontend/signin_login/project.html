@@ -734,14 +734,23 @@ async function handleLogin() {
 
         const role = (user.role || 'student').toLowerCase();
         if (role === 'student' && (!user.course || user.course === 'General')) {
+            let qualificationOptions = {};
+            try {
+                const catalogueResponse = await fetch('https://studybuddy-bl8d.onrender.com/api/qualifications');
+                const catalogueData = await catalogueResponse.json();
+                if (catalogueResponse.ok) {
+                    (catalogueData.qualifications || []).forEach(item => {
+                        qualificationOptions[item.name] = item.name;
+                    });
+                }
+            } catch (catalogueError) {
+                console.warn('Could not load the qualification catalogue:', catalogueError);
+            }
             const qualificationPrompt = await Swal.fire({
                 ...popupOptions, title: 'Set up your student profile',
                 text: 'Choose your qualification before booking tutoring sessions.',
-                input: 'select', inputOptions: {
-                    'Diploma in Information Technology': 'Diploma in Information Technology (DIT)',
-                    'Bachelor of Science in IT': 'Bachelor of Science in Information Technology (BSc IT)',
-                    'Bachelor of Business Administration': 'Bachelor of Business Administration'
-                }, inputPlaceholder: 'Select your qualification',
+                input: 'select', inputOptions: qualificationOptions,
+                inputPlaceholder: 'Select your qualification',
                 inputValidator: value => value ? undefined : 'Please select your qualification.',
                 showCancelButton: false, allowOutsideClick: false, confirmButtonText: 'Continue'
             });

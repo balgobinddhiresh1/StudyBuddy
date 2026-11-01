@@ -402,40 +402,11 @@ with app.app_context():
                 ))
         db.session.commit()
 
-    # Keep the module catalogue aligned with the qualification prospectuses.
-    # Existing administrator-added modules are preserved; missing rows are added only once.
-    qualification_catalog = {
-      "Diploma in Information Technology": {
-        1: ["Software Development 500", "Information Systems 511", "Programming 511", "Web Technology 511", "Networks 511", "Business Communication 500", "Information Systems 512", "Programming 512", "Web Technology 512", "Networks 512"],
-        2: ["M-Commerce 621", "Information Systems 621", "Programming 621", "Database Systems 621", "Internet Programming 621", "Networks 621", "Business Management 621", "M-Commerce 622", "Information Systems 622", "Programming 622", "Database Systems 622", "Internet Programming 622", "Networks 622", "Business Management 622"],
-        3: ["Quantitative Techniques 600", "IT Project Management 600", "Software Engineering 600", "Human Computer Interaction 600", "Programming 631", "Networks 631", "Business Analysis 631", "Operating Systems 600", "Management Information Systems 600", "Work Integrated Learning 600", "Programming 632", "Networks 632", "Business Analysis 632"]
-      },
-      "Bachelor of Science in IT": {
-        1: ["Information Systems 511", "Programming 511", "Web Technology 511", "Networks 511", "Mathematics 511", "Information Systems 512", "Programming 512", "Web Technology 512", "Networks 512", "Mathematics 512", "Data Science 500"],
-        2: ["Information Systems 621", "Programming 621", "Database Systems 600", "Cloud Computing 600", "Internet Programming 621", "Data Manipulation & Visualisation 600", "Business Analysis 621", "Computer Architecture 600", "Information Systems 622", "Programming 622", "Big Data & IOT 600", "Machine Learning 600", "Internet Programming 622", "Statistics for Data Science 600", "Business Analysis 622", "Server Technology 600"],
-        3: ["Software Engineering 700", "Programming 731", "Cyber Security 700", "Artificial Intelligence 700", "Human Computer Interaction 700", "Programming 741", "Machine Learning 700", "IT Strategic Management 731", "Networks 731", "IT Project 700", "Programming 732", "Mobile App Development 700", "Work Integrated Learning 700", "Operating Systems 700", "Programming 742", "Autonomous Systems & Robotics 700", "IT Strategic Management 732", "Networks 732"]
-      },
-      "Bachelor of Business Administration": {
-        1: ["Business Ethics 500", "Economics 511", "Accounting 511", "Statistics 511", "Information Systems 511", "Human Resource Management 511", "Marketing Management 511", "Entrepreneurship 500", "Economics 512", "Accounting 512", "Statistics 512", "Information Systems 512", "Human Resource Management 512", "Marketing Management 512"],
-        2: ["Economics 621", "Stakeholder Relations 621", "Commercial Law 621", "Accounting 621", "Marketing Management 621", "Human Resource Management 621", "Economics 622", "Stakeholder Relations 622", "Commercial Law 622", "Accounting 622", "Marketing Management 622", "Human Resource Management 622"],
-        3: ["Strategic Management 731", "Market Research 700", "Entrepreneurship & Small Business Management 700", "Contemporary Issues in Industrial Relations 700", "Accounting 731", "Marketing Management 731", "Human Resource Management 731", "Strategic Management 732", "Training & Development 700", "Total Quality Management 700", "Work Integrated Learning 700", "Accounting 732", "Marketing Management 732", "Human Resource Management 732"]
-      }
-    }
-    for qualification_name, year_map in qualification_catalog.items():
-        qualification = ManagedQualification.query.filter(db.func.lower(ManagedQualification.name) == qualification_name.lower()).first()
-        if not qualification:
-            qualification = ManagedQualification(name=qualification_name, active=True)
-            db.session.add(qualification)
-            db.session.flush()
-        for year, names in year_map.items():
-            for module_name in names:
-                exists = ManagedModule.query.filter_by(qualification_id=qualification.id, academic_year=year, name=module_name).first()
-                if not exists:
-                    db.session.add(ManagedModule(name=module_name, qualification_id=qualification.id, academic_year=year, active=True))
-    # Remove generic placeholder module rows from the initial starter catalogue.
-    # Real prospectus modules (with their module codes) remain intact.
-    ManagedModule.query.filter(ManagedModule.name.in_(["Programming", "Database Systems", "Networks", "Machine Learning", "Data Manipulation & Visualisation"])).delete(synchronize_session=False)
+    # The administrator-managed catalogue is authoritative after initial setup.
+    # Do not reinsert prospectus rows on every application restart: doing so would
+    # silently undo module deletions made by administrators.
     db.session.commit()
+
 
 
 def add_notification(user_id, title, message, kind, session_id=None):
@@ -581,6 +552,10 @@ def resolve_managed_qualification(course):
     return None
 
 
+def normalized_text(value):
+    return " ".join(str(value or "").casefold().replace("&", "and").split())
+
+
 def modules_for_qualification(course, academic_year=None, include_previous=False):
     """Return prospectus modules for one year, or current plus earlier years for tutors."""
     qualification = resolve_managed_qualification(course)
@@ -599,6 +574,15 @@ def modules_for_qualification(course, academic_year=None, include_previous=False
     course = (course or "General").strip().lower()
     # Unknown or unset qualifications must not receive generic modules.
     return set()
+
+
+@app.route("/api/qualifications", methods=["GET"])
+def public_qualification_catalog():
+    """Public active qualification names for registration and profile forms."""
+    qualifications = ManagedQualification.query.filter_by(active=True).order_by(ManagedQualification.name.asc()).all()
+    return jsonify(status="success", qualifications=[
+        {"id": item.id, "name": item.name} for item in qualifications
+    ]), 200
 
 
 @app.route("/api/modules", methods=["GET"])
@@ -747,7 +731,7 @@ def current_user(user_id):
 
 PUBLIC_API_ENDPOINTS = {
     "register", "verify_otp", "login", "verify_login_otp", "forgot_password", "reset_password",
-    "home", "health", "send_session_reminders"
+    "home", "health", "send_session_reminders", "public_qualification_catalog"
 }
 
 
@@ -1014,81 +998,38 @@ def verify_login_otp():
 
 @app.route("/api/forgot-password", methods=["POST"])
 def forgot_password():
-    """Send a password reset code to a registered email."""
-
-    data = request.get_json() or {}
+    """Send a reset code only to a registered, verified account."""
+    data = request.get_json(silent=True) or {}
     email = str(data.get("email", "")).strip().lower()
-
-    # Always return the same public message to avoid revealing
-    # whether an email address has an account.
-    generic_message = (
-        "If an eligible account exists for that email, "
-        "a reset code will be sent."
-    )
-
     if not valid_email(email):
-        return jsonify({
-            "status": "success",
-            "message": generic_message
-        }), 200
-
+        return jsonify(status="error", message="Please enter a valid email address."), 400
     user = User.query.filter_by(email=email).first()
-
-    # Only send reset codes to verified accounts.
     if not user or not user.is_verified:
-        return jsonify({
-            "status": "success",
-            "message": generic_message
-        }), 200
-
+        return jsonify(status="error", message="This email is not registered with Octo Buddy."), 404
     try:
-        # Invalidate previous unused reset codes for this user.
-        PasswordResetCode.query.filter_by(
-            user_id=user.id,
-            used=False
-        ).delete(synchronize_session=False)
-
-        # Keep the five-digit format used by your existing email relay.
+        PasswordResetCode.query.filter_by(user_id=user.id, used=False).delete(synchronize_session=False)
         code = str(secrets.randbelow(90000) + 10000)
-
         reset_record = PasswordResetCode(
             user_id=user.id,
-            code_hash=hashlib.sha256(
-                code.encode("utf-8")
-            ).hexdigest(),
+            code_hash=hashlib.sha256(code.encode("utf-8")).hexdigest(),
             expires_at=datetime.utcnow() + timedelta(minutes=10),
             attempts=0,
             used=False
         )
-
         db.session.add(reset_record)
         db.session.commit()
-
-        # Reuse the email system already used by registration.
         try:
             send_otp_email(user.email, code)
         except Exception:
             app.logger.exception("Password reset email delivery failed.")
-
-            # Remove the code if delivery fails.
-            PasswordResetCode.query.filter_by(
-                id=reset_record.id
-            ).delete()
+            PasswordResetCode.query.filter_by(id=reset_record.id).delete()
             db.session.commit()
-
-        return jsonify({
-            "status": "success",
-            "message": generic_message
-        }), 200
-
+            return jsonify(status="error", message="We could not send the reset code. Please try again shortly."), 502
+        return jsonify(status="success", message="A password reset code has been sent. It expires in 10 minutes."), 200
     except Exception:
         db.session.rollback()
         app.logger.exception("Password reset request failed.")
-
-        return jsonify({
-            "status": "success",
-            "message": generic_message
-        }), 200
+        return jsonify(status="error", message="Could not request a reset code. Please try again."), 500
 
 
 @app.route("/api/reset-password", methods=["POST"])
@@ -1750,16 +1691,14 @@ def available_tutors():
         if not tutor or (tutor.role or "").lower() != "buddy":
             continue
 
-        # Match both the qualification and year selected on the Buddy application.
-        if normalized(application.qualification) != normalized(student.course):
-            continue
-        try:
-            if int(str(application.academic_year).strip().lower().replace("year", "").strip()) != int(student.academic_year):
-                continue
-        except (TypeError, ValueError):
-            continue
-
-        matching_modules = [name for name in json_list(application.modules) if name in student_modules]
+        # Match by the actual module names the student studies. A Buddy may
+        # study a different qualification/year and still tutor shared modules.
+        student_module_lookup = {normalized(name): name for name in student_modules}
+        matching_modules = [
+            student_module_lookup[normalized(name)]
+            for name in json_list(application.modules)
+            if normalized(name) in student_module_lookup
+        ]
         if requested_module:
             matching_modules = [name for name in matching_modules if name == requested_module]
         if not matching_modules:
@@ -2268,16 +2207,27 @@ def admin_delete_session(session_id):
     session = db.session.get(TutoringSession, session_id)
     if not session:
         return jsonify(status="error", message="Session not found."), 404
-    write_audit("session_deleted", "session", session.id, {
-        "student_id": session.student_id,
-        "buddy_id": session.buddy_id,
-        "module": session.module,
-        "date": session.session_date.isoformat(),
-        "time": session.session_time,
-    })
-    db.session.delete(session)
-    db.session.commit()
-    return jsonify(status="success", message="Session deleted."), 200
+    try:
+        write_audit("session_deleted", "session", session.id, {
+            "student_id": session.student_id,
+            "buddy_id": session.buddy_id,
+            "module": session.module,
+            "date": session.session_date.isoformat(),
+            "time": session.session_time,
+        })
+        # Remove dependent rows first because these tables use foreign keys
+        # without database-level ON DELETE CASCADE.
+        SessionLifecycle.query.filter_by(session_id=session.id).delete(synchronize_session=False)
+        UserNotification.query.filter_by(session_id=session.id).update(
+            {UserNotification.session_id: None}, synchronize_session=False
+        )
+        db.session.delete(session)
+        db.session.commit()
+        return jsonify(status="success", message="Session deleted."), 200
+    except Exception:
+        db.session.rollback()
+        app.logger.exception("Could not delete tutoring session %s", session_id)
+        return jsonify(status="error", message="The session could not be deleted. Please try again."), 500
 
 
 @app.route("/api/admin/sessions", methods=["GET"])
@@ -2536,6 +2486,12 @@ def admin_update_qualification(qualification_id):
         ).first()
         if duplicate:
             return jsonify(status="error", message="That qualification already exists."), 409
+        old_name = item.name
+        if old_name != name:
+            for user in User.query.filter_by(course=old_name).all():
+                user.course = name
+            for application in BuddyApplication.query.filter_by(qualification=old_name).all():
+                application.qualification = name
         item.name = name
     write_audit("qualification_updated", "qualification", item.id, {"name": item.name, "active": item.active})
     db.session.commit()
@@ -2550,13 +2506,23 @@ def admin_delete_qualification(qualification_id):
     item = db.session.get(ManagedQualification, qualification_id)
     if not item:
         return jsonify(status="error", message="Qualification not found."), 404
-    # Do not delete catalogue rows still referenced by modules; this avoids orphaned data.
-    if ManagedModule.query.filter_by(qualification_id=item.id).first():
-        return jsonify(status="error", message="Delete or reassign this qualification's modules before deleting the qualification."), 409
-    write_audit("qualification_deleted", "qualification", item.id, {"name": item.name})
-    db.session.delete(item)
-    db.session.commit()
-    return jsonify(status="success", message="Qualification deleted."), 200
+    old_name = item.name
+    try:
+        for user in User.query.filter_by(course=old_name).all():
+            user.course = "General"
+        module_names = [m.name for m in ManagedModule.query.filter_by(qualification_id=item.id).all()]
+        for application in BuddyApplication.query.filter_by(qualification=old_name).all():
+            selected = json_list(application.modules)
+            application.modules = as_json_text([value for value in selected if value not in module_names])
+        ManagedModule.query.filter_by(qualification_id=item.id).delete(synchronize_session=False)
+        write_audit("qualification_deleted", "qualification", item.id, {"name": old_name})
+        db.session.delete(item)
+        db.session.commit()
+        return jsonify(status="success", message="Qualification deleted."), 200
+    except Exception:
+        db.session.rollback()
+        app.logger.exception("Could not delete qualification %s", qualification_id)
+        return jsonify(status="error", message="The qualification could not be deleted. Please try again."), 500
 
 
 @app.route("/api/admin/modules", methods=["GET", "POST"])
@@ -2585,7 +2551,13 @@ def admin_modules():
     if not isinstance(year, int) or year not in (1, 2, 3, 4, 5, 6):
         return jsonify(status="error", message="Academic year must be a number from 1 to 6."), 400
     if not 2 <= len(name) <= 150 or not re.fullmatch(r"[A-Za-zÀ-ÖØ-öø-ÿ][A-Za-zÀ-ÖØ-öø-ÿ &().,'/-]*(?: [0-9]{3})?", name):
-        return jsonify(status="error", message="Module names must start with a letter and may only end with a three-digit module code, e.g. Programming 621."), 400
+        return jsonify(status="error", message="Enter a valid module name. A three-digit module code is allowed at the end, e.g. Programming 621."), 400
+    duplicate = ManagedModule.query.filter(
+        ManagedModule.qualification_id == qid,
+        db.func.lower(ManagedModule.name) == name.lower()
+    ).first()
+    if duplicate:
+        return jsonify(status="error", message="That module is already part of this qualification."), 409
     item = ManagedModule(name=name, qualification_id=qid, academic_year=year)
     db.session.add(item)
     try:
@@ -2613,19 +2585,55 @@ def admin_update_module(module_id):
     if "name" in data:
         name = str(data.get("name", "")).strip()
         if not 2 <= len(name) <= 150 or not re.fullmatch(r"[A-Za-zÀ-ÖØ-öø-ÿ][A-Za-zÀ-ÖØ-öø-ÿ &().,'/-]*(?: [0-9]{3})?", name):
-            return jsonify(status="error", message="Module names must start with a letter and may only end with a three-digit module code, e.g. Programming 621."), 400
+            return jsonify(status="error", message="Enter a valid module name. A three-digit module code is allowed at the end, e.g. Programming 621."), 400
         duplicate = ManagedModule.query.filter(
             db.func.lower(ManagedModule.name) == name.lower(),
             ManagedModule.qualification_id == item.qualification_id,
-            ManagedModule.academic_year == item.academic_year,
             ManagedModule.id != item.id
         ).first()
         if duplicate:
-            return jsonify(status="error", message="That module already exists for this qualification and year."), 409
-        item.name = name
+            return jsonify(status="error", message="That module is already part of this qualification."), 409
+        old_name = item.name
+        if old_name != name:
+            qualification_name = item.qualification.name if item.qualification else ""
+            for application in BuddyApplication.query.all():
+                if normalized_text(application.qualification) == normalized_text(qualification_name):
+                    selected = json_list(application.modules)
+                    if old_name in selected:
+                        application.modules = as_json_text([name if value == old_name else value for value in selected])
+            item.name = name
     write_audit("module_updated", "module", item.id, {"name": item.name, "active": item.active})
     db.session.commit()
     return jsonify(status="success", module={"id": item.id, "name": item.name, "active": item.active}), 200
+
+
+@app.route("/api/admin/modules/<int:module_id>", methods=["DELETE"])
+def admin_delete_module(module_id):
+    denied = _admin_required()
+    if denied:
+        return denied
+    item = db.session.get(ManagedModule, module_id)
+    if not item:
+        return jsonify(status="error", message="Module not found."), 404
+    module_name = item.name
+    qualification_name = item.qualification.name if item.qualification else ""
+    try:
+        for application in BuddyApplication.query.all():
+            if normalized_text(application.qualification) == normalized_text(qualification_name):
+                selected = json_list(application.modules)
+                if module_name in selected:
+                    application.modules = as_json_text([value for value in selected if value != module_name])
+        write_audit("module_deleted", "module", item.id, {
+            "name": module_name, "qualification": qualification_name,
+            "academic_year": item.academic_year
+        })
+        db.session.delete(item)
+        db.session.commit()
+        return jsonify(status="success", message="Module deleted."), 200
+    except Exception:
+        db.session.rollback()
+        app.logger.exception("Could not delete managed module %s", module_id)
+        return jsonify(status="error", message="The module could not be deleted. Please try again."), 500
 
 
 @app.route("/api/admin/reports.csv", methods=["GET"])

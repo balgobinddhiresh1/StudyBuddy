@@ -16,7 +16,7 @@ async function loadAvailableTutors() {
         const tutors = Array.isArray(data.tutors) ? data.tutors : [];
         if (!tutors.length) {
             listPanel.innerHTML = `
-              <p>No approved Octo Buddies currently match your saved qualification and academic year.</p>
+              <p>No approved Octo Buddies currently teach the modules in your study plan.</p>
               <p><strong>${escapeHtml(data.qualification || "Qualification not set")}</strong> · Year ${escapeHtml(String(data.academic_year || "—"))}</p>`;
             return;
         }
@@ -35,7 +35,7 @@ async function loadAvailableTutors() {
         }));
 
         listPanel.innerHTML = `
-          <p>Automatically matched to <strong>${escapeHtml(data.qualification || "your qualification")}</strong>, Year <strong>${escapeHtml(String(data.academic_year || "—"))}</strong>. No booking-form details are needed to view this list.</p>
+          <p>These Octo Buddies are matched to the modules you study: <strong>${escapeHtml((data.modules || []).join(", ") || "No modules configured")}</strong>. Qualification and year do not restrict the match.</p>
           <div class="available-tutors-scroll" style="max-height:340px;overflow:auto;border:1px solid #dbe7ee;border-radius:10px;background:#fff">
             <table class="available-tutors-table" style="width:100%;border-collapse:collapse;min-width:650px">
               <thead style="position:sticky;top:0;background:#eef6fa;z-index:1"><tr>
@@ -354,7 +354,7 @@ function updateDOMProfile(data) {
    PROFILE EDIT MODAL
 ========================================================= */
 
-function openEditModal() {
+async function openEditModal() {
     const role = (localStorage.getItem("user_role") || localStorage.getItem("role") || "").toLowerCase();
     if (role === "buddy" || role === "octo buddy") {
         octoAlert("Octo Buddy profiles cannot be edited.");
@@ -376,6 +376,20 @@ function openEditModal() {
     const yearSelect = document.getElementById("editAcademicYear");
 
     if (courseSelect) {
+        try {
+            const response = await fetch(`${API_BASE_URL}qualifications`);
+            const data = await response.json();
+            if (response.ok && Array.isArray(data.qualifications)) {
+                const current = cachedUser.course || "";
+                courseSelect.replaceChildren(new Option("Select qualification", ""));
+                data.qualifications.forEach(item => courseSelect.add(new Option(item.name, item.name)));
+                if (current && !data.qualifications.some(item => item.name === current)) {
+                    courseSelect.add(new Option(current, current));
+                }
+            }
+        } catch (error) {
+            console.warn("Could not refresh qualification options:", error);
+        }
         courseSelect.value = cachedUser.course || "";
     }
 
