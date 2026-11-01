@@ -400,7 +400,7 @@ function renderBuddySchedule(sessions) {
 
 async function respondToBooking(sessionId, status) {
     const verb = status === "Confirmed" ? "approve" : "reject";
-    if (!confirm(`Are you sure you want to ${verb} this session request?`)) return;
+    if (!await octoConfirm(`Are you sure you want to ${verb} this session request?`)) return;
     try {
         const response = await fetch(`${API_BASE_URL}sessions/${sessionId}/status`, {
             method: "PUT",

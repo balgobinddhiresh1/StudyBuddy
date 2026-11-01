@@ -205,7 +205,7 @@ function createSessionCard(session) {
             button.className = "join-btn";
             button.textContent = nextStatus === "Confirmed" ? "Approve" : "Reject";
             button.addEventListener("click", async () => {
-                if (!confirm(`${nextStatus === "Confirmed" ? "Approve" : "Reject"} this session request?`)) return;
+                if (!await octoConfirm(`${nextStatus === "Confirmed" ? "Approve" : "Reject"} this session request?`)) return;
                 const response = await fetch(`${API_URL}/sessions/${session.id}/status`, {
                     method: "PUT", headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ status: nextStatus })
@@ -221,7 +221,7 @@ function createSessionCard(session) {
         cancel.className = "cancel-session-btn";
         cancel.textContent = "Cancel booking";
         cancel.addEventListener("click", async () => {
-            if (!confirm("Cancel this tutoring session?")) return;
+            if (!await octoConfirm("Cancel this tutoring session?")) return;
             const response = await fetch(`${API_URL}/sessions/${session.id}/status`, {
                 method: "PUT", headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ status: "Cancelled" })

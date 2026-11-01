@@ -357,7 +357,7 @@ function updateDOMProfile(data) {
 function openEditModal() {
     const role = (localStorage.getItem("user_role") || localStorage.getItem("role") || "").toLowerCase();
     if (role === "buddy" || role === "octo buddy") {
-        alert("Octo Buddy profiles cannot be edited.");
+        octoAlert("Octo Buddy profiles cannot be edited.");
         return;
     }
     const modal = document.getElementById("editModal");
@@ -416,7 +416,7 @@ async function saveProfileChanges() {
         sessionStorage.getItem("user_id");
 
     if (!userId) {
-        alert("Your login session could not be found. Please log in again.");
+        octoAlert("Your login session could not be found. Please log in again.");
         return;
     }
 
@@ -441,7 +441,7 @@ headers: {
         const data = await response.json();
 
         if (!response.ok) {
-            alert(data.message || "Could not update your profile.");
+            octoAlert(data.message || "Could not update your profile.");
             return;
         }
 
@@ -459,7 +459,7 @@ headers: {
 
     } catch (error) {
         console.error("Profile update error:", error);
-        alert("Could not connect to the backend server.");
+        octoAlert("Could not connect to the backend server.");
     }
 }
 
@@ -503,28 +503,31 @@ function renderUpcomingSessions(sessions) {
     container.querySelectorAll(".dynamic-session").forEach(card => card.remove());
 
     const now = new Date();
-    const futureSessions = (sessions || [])
+    const visibleSessions = (sessions || [])
         .filter(session => !["Cancelled", "Rejected"].includes(String(session.status || "").toLowerCase()))
-        .filter(session => {
-            const start = new Date(`${String(session.date || "").slice(0,10)}T${String(session.time || "00:00").slice(0,5)}:00`);
-            return !Number.isNaN(start.getTime()) && start >= now;
+        .map(session => {
+            const dateText = String(session.date || "").slice(0, 10);
+            const timeText = String(session.time || "00:00").slice(0, 5);
+            const start = new Date(`${dateText}T${timeText}:00`);
+            return { ...session, _start: start, _entryOpens: new Date(start.getTime() - 15 * 60000), _entryCloses: new Date(start.getTime() + 15 * 60000) };
         })
-        .sort((a,b) => `${a.date} ${a.time}`.localeCompare(`${b.date} ${b.time}`))
-        .slice(0,5);
+        .filter(session => !Number.isNaN(session._start.getTime()) && session._entryCloses >= now)
+        .sort((a, b) => a._start - b._start)
+        .slice(0, 5);
 
     const noSession = container.querySelector(".no-session");
-    if (!futureSessions.length) {
+    if (!visibleSessions.length) {
         if (noSession) noSession.style.display = "";
         return;
     }
     if (noSession) noSession.style.display = "none";
 
-    futureSessions.forEach(session => {
-        const start = new Date(`${session.date}T${session.time || "00:00"}`);
+    visibleSessions.forEach(session => {
+        const start = session._start;
         const card = document.createElement("div");
         card.className = "session-card dynamic-session";
-        const canJoin = String(session.status || "").toLowerCase() === "confirmed" &&
-            start.toDateString() === now.toDateString() && now >= start && Boolean(session.room_code);
+        const isConfirmed = String(session.status || "").toLowerCase() === "confirmed";
+        const canJoinNow = isConfirmed && now >= session._entryOpens && now <= session._entryCloses && Boolean(session.room_code);
         const dateLabel = start.toLocaleDateString("en-ZA", { day:"2-digit", month:"long", year:"numeric" });
         card.innerHTML = `
             <div class="session-date"><span class="day">${String(start.getDate()).padStart(2,"0")}</span><span class="month">${escapeHtml(start.toLocaleDateString("en-ZA",{month:"long"}))}</span></div>
@@ -536,18 +539,34 @@ function renderUpcomingSessions(sessions) {
                 <p>Status: <strong>${escapeHtml(session.status || "Pending")}</strong></p>
             </div>
             <div class="session-actions">
-                ${String(session.status).toLowerCase() === "confirmed" ? `<button class="join-btn" type="button" ${canJoin ? "" : "disabled"}>${canJoin ? "Enter session" : "Enter session (not yet available)"}</button>` : `<p>Waiting for Octo Buddy approval</p>`}
+                ${isConfirmed ? `<button class="join-btn" type="button">Enter session</button><small class="session-entry-hint">${canJoinNow ? "Available now" : "Available 15 minutes before until 15 minutes after start"}</small>` : `<p>Waiting for Octo Buddy approval</p>`}
                 <button class="cancel-session-btn" type="button" data-session-id="${Number(session.id)}">Cancel booking</button>
             </div>`;
         const join = card.querySelector(".join-btn");
-        if (join) join.addEventListener("click", () => joinTutorRoom(session.room_code));
+        if (join) join.addEventListener("click", () => {
+            const current = new Date();
+            if (current < session._entryOpens) {
+                const minutes = Math.ceil((session._entryOpens - current) / 60000);
+                octoAlert(`This session is not available yet. You can enter 15 minutes before the scheduled start time. Please try again in about ${minutes} minute${minutes === 1 ? "" : "s"}.`, "Session not available");
+                return;
+            }
+            if (current > session._entryCloses) {
+                octoAlert("This session has expired. You can only enter from 15 minutes before until 15 minutes after the scheduled start time.", "Session expired");
+                return;
+            }
+            if (!session.room_code) {
+                octoAlert("This session does not have a video room assigned yet. Please contact your Octo Buddy.", "Room unavailable");
+                return;
+            }
+            joinTutorRoom(session.room_code);
+        });
         card.querySelector(".cancel-session-btn").addEventListener("click", () => cancelStudentSession(Number(session.id)));
         container.insertBefore(card, container.firstChild);
     });
 }
 
 async function cancelStudentSession(sessionId) {
-    if (!confirm("Cancel this tutoring session request?")) return;
+    if (!(await octoConfirm("Cancel this tutoring session request?", "Cancel booking"))) return;
     try {
         const response = await fetch(`${API_BASE_URL}sessions/${sessionId}/status`, {
             method: "PUT",
@@ -557,22 +576,22 @@ async function cancelStudentSession(sessionId) {
         const data = await response.json();
         if (!response.ok) throw new Error(data.message || "Could not cancel this session.");
         await loadUpcomingSessions();
-        alert("Your session has been cancelled.");
-    } catch (error) { alert(error.message || "Could not cancel the session."); }
+        octoAlert("Your session has been cancelled.");
+    } catch (error) { octoAlert(error.message || "Could not cancel the session."); }
 }
 
 /**
  * Join a Jitsi room assigned by the backend.
  */
 async function joinTutorRoom(roomName) {
-    if (!roomName) { alert("This session does not have a video room yet."); return; }
+    if (!roomName) { octoAlert("This session does not have a video room yet."); return; }
     try {
         const token = localStorage.getItem("auth_token") || "";
         const response = await fetch(`${API_BASE_URL}sessions/room/${encodeURIComponent(roomName)}/join`, { method: "POST", headers: { Authorization: `Bearer ${token}` } });
         const data = await response.json();
         if (!response.ok) throw new Error(data.message || "Your Octo Buddy has not started the session yet.");
         launchJitsiCall(roomName);
-    } catch (error) { alert(error.message || "Could not join the session."); }
+    } catch (error) { octoAlert(error.message || "Could not join the session."); }
 }
 
 
@@ -725,19 +744,19 @@ function setupBookingForm() {
             localStorage.getItem("user_id");
 
         if (!module || !date || !time) {
-            alert("Please complete all booking fields.");
+            octoAlert("Please complete all booking fields.");
             return;
         }
 
         const now = new Date();
         const selectedStart = new Date(`${date}T${time}:00`);
         if (selectedStart <= now) {
-            alert("Please choose a time in the future. You cannot book a time that has already passed.");
+            octoAlert("Please choose a time in the future. You cannot book a time that has already passed.");
             return;
         }
 
         if (!userId) {
-            alert("Please log in before booking a tutoring session.");
+            octoAlert("Please log in before booking a tutoring session.");
             return;
         }
 
@@ -768,7 +787,7 @@ function setupBookingForm() {
             const data = await response.json();
 
             if (!response.ok) {
-                alert(data.message || "Booking failed.");
+                octoAlert(data.message || "Booking failed.");
                 return;
             }
 
@@ -780,7 +799,7 @@ function setupBookingForm() {
                 );
             }
 
-            alert(
+            octoAlert(
                 "Your session request has been sent to the Octo Buddy. It will remain Pending until they approve it.\n\n" +
                 `Module: ${module}\n` +
                 `Date: ${date}\n` +
@@ -793,7 +812,7 @@ function setupBookingForm() {
 
         } catch (error) {
             console.error("Booking error:", error);
-            alert(
+            octoAlert(
                 "Could not connect to the backend server. " +
                 "Make sure app.py is running."
             );
@@ -835,17 +854,17 @@ function setupMarksForm() {
             document.getElementById("academicResult");
 
         if (!subject || !/^[A-Za-zÀ-ÿ][A-Za-zÀ-ÿ &’'\-]*$/.test(subject)) {
-            alert("Please enter a module name using letters and spaces only. Numbers are not allowed.");
+            octoAlert("Please enter a module name using letters and spaces only. Numbers are not allowed.");
             return;
         }
 
         if (!Number.isFinite(score) || document.getElementById("score").value.trim() === "") {
-            alert("Please enter a valid score.");
+            octoAlert("Please enter a valid score.");
             return;
         }
 
         if (score < 0 || score > 100) {
-            alert("Score must be between 0 and 100.");
+            octoAlert("Score must be between 0 and 100.");
             return;
         }
 

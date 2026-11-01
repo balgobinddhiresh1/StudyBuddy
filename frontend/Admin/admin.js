@@ -270,7 +270,7 @@ function setupApplicationActions() {
         const message = action === "approve"
             ? "Approve this Octo Buddy application?"
             : "Reject this Octo Buddy application?";
-        if (!confirm(message)) return;
+        if (!await octoConfirm(message)) return;
 
         try {
             const response = await apiFetch(`${API_BASE_URL}buddy-applications/${applicationId}/${action}`, { method: "PUT" });
@@ -658,10 +658,10 @@ async function setupQualificationButtons() {
             const selectedName = selectedButton?.textContent.trim() || "";
             const qualification = managedQualifications.find(item => item.name === selectedName) || managedQualifications[0];
             if (!qualification) { alert("Add a qualification before adding modules."); return; }
-            const name = prompt("Enter the module name:");
+            const name = await octoPrompt("Enter the module name:");
             if (!name?.trim()) return;
             if (!/^[A-Za-zÀ-ÖØ-öø-ÿ][A-Za-zÀ-ÖØ-öø-ÿ &().,'/-]*(?: [0-9]{3})?$/.test(name.trim())) { alert("Module names must start with a letter and may only end with a three-digit module code, for example Programming 621."); return; }
-            const yearText = prompt("Enter the academic year for this module (1–6):", "1");
+            const yearText = await octoPrompt("Enter the academic year for this module (1–6):", "1");
             if (yearText === null) return;
             const year = Number(yearText);
             if (!Number.isInteger(year) || year < 1 || year > 6) { alert("Academic year must be a whole number from 1 to 6."); return; }
@@ -764,7 +764,7 @@ function renderQualifications() {
     grid.querySelectorAll(".qualification-open-btn").forEach(button => button.onclick = () => window.location.href = `qualification-detail.html?id=${button.dataset.qualificationId}`);
     grid.querySelectorAll(".qualification-delete-btn").forEach(button => button.onclick = async () => {
         const q = managedQualifications.find(item => Number(item.id) === Number(button.dataset.qualificationId));
-        if (!q || !confirm(`Delete qualification “${q.name}”? This may be blocked if modules or bookings depend on it.`)) return;
+        if (!q || !await octoConfirm(`Delete qualification “${q.name}”? This may be blocked if modules or bookings depend on it.`)) return;
         try {
             const response = await apiFetch(`${API_BASE_URL}admin/qualifications/${q.id}`, { method: "DELETE" });
             const data = await response.json();
@@ -881,8 +881,8 @@ function setupAdminActions() {
     }
 
     if (logoutBtn) {
-        logoutBtn.addEventListener("click", () => {
-            if (!confirm("Are you sure you want to logout?")) return;
+        logoutBtn.addEventListener("click", async () => {
+            if (!await octoConfirm("Are you sure you want to logout?")) return;
             clearLogin();
            window.location.href = "../signin_login/project.html";
         });
@@ -967,7 +967,7 @@ function setupAdminManagementControls() {
         if (statusButton) {
             const userId = statusButton.dataset.userId;
             const suspended = statusButton.dataset.suspended !== "true";
-            if (!confirm(suspended ? "Suspend this account? The user will no longer be able to sign in." : "Reactivate this account?")) return;
+            if (!await octoConfirm(suspended ? "Suspend this account? The user will no longer be able to sign in." : "Reactivate this account?")) return;
             try {
                 const response = await apiFetch(`${API_BASE_URL}admin/users/${userId}/status`, {
                     method: "PUT", body: JSON.stringify({ suspended })
@@ -982,7 +982,7 @@ function setupAdminManagementControls() {
         const deactivateButton = event.target.closest(".buddy-deactivate-btn");
         if (deactivateButton) {
             const id = deactivateButton.dataset.userId;
-            if (!confirm("Deactivate this Buddy's tutoring role? Their account will remain a student account.")) return;
+            if (!await octoConfirm("Deactivate this Buddy's tutoring role? Their account will remain a student account.")) return;
             try {
                 const response = await apiFetch(`${API_BASE_URL}admin/buddies/${id}/deactivate`, { method: "PUT" });
                 const data = await response.json();
@@ -1024,7 +1024,7 @@ function renderAdminBookings() {
       <td><button type="button" class="view-session-btn outline-btn" data-session-id="${session.id}">View session</button> <button type="button" class="delete-session-btn" data-session-id="${session.id}">Delete</button></td></tr>`).join("") : `<tr><td colspan="9">No bookings match this filter.</td></tr>`;
     table.querySelectorAll(".delete-session-btn").forEach(button => button.addEventListener("click", async () => {
         const id = button.dataset.sessionId;
-        if (!confirm(`Permanently delete session #${id}? This cannot be undone.`)) return;
+        if (!await octoConfirm(`Permanently delete session #${id}? This cannot be undone.`)) return;
         try {
             const response = await apiFetch(`${API_BASE_URL}admin/sessions/${id}`, { method: "DELETE" });
             const data = await response.json();

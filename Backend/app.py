@@ -1541,8 +1541,12 @@ def session_room_join(room_code):
         scheduled_start = datetime.combine(session.session_date, datetime.strptime(session.session_time, "%H:%M").time(), tzinfo=ZoneInfo("Africa/Johannesburg"))
     except ValueError:
         return jsonify(status="error", message="The scheduled session time is invalid."), 400
-    if local_now < scheduled_start:
-        return jsonify(status="error", message="This session cannot be entered before its scheduled start time."), 403
+    entry_opens = scheduled_start - timedelta(minutes=15)
+    entry_closes = scheduled_start + timedelta(minutes=15)
+    if local_now < entry_opens:
+        return jsonify(status="error", message="This session is not available yet. You can enter 15 minutes before the scheduled start time."), 403
+    if local_now > entry_closes:
+        return jsonify(status="error", message="This session has expired. Entry is only available until 15 minutes after the scheduled start time."), 403
     lifecycle = SessionLifecycle.query.filter_by(session_id=session.id).first()
     if not lifecycle:
         lifecycle = SessionLifecycle(session_id=session.id)
@@ -1912,6 +1916,8 @@ def student_sessions(user_id):
     purge_past_sessions()
     sessions = TutoringSession.query.filter_by(
         student_id=user_id
+    ).filter(
+        TutoringSession.status != "Rejected"
     ).order_by(
         TutoringSession.session_date.asc(),
         TutoringSession.session_time.asc()
