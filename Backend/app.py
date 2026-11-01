@@ -283,6 +283,8 @@ class SessionLifecycle(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     session_id = db.Column(db.Integer, db.ForeignKey("tutoring_sessions.id"), nullable=False, unique=True, index=True)
     started_at = db.Column(db.DateTime, nullable=True)
+    student_left_at = db.Column(db.DateTime, nullable=True)
+    buddy_left_at = db.Column(db.DateTime, nullable=True)
     ended_at = db.Column(db.DateTime, nullable=True)
     session = db.relationship("TutoringSession")
 
@@ -1547,7 +1549,7 @@ def session_room_join(room_code):
         return jsonify(status="error", message="This session is not available yet. You can enter 15 minutes before the scheduled start time."), 403
     if local_now > entry_closes:
         return jsonify(status="error", message="This session has expired. Entry is only available until 15 minutes after the scheduled start time."), 403
-    lifecycle = SessionLifecycle.query.filter_by(session_id=session.id).first()
+    lifecycle = SessionLifecycle.query.filter_by(session_id=session.id).with_for_update().first()
     if not lifecycle:
         lifecycle = SessionLifecycle(session_id=session.id)
         db.session.add(lifecycle)
@@ -1556,48 +1558,92 @@ def session_room_join(room_code):
     if role == "buddy":
         if actor.id != session.buddy_id:
             return jsonify(status="error", message="Only the assigned Octo Buddy can start this session."), 403
+        changed = False
         if not lifecycle.started_at:
             lifecycle.started_at = datetime.utcnow()
             add_notification(session.student_id, "Your Octo Buddy has started the session", f"Your {session.module} session is ready to join.", "session_started", session.id)
+            changed = True
+        if lifecycle.buddy_left_at:
+            lifecycle.buddy_left_at = None
+            changed = True
+        if changed:
             db.session.commit()
     elif role == "student":
         if actor.id != session.student_id:
             return jsonify(status="error", message="Only the booked student can join this session."), 403
         if not lifecycle.started_at or lifecycle.ended_at:
             return jsonify(status="error", message="Your Octo Buddy has not started this session yet."), 409
+        if lifecycle.student_left_at:
+            lifecycle.student_left_at = None
+            db.session.commit()
     return jsonify(status="success", message="Session may be joined.", session_id=session.id,
                    started=bool(lifecycle.started_at), ended=bool(lifecycle.ended_at)), 200
 
 
+@app.route("/api/sessions/room/<path:room_code>/leave", methods=["POST"])
 @app.route("/api/sessions/room/<path:room_code>/end", methods=["POST"])
-def session_room_end(room_code):
-    """Only the assigned Buddy can end and complete a session."""
+def session_room_leave(room_code):
+    """Record each participant leaving; complete and reward only after both have left."""
     actor = getattr(g, "current_user", None)
     session = TutoringSession.query.filter_by(room_code=room_code).first()
     if not actor or not session:
         return jsonify(status="error", message="Session or account not found."), 404
-    if actor.id != session.buddy_id or (actor.role or "").lower() != "buddy":
-        return jsonify(status="error", message="Only the assigned Octo Buddy can end this session."), 403
-    lifecycle = SessionLifecycle.query.filter_by(session_id=session.id).first()
+
+    role = (actor.role or "").lower()
+    if role == "student" and actor.id != session.student_id:
+        return jsonify(status="error", message="Only the booked student can leave this session."), 403
+    if role == "buddy" and actor.id != session.buddy_id:
+        return jsonify(status="error", message="Only the assigned Octo Buddy can leave this session."), 403
+    if role not in {"student", "buddy"}:
+        return jsonify(status="error", message="Only the booked participants can record leaving this session."), 403
+
+    lifecycle = SessionLifecycle.query.filter_by(session_id=session.id).with_for_update().first()
     if not lifecycle or not lifecycle.started_at:
-        return jsonify(status="error", message="The session has not been started by the Buddy."), 409
-    if not lifecycle.ended_at:
-        lifecycle.ended_at = datetime.utcnow()
-        if session.status == "Confirmed":
-            session.status = "Completed"
-            actor.points = (actor.points or 0) + 25
-            add_notification(session.student_id, "Tutoring session completed", f"Your {session.module} session has ended.", "session_completed", session.id)
-            add_notification(actor.id, "Tutoring session completed", f"You completed the {session.module} session.", "session_completed", session.id)
-        db.session.commit()
-        if session.status == "Completed":
-            student_name = f"{session.student.first_name} {session.student.last_name}" if session.student else "Student"
-            buddy_name = f"{session.buddy.first_name} {session.buddy.last_name}" if session.buddy else "Octo Buddy"
-            notify_admins_by_email(
-                "Octo Buddy session completed",
-                f"A tutoring session has been completed.\n\nStudent: {student_name}\nOcto Buddy: {buddy_name}\nModule: {session.module}\nDate: {session.session_date.isoformat()}\nTime: {session.session_time}\nSession ID: {session.id}",
-                "session_completed"
-            )
-    return jsonify(status="success", message="Session ended and recorded.", session=session_to_dict(session)), 200
+        return jsonify(status="error", message="The video session has not been started."), 409
+    if session.status == "Completed" or lifecycle.ended_at:
+        return jsonify(status="success", message="This session has already been completed.",
+                       completed=True, session=session_to_dict(session)), 200
+    if session.status != "Confirmed":
+        return jsonify(status="error", message="This session is no longer active."), 409
+
+    left_at = datetime.utcnow()
+    if role == "student" and not lifecycle.student_left_at:
+        lifecycle.student_left_at = left_at
+    elif role == "buddy" and not lifecycle.buddy_left_at:
+        lifecycle.buddy_left_at = left_at
+
+    completed_now = bool(lifecycle.student_left_at and lifecycle.buddy_left_at)
+    if completed_now and not lifecycle.ended_at:
+        lifecycle.ended_at = left_at
+        session.status = "Completed"
+        if session.buddy:
+            session.buddy.points = (session.buddy.points or 0) + 25
+        add_notification(session.student_id, "Tutoring session completed",
+                         f"Your {session.module} session has ended.", "session_completed", session.id)
+        if session.buddy_id:
+            add_notification(session.buddy_id, "Tutoring session completed",
+                             f"You completed the {session.module} session.", "session_completed", session.id)
+
+    db.session.commit()
+
+    if completed_now:
+        student_name = f"{session.student.first_name} {session.student.last_name}" if session.student else "Student"
+        buddy_name = f"{session.buddy.first_name} {session.buddy.last_name}" if session.buddy else "Octo Buddy"
+        notify_admins_by_email(
+            "Octo Buddy session completed",
+            f"A tutoring session has been completed.\\n\\nStudent: {student_name}\\nOcto Buddy: {buddy_name}\\nModule: {session.module}\\nDate: {session.session_date.isoformat()}\\nTime: {session.session_time}\\nSession ID: {session.id}",
+            "session_completed"
+        )
+
+    return jsonify(
+        status="success",
+        message=("Both participants have left. The session is completed." if completed_now
+                 else "Your departure has been recorded. The session will complete when the other participant leaves."),
+        completed=completed_now,
+        student_left=bool(lifecycle.student_left_at),
+        buddy_left=bool(lifecycle.buddy_left_at),
+        session=session_to_dict(session)
+    ), 200
 
 
 @app.route("/api/notifications", methods=["GET"])

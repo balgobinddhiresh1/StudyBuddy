@@ -671,7 +671,26 @@ function launchJitsiCall(roomName) {
             );
 
         jitsiApi.addEventListeners({
-            videoConferenceLeft: closeJitsiSession
+            videoConferenceLeft: async () => {
+                try {
+                    const token = localStorage.getItem("auth_token") || "";
+                    const response = await fetch(`${API_BASE_URL}sessions/room/${encodeURIComponent(roomName)}/leave`, {
+                        method: "POST",
+                        headers: { Authorization: `Bearer ${token}` }
+                    });
+                    const result = await response.json();
+                    if (!response.ok) {
+                        console.warn("Student departure was not recorded:", result.message);
+                    } else if (!result.completed) {
+                        console.info("Student departure recorded; waiting for the Buddy to leave.");
+                    }
+                } catch (error) {
+                    console.warn("Could not record student departure:", error);
+                } finally {
+                    closeJitsiSession();
+                    if (typeof loadUpcomingSessions === "function") loadUpcomingSessions();
+                }
+            }
         });
 
     } else {

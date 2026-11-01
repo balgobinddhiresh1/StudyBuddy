@@ -555,7 +555,7 @@ function launchJitsiCall(roomName) {
             if (room) {
                 try {
                     const token = localStorage.getItem("auth_token") || "";
-                    await fetch(`${API_BASE_URL}sessions/room/${encodeURIComponent(room)}/end`, { method: "POST", headers: { Authorization: `Bearer ${token}` } });
+                    await fetch(`${API_BASE_URL}sessions/room/${encodeURIComponent(room)}/leave`, { method: "POST", headers: { Authorization: `Bearer ${token}` } });
                 } catch (error) { console.warn("Could not record session end."); }
                 localStorage.removeItem("octo_active_buddy_room");
             }
