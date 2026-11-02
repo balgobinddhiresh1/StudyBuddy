@@ -1081,7 +1081,7 @@ function setupAdminManagementControls() {
         controls.innerHTML = `<select id="reportTypeFilter" aria-label="Report type"><option value="users">User accounts</option><option value="applications">Buddy applications</option><option value="bookings">Bookings</option></select>
           <select id="reportStatusFilter" aria-label="Report status"><option value="">All statuses</option><option>Pending</option><option>Approved</option><option>Rejected</option><option>Confirmed</option><option>Completed</option><option>Cancelled</option><option value="active">Active</option><option value="suspended">Suspended</option></select>
           <select id="reportQualificationFilter" aria-label="Filter report by qualification"><option value="">All qualifications</option></select>
-          <select id="reportYearFilter" aria-label="Filter report by academic year"><option value="">All years</option><option value="1">Year 1</option><option value="2">Year 2</option><option value="3">Year 3</option><option value="4">Year 4</option><option value="5">Year 5</option><option value="6">Year 6</option></select>
+          <select id="reportYearFilter" aria-label="Filter report by academic year"><option value="">All years</option><option value="1">Year 1</option><option value="2">Year 2</option><option value="3">Year 3</option><option value="4">Year 4</option></select>
           <input id="reportStartDate" type="date" aria-label="Report start date"><input id="reportEndDate" type="date" aria-label="Report end date">`;
         reportsHeading.appendChild(controls);
         controls.querySelectorAll("select,input").forEach(el => el.addEventListener("change", refreshReportFilters));
@@ -1319,7 +1319,10 @@ function exportReportData() {
 }
 
 function clearLogin() {
-    ["auth_token", "user_id", "user", "first_name", "last_name", "role", "active_buddy_room"].forEach(key => localStorage.removeItem(key));
+    ["auth_token", "user_id", "user", "first_name", "last_name", "role", "user_role", "active_buddy_room", "access_token"].forEach(key => {
+        localStorage.removeItem(key);
+        sessionStorage.removeItem(key);
+    });
 }
 
 /* =========================================================

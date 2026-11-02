@@ -586,15 +586,13 @@ function closeJitsiSession() {
 ========================================================= */
 
 function logout() {
-    localStorage.removeItem("auth_token");
-    localStorage.removeItem("user_id");
-    localStorage.removeItem("user");
-    localStorage.removeItem("first_name");
-    localStorage.removeItem("last_name");
-    localStorage.removeItem("role");
-    localStorage.removeItem("active_buddy_room");
-
-    window.location.href = "../signin_login/project.html";
+    if (typeof window.octoLogout === "function") {
+        window.octoLogout();
+        return;
+    }
+    ["auth_token", "user_id", "user", "first_name", "last_name", "role", "user_role", "active_buddy_room", "access_token"]
+        .forEach(key => { localStorage.removeItem(key); sessionStorage.removeItem(key); });
+    window.location.replace("../signin_login/project.html");
 }
     let lastScrollY = window.scrollY;
     const siteHeader = document.querySelector('header');
